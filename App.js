@@ -1,19 +1,28 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function App(props) {
-  const [prompt, setPrompt] = useState("Scan to read NFC card")
-  const [nodeURL, setNodeURL] = useState("")
-  const [readMode, setReadMode] = useState(true)
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+function LogoTitle(props) {
+  return (
+    <View style={{flexDirection:'row'}}>
+      <Image
+        style={{width: 50, height: 50 }}
+        source={{uri:'https://avatars.githubusercontent.com/u/109875636?s=200&v=4'}}
+      />
+      <Text style={{lineHeight:50, fontSize:20}}>{props.title}</Text>
+      </View>
+  );
+}
+function ReadNFCScreen(props) {
 
-  const [cardReadInfo, setCardReadInfo] = useState("pending...")
+  const [cardReadInfo, setCardReadInfo] = useState("")
   const [ndef, setNdef] = useState("pending...")
-  const [cardFileSettings, setCardFileSettings] = useState("pending...")
-
+  const [cardFileSettings, setCardFileSettings] = useState("")
   
   useEffect(() =>{
-
     const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
     const eventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
       setCardReadInfo(event.cardReadInfo)
@@ -25,17 +34,113 @@ export default function App(props) {
       eventListener.remove();
     };
   })
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('ReadNFCScreen');
+      NativeModules.MyReactModule.setReadMode(true);
+    }, [])
+  );
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
-  const toggleReadMode = (mode) => {
-    NativeModules.MyReactModule.setReadMode(mode);
-    setPrompt(!mode ? "Scan to write NFC card" : "Scan to read NFC card");
-    setReadMode(mode);
-  }
+        <Text>Scan to read NFC card</Text>
+        <Text style={{fontWeight:'bold', fontSize:20}}>{ndef}</Text>
+        <Text>{cardReadInfo}</Text>
+        <Text>{cardFileSettings}</Text>
+
+    </View>
+  );
+}
+
+function WriteNFCScreen(props) {
+  const [nodeURL, setNodeURL] = useState("")
+  const [writeOutput, setWriteOutput] = useState("pending...")
+
+  useEffect(() =>{
+    const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
+    const eventListener = eventEmitter.addListener('WriteResult', (event) => {
+      setWriteOutput(event.output)
+    });
+
+    return () => {
+      eventListener.remove();
+    };
+  })
 
   const updateNodeUrl = text => {
     setNodeURL(text);
     NativeModules.MyReactModule.setNodeURL(text);
   }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('WriteNFCScreen');
+      NativeModules.MyReactModule.setReadMode(false);
+    }, [])
+  );
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+       <Text>Please enter your node's domain and path</Text>
+        <View style={{flexDirection:'row'}}>
+          <Text style={{lineHeight:60}}>lnurlw://</Text>
+          <TextInput 
+            style={styles.input} 
+            value={nodeURL} 
+            onChangeText={(text) => updateNodeUrl(text)}
+            placeholder="yourdomain.com/path"
+          />
+
+        </View>
+        <Text>Then scan to write NFC card</Text>
+        <Text style={{color: writeOutput == "Success" ? 'green' : 'orange'}}>{writeOutput}</Text>
+    </View>
+  );
+}
+const Tab = createBottomTabNavigator();
+
+
+export default function App(props) {
+
+
+  return (
+    <>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+
+            if (route.name === 'ReadNFC') {
+              iconName = focused
+                ? 'book'
+                : 'book-outline';
+            } else if (route.name === 'WriteNFC') {
+              iconName = focused ? 'save' : 'save-outline';
+            }
+
+            // You can return any component that you like here!
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: 'tomato',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen 
+          name="ReadNFC" 
+          component={ReadNFCScreen} 
+          options={{ headerTitle: (props) => <LogoTitle title="Read NFC" {...props} />}} 
+        />
+        <Tab.Screen 
+          name="WriteNFC" 
+          component={WriteNFCScreen} 
+          props={props} 
+          options={{ headerTitle: (props) => <LogoTitle title="Write NFC" {...props} />}} 
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
+    </>
+  );
 
   return (
     <View style={styles.container}>
@@ -81,6 +186,8 @@ export default function App(props) {
       <StatusBar style="auto" />
     </View>
   );
+
+
 }
 
 const styles = StyleSheet.create({
