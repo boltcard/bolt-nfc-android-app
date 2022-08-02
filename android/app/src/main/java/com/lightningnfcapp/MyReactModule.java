@@ -24,12 +24,19 @@ public class MyReactModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void finish() {
-        Log.d(TAG, "finish");
+    public void setReadMode(boolean readmode) {
+        Log.d(TAG, "setReadMode: "+readmode);
 
         MainActivity activity = (MainActivity) getCurrentActivity();
-        activity.getSomething(null);
+        activity.setReadMode(readmode);
         
+    }
+    
+    @ReactMethod
+    public void setNodeURL(String url) {
+        Log.d(TAG, "setNodeURL: "+url);
+        MainActivity activity = (MainActivity) getCurrentActivity();
+        activity.setNodeURL(url);
     }
 
 }

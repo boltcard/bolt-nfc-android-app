@@ -165,6 +165,9 @@ public class MainActivity extends ReactActivity {
   private ReactRootView mReactRootView; //change
   private ReactInstanceManager mReactInstanceManager;
 
+  private boolean readmode = true;
+  private String nodeURL = "";
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     // Set the theme to AppTheme BEFORE onCreate to support 
@@ -301,7 +304,13 @@ public class MainActivity extends ReactActivity {
       mString = Objects.requireNonNull(extras).get("android.nfc.extra.TAG");
       // logoAndCardImageView.setVisibility(View.VISIBLE);
       try {
-          cardLogic(intent);
+          if(this.readmode) {
+            readCard(intent);
+          }
+          else {
+            writeCard(intent);
+          }
+          // cardLogic(intent);
           super.onNewIntent(intent);
           // tapTagImageView.setVisibility(View.GONE);
       } catch (Exception e) {
@@ -315,6 +324,127 @@ public class MainActivity extends ReactActivity {
   //   //do something with tagFromIntent
   // }
 
+  private void readCard(final Intent intent) throws Exception{
+    Log.e(TAG, "readCard");
+
+    CardType type = libInstance.getCardType(intent); //Get the type of the card
+    if (type == CardType.UnknownCard) {
+      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+    }
+    else if (type == CardType.NTAG424DNA) {
+      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+      byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+      String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
+      String UID = Utilities.dumpBytes(ntag424DNA.getUID());
+      // String FileCounter = Utilities.dumpBytes(ntag424DNA.getFileCounters(0));
+      int totalMem = ntag424DNA.getTotalMemory();
+      byte[] getVersion = ntag424DNA.getVersion();
+      String vendor = "Non NXP";
+      if (getVersion[0] == (byte) 0x04) {
+        vendor = "NXP";
+      }         
+
+      String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
+        "UID: "+UID+"\r\n"+
+        "totalMem: "+totalMem+"\r\n"+
+        "getVersion: "+Utilities.dumpBytes(getVersion)+"\r\n"+
+        "vendor: "+vendor+"\r\n";
+
+      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+      KeyData aesKeyData = new KeyData();
+      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+      aesKeyData.setKey(keyDefault);
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+
+      NTAG424DNAFileSettings readSettings2 = ntag424DNA.getFileSettings(2);
+
+      INdefMessage ndefRead = ntag424DNA.readNDEF();
+      Log.d(TAG, "***NDEF READ : "+this.decodeHex(ndefRead.toByteArray()));
+
+      WritableMap params = Arguments.createMap();
+      params.putString("cardReadInfo", cardDataBuilder);
+      params.putString("ndef", this.decodeHex(ndefRead.toByteArray()).substring(5));
+      params.putString("cardFileSettings", readSettings2.toString().replace(",", ",\r\n"));
+      sendEvent("CardHasBeenRead", params);
+
+
+    }
+  }
+
+  private void writeCard(final Intent intent) throws Exception{
+    Log.e(TAG, "writeCard");
+
+    if (this.nodeURL == null || this.nodeURL.equals("")) {
+      throw new Exception("Lightning node URL must not be empty");
+    }
+
+    CardType type = libInstance.getCardType(intent); //Get the type of the card
+    if (type == CardType.UnknownCard) {
+      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+    }
+    else if (type == CardType.NTAG424DNA) {
+      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+      byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+      
+      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+      KeyData aesKeyData = new KeyData();
+      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+      aesKeyData.setKey(keyDefault);
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+
+      NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
+        MFPCard.CommunicationMode.Plain,
+        (byte) 0xE,
+        (byte) 0xE,
+        (byte) 0xE,
+        (byte) 0x0
+      );
+
+      //picc offset = 9 + nodeURL length + 3 +7(junk at start?)
+      //mac offset = 9 + nodeURL length + 38 +7(junk at start?)
+      int piccOffset = 9 + nodeURL.length() + 3 + 7;
+      int macOffset = 9 + nodeURL.length() + 38 + 7;
+      fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
+      fileSettings.setSDMEnabled(true);
+      fileSettings.setUIDMirroringEnabled(true);
+      fileSettings.setSDMReadCounterEnabled(true);
+      fileSettings.setSDMReadCounterLimitEnabled(false);
+      fileSettings.setSDMEncryptFileDataEnabled(false);
+      fileSettings.setUidOffset(null);
+      fileSettings.setSdmReadCounterOffset(null);
+      fileSettings.setPiccDataOffset(new byte[] {(byte) piccOffset, (byte) 0, (byte) 0});
+      fileSettings.setSdmMacInputOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
+      fileSettings.setSdmEncryptionOffset(null);
+      fileSettings.setSdmEncryptionLength(null);
+      fileSettings.setSdmMacOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
+      fileSettings.setSdmReadCounterLimit(null);
+
+      ntag424DNA.changeFileSettings(2, fileSettings);
+
+      NdefMessageWrapper msg = new NdefMessageWrapper(
+        NdefRecordWrapper.createUri("lnurlw://"+nodeURL+"?p=00000000000000000000000000000000&c=0000000000000000")
+      );
+
+      // INdefMessage ndefPreRead = ntag424DNA.readNDEF();
+      // Log.d(TAG, "***NDEF PRE READ : "+this.decodeHex(ndefPreRead.toByteArray()));
+
+
+      // ntag424DNA.writeData(2, 0, ArrayUtils.addAll(initialBytes, urlbytes));
+      ntag424DNA.writeNDEF(msg);
+
+
+      INdefMessage ndefAfterRead = ntag424DNA.readNDEF();
+      Log.d(TAG, "***NDEF AFTER READ : "+this.decodeHex(ndefAfterRead.toByteArray()));
+
+
+
+      WritableMap params = Arguments.createMap();
+      params.putString("output", "Success");
+      sendEvent("WriteResult", params);
+
+    }
+  }
+  /*
   //This API identifies the card type and calls the specific operations
   private void cardLogic(final Intent intent) throws Exception{
     Log.d(TAG, "cardLogic");
@@ -484,7 +614,7 @@ public class MainActivity extends ReactActivity {
     }
     NxpLogUtils.save();
   }
-
+  */
   
   protected String decodeHex(byte[] input) throws Exception {
     return this.decodeHex(new BigInteger(1, input).toString(16));
@@ -550,10 +680,15 @@ public class MainActivity extends ReactActivity {
       return super.onKeyUp(keyCode, event);
   }
 
-  
-  public void getSomething(Callback callback) {
-    Log.d(TAG, "MainActivity.getSomething");
+  public void setNodeURL(String url) {
+    Log.d(TAG, "MainActivity.setNodeURL: "+url);
+    this.nodeURL = url;
+    // callback.invoke(null, "Hello");
+  }
 
+  public void setReadMode(boolean readmode) {
+    Log.d(TAG, "MainActivity.setReadMode: "+readmode);
+    this.readmode = readmode;
     // callback.invoke(null, "Hello");
   }
 
