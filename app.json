@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "lightning-nfc-app",
+    "slug": "lightning-nfc-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "lightning-nfc-app"
+}

@@ -1,0 +1,61 @@
+<!--
+  ~ ******************************************************************************************************************************
+  ~ Copyright 2013-2020 NXP.
+  ~ NXP Confidential. This software is owned or controlled by NXP and may only be used strictly in accordance with the applicable license terms.
+  ~ By expressly accepting such terms or by downloading, installing, activating and/or otherwise using the software, you are agreeing that you have read, and that you agree to comply with and are bound by, such license terms.
+  ~ If you do not agree to be bound by the applicable license terms, then you may not retain, install, activate or otherwise use the software.
+  ~ *********************************************************************************************************************************
+  ~
+  -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/padding_128"
+    android:paddingTop="@dimen/padding_128"
+    android:paddingRight="@dimen/padding_128">
+
+    <ImageView
+        android:id="@+id/tap_tag_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/separator"
+        android:contentDescription="tap_tag_image"
+        android:src="@drawable/icon_tap_tag" />
+
+    <ImageView
+        android:id="@+id/nxp_background"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_info"
+        android:contentDescription="nxp_background"
+        android:src="@drawable/app_bkgnd" />
+
+    <TextView
+        android:id="@+id/text_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tap_tag_image"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="@string/info_string"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/text_note"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/note"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textStyle="bold" />
+
+    <View
+        android:id="@+id/separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/text_note"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/holo_blue_light" />
+
+
+</RelativeLayout>
