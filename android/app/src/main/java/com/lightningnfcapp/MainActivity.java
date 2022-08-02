@@ -347,7 +347,7 @@ public class MainActivity extends ReactActivity {
       String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
         "UID: "+UID+"\r\n"+
         "totalMem: "+totalMem+"\r\n"+
-        "getVersion: "+Utilities.dumpBytes(getVersion)+"\r\n"+
+        // "getVersion: "+Utilities.dumpBytes(getVersion)+"\r\n"+
         "vendor: "+vendor+"\r\n";
 
       ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);

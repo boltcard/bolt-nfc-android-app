@@ -54,10 +54,11 @@ export default function App(props) {
           <Text>Write Mode</Text>
         </TouchableOpacity>
       </View>
-      <Text>{prompt}</Text>
+      
       {readMode ? 
       <>
-        <Text>{ndef}</Text>
+        <Text>Scan to read NFC card</Text>
+        <Text style={{fontWeight:'bold', fontSize:20}}>{ndef}</Text>
         <Text>{cardReadInfo}</Text>
         <Text>{cardFileSettings}</Text>
       </>
@@ -72,7 +73,9 @@ export default function App(props) {
             onChangeText={(text) => updateNodeUrl(text)}
             placeholder="yourdomain.com/path"
           />
+
         </View>
+        <Text>Then scan to write NFC card</Text>
       </>
       }
       <StatusBar style="auto" />
