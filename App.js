@@ -4,9 +4,14 @@ import { Image, NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, 
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import KeyDisplayScreen from './src/screens/KeyDisplay';
+import { LogBox } from 'react-native';
+import KeyDisplayScreen from './src/screens/KeyDisplayScreen';
+import ScanScreen from './src/screens/ScanScreen';
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreAllLogs();
 
 function LogoTitle(props) {
   return (
@@ -103,6 +108,17 @@ function WriteNFCScreen(props) {
 const Tab = createBottomTabNavigator();
 
 
+const KeyManagementStack = createNativeStackNavigator();
+
+function KeyManagementStackScreen() {
+  return (
+    <KeyManagementStack.Navigator>
+      <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
+      <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
+    </KeyManagementStack.Navigator>
+  );
+}
+
 export default function App(props) {
 
 
@@ -137,13 +153,11 @@ export default function App(props) {
         <Tab.Screen 
           name="Write NFC" 
           component={WriteNFCScreen} 
-          props={props} 
           options={{ headerTitle: (props) => <LogoTitle title="Write NFC" {...props} />}} 
         />
         <Tab.Screen 
           name="Key Management" 
-          component={KeyDisplayScreen} 
-          props={props} 
+          component={KeyManagementStackScreen} 
           options={{ headerTitle: (props) => <LogoTitle title="Key Management" {...props} />}} 
         />
       </Tab.Navigator>
