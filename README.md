@@ -29,17 +29,17 @@ through the SDK Manager in Android Studio.“
 
 ### Node packages
 
-"@react-navigation/bottom-tabs": "^6.3.2",
-"@react-navigation/native": "^6.0.11",
-"expo": "~45.0.0",
-"expo-splash-screen": "~0.15.1",
-"expo-status-bar": "~1.3.0",
-"react": "17.0.2",
-"react-dom": "17.0.2",
-"react-native": "0.68.2",
-"react-native-safe-area-context": "^4.3.1",
-"react-native-screens": "^3.15.0",
-"react-native-web": "0.17.7"
+"@react-navigation/bottom-tabs": "^6.3.2",  
+"@react-navigation/native": "^6.0.11",  
+"expo": "~45.0.0",  
+"expo-splash-screen": "~0.15.1",  
+"expo-status-bar": "~1.3.0",  
+"react": "17.0.2",  
+"react-dom": "17.0.2",  
+"react-native": "0.68.2",  
+"react-native-safe-area-context": "^4.3.1",  
+"react-native-screens": "^3.15.0",  
+"react-native-web": "0.17.7"  
 
 ### Java packages
 
@@ -47,10 +47,10 @@ NXP Taplinx Android Library version 1.9.1
 
 All react native java packages plus
 
-implementation "com.facebook.react:react-native:+"  // From node_modules
-implementation "com.google.firebase:firebase-core:17.2.2"
-implementation 'org.apache.commons:commons-lang3:3.6'
-implementation 'commons-codec:commons-codec:1.13'
-implementation group: 'com.madgag.spongycastle', name: 'pkix', version: '1.54.0.0'
-implementation group: 'com.madgag.spongycastle', name: 'prov', version: '1.54.0.0'
-implementation group: 'com.madgag.spongycastle', name: 'core', version: '1.54.0.0'
+implementation "com.facebook.react:react-native:+"  
+implementation "com.google.firebase:firebase-core:17.2.2"  
+implementation 'org.apache.commons:commons-lang3:3.6'  
+implementation 'commons-codec:commons-codec:1.13'  
+implementation group: 'com.madgag.spongycastle', name: 'pkix', version: '1.54.0.0'  
+implementation group: 'com.madgag.spongycastle', name: 'prov', version: '1.54.0.0'  
+implementation group: 'com.madgag.spongycastle', name: 'core', version: '1.54.0.0'  
