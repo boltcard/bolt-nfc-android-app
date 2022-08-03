@@ -5,11 +5,14 @@ import { Image, NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import KeyDisplayScreen from './src/screens/KeyDisplay';
+
 function LogoTitle(props) {
   return (
     <View style={{flexDirection:'row'}}>
       <Image
-        style={{width: 50, height: 50 }}
+        style={{width: 50, height: 50, marginRight:10 }}
         source={{uri:'https://avatars.githubusercontent.com/u/109875636?s=200&v=4'}}
       />
       <Text style={{lineHeight:50, fontSize:20}}>{props.title}</Text>
@@ -111,12 +114,12 @@ export default function App(props) {
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
-            if (route.name === 'ReadNFC') {
-              iconName = focused
-                ? 'book'
-                : 'book-outline';
-            } else if (route.name === 'WriteNFC') {
+            if (route.name === 'Read NFC') {
+              iconName = focused ? 'book' : 'book-outline';
+            } else if (route.name === 'Write NFC') {
               iconName = focused ? 'save' : 'save-outline';
+            } else if (route.name === 'Key Management') {
+              iconName = focused ? 'key' : 'key-outline';
             }
 
             // You can return any component that you like here!
@@ -127,15 +130,21 @@ export default function App(props) {
         })}
       >
         <Tab.Screen 
-          name="ReadNFC" 
+          name="Read NFC" 
           component={ReadNFCScreen} 
           options={{ headerTitle: (props) => <LogoTitle title="Read NFC" {...props} />}} 
         />
         <Tab.Screen 
-          name="WriteNFC" 
+          name="Write NFC" 
           component={WriteNFCScreen} 
           props={props} 
           options={{ headerTitle: (props) => <LogoTitle title="Write NFC" {...props} />}} 
+        />
+        <Tab.Screen 
+          name="Key Management" 
+          component={KeyDisplayScreen} 
+          props={props} 
+          options={{ headerTitle: (props) => <LogoTitle title="Key Management" {...props} />}} 
         />
       </Tab.Navigator>
     </NavigationContainer>
