@@ -58,7 +58,7 @@ import com.nxp.nfclib.desfire.MFPCard;
 import com.nxp.nfclib.ndef.INdefMessage;
 import com.nxp.nfclib.ndef.NdefMessageWrapper;
 import com.nxp.nfclib.ndef.NdefRecordWrapper;
-
+import com.nxp.nfclib.exceptions.UsageException;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -315,7 +315,12 @@ public class MainActivity extends ReactActivity {
           // tapTagImageView.setVisibility(View.GONE);
       } catch (Exception e) {
           Log.e(TAG, "Some exception occurred", e);
-          showMessage("Some exception occurred: "+ e.getMessage(), TOAST_PRINT);
+          if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
+            WritableMap params = Arguments.createMap();
+            params.putString("ndef", "This NFC card has not been formatted.");
+            sendEvent("CardHasBeenRead", params);
+          }
+          //showMessage("Some exception occurred: "+ e.getMessage(), TOAST_PRINT);
       }
   }
 
