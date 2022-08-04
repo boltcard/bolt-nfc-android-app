@@ -1,17 +1,32 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { Image, NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import { LogBox } from 'react-native';
 import KeyDisplayScreen from './src/screens/KeyDisplayScreen';
+import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ScanScreen from './src/screens/ScanScreen';
+import WriteNFCScreen from './src/screens/WriteNFCScreen';
+
+import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
+
+const Tab = createBottomTabNavigator();
+const KeyManagementStack = createNativeStackNavigator();
+
+function KeyManagementStackScreen() {
+  return (
+    <KeyManagementStack.Navigator>
+      <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
+      <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
+    </KeyManagementStack.Navigator>
+  );
+}
 
 function LogoTitle(props) {
   return (
@@ -24,101 +39,6 @@ function LogoTitle(props) {
       </View>
   );
 }
-function ReadNFCScreen(props) {
-
-  const [cardReadInfo, setCardReadInfo] = useState("")
-  const [ndef, setNdef] = useState("pending...")
-  const [cardFileSettings, setCardFileSettings] = useState("")
-  
-  useEffect(() =>{
-    const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
-    const eventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
-      setCardReadInfo(event.cardReadInfo)
-      setNdef(event.ndef)
-      setCardFileSettings(event.cardFileSettings)
-    });
-
-    return () => {
-      eventListener.remove();
-    };
-  })
-  
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log('ReadNFCScreen');
-      NativeModules.MyReactModule.setReadMode(true);
-    }, [])
-  );
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-
-        <Text>Scan to read NFC card</Text>
-        <Text style={{fontWeight:'bold', fontSize:20}}>{ndef}</Text>
-        <Text>{cardReadInfo}</Text>
-        <Text>{cardFileSettings}</Text>
-
-    </View>
-  );
-}
-
-function WriteNFCScreen(props) {
-  const [nodeURL, setNodeURL] = useState("")
-  const [writeOutput, setWriteOutput] = useState("pending...")
-
-  useEffect(() =>{
-    const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
-    const eventListener = eventEmitter.addListener('WriteResult', (event) => {
-      setWriteOutput(event.output)
-    });
-
-    return () => {
-      eventListener.remove();
-    };
-  })
-
-  const updateNodeUrl = text => {
-    setNodeURL(text);
-    NativeModules.MyReactModule.setNodeURL(text);
-  }
-
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log('WriteNFCScreen');
-      NativeModules.MyReactModule.setReadMode(false);
-    }, [])
-  );
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-       <Text>Please enter your node's domain and path</Text>
-        <View style={{flexDirection:'row'}}>
-          <Text style={{lineHeight:60}}>lnurlw://</Text>
-          <TextInput 
-            style={styles.input} 
-            value={nodeURL} 
-            onChangeText={(text) => updateNodeUrl(text)}
-            placeholder="yourdomain.com/path"
-          />
-
-        </View>
-        <Text>Then scan to write NFC card</Text>
-        <Text style={{color: writeOutput == "Success" ? 'green' : 'orange'}}>{writeOutput}</Text>
-    </View>
-  );
-}
-const Tab = createBottomTabNavigator();
-
-
-const KeyManagementStack = createNativeStackNavigator();
-
-function KeyManagementStackScreen() {
-  return (
-    <KeyManagementStack.Navigator>
-      <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
-      <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
-    </KeyManagementStack.Navigator>
-  );
-}
-
 export default function App(props) {
 
 
