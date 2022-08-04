@@ -12,7 +12,7 @@ function ScanScreen({ navigation }) {
     const onSuccess = e => {
         console.log(e.data);
 
-        navigation.navigate('KeyDisplayScreen', {data: e.data})
+        navigation.navigate('KeyDisplayScreen', {data: e.data, timestamp: Date.now()})
         // Linking.openURL(e.data).catch(err =>
         //     console.error('An error occured', err)
         // );

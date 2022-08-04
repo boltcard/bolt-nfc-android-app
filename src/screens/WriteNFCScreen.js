@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { NativeEventEmitter, NativeModules, Text, TextInput, View } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
+
+
 export default function WriteNFCScreen(props) {
     const [nodeURL, setNodeURL] = useState("")
     const [writeOutput, setWriteOutput] = useState("pending...")
@@ -45,4 +47,4 @@ export default function WriteNFCScreen(props) {
           <Text style={{color: writeOutput == "Success" ? 'green' : 'orange'}}>{writeOutput}</Text>
       </View>
     );
-  }
+}
