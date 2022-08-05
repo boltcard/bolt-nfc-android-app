@@ -8,31 +8,19 @@ import {
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
-function ScanScreen({ navigation }) {
+export default function ScanScreen({ navigation }) {
     const onSuccess = e => {
-        console.log(e.data);
-
         navigation.navigate('KeyDisplayScreen', {data: e.data, timestamp: Date.now()})
-        // Linking.openURL(e.data).catch(err =>
-        //     console.error('An error occured', err)
-        // );
     };
 
     return (
         <QRCodeScanner
         onRead={onSuccess}
-        // flashMode={RNCamera.Constants.FlashMode.torch}
         topContent={
             <Text style={styles.centerText}>
            Scan the QR code
             </Text>
         }
-        // bottomContent={
-        //     <TouchableOpacity style={styles.buttonTouchable}
-        //         onPress={() => navigation.navigate('KeyDisplayScreen') }>
-        //     <Text style={styles.buttonText}>OK. Got it!</Text>
-        //     </TouchableOpacity>
-        // }
         />
     );
   
@@ -57,5 +45,3 @@ const styles = StyleSheet.create({
     padding: 16
   }
 });
-
-export default ScanScreen;

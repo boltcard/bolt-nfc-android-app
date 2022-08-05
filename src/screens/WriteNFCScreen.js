@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NativeEventEmitter, NativeModules, Text, TextInput, View } from 'react-native';
+import { NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -27,7 +27,7 @@ export default function WriteNFCScreen(props) {
     useFocusEffect(
       React.useCallback(() => {
         console.log('WriteNFCScreen');
-        NativeModules.MyReactModule.setReadMode(false);
+        NativeModules.MyReactModule.setCardMode("write");
       }, [])
     );
     return (
@@ -44,7 +44,16 @@ export default function WriteNFCScreen(props) {
   
           </View>
           <Text>Then scan to write NFC card</Text>
-          <Text style={{color: writeOutput == "Success" ? 'green' : 'orange'}}>{writeOutput}</Text>
+          <Text style={{color: writeOutput == "success" ? 'green' : 'orange'}}>{writeOutput}</Text>
       </View>
     );
 }
+const styles = StyleSheet.create({
+    input: {
+      height: 40,
+      margin: 12,
+      borderWidth: 1,
+      padding: 10,
+    },
+  });
+  
