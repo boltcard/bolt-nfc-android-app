@@ -165,9 +165,18 @@ public class MainActivity extends ReactActivity {
   private ReactRootView mReactRootView; //change
   private ReactInstanceManager mReactInstanceManager;
 
-  private boolean readmode = true;
+  private final String CARD_MODE_READ = "read";
+  private final String CARD_MODE_WRITE = "write";
+  private final String CARD_MODE_WRITEKEYS = "writekeys";
+  private final String CARD_MODE_DEBUGRESETKEYS = "resetkeys";
+  
+  private String cardmode = CARD_MODE_READ;
   private String nodeURL = "";
 
+  private byte[] key0;
+  private byte[] key1;
+  private byte[] key2;
+  
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     // Set the theme to AppTheme BEFORE onCreate to support 
@@ -294,25 +303,27 @@ public class MainActivity extends ReactActivity {
    * (non-Javadoc).
    *
    * @param intent NFC intent from the android framework.
-   *               // @see android.app.Activity#onNewIntent(android.content.Intent)
+   * // @see android.app.Activity#onNewIntent(android.content.Intent)
    */
   @Override
   public void onNewIntent(final Intent intent) {
       Log.d(TAG, "onNewIntent");
-      // stringBuilder.delete(0, stringBuilder.length());
       final Bundle extras = intent.getExtras();
       mString = Objects.requireNonNull(extras).get("android.nfc.extra.TAG");
-      // logoAndCardImageView.setVisibility(View.VISIBLE);
       try {
-          if(this.readmode) {
-            readCard(intent);
-          }
-          else {
+          if(this.cardmode.equals(CARD_MODE_WRITE)) {
             writeCard(intent);
           }
-          // cardLogic(intent);
+          else if(this.cardmode.equals(CARD_MODE_WRITEKEYS)) {
+            writeKeys(intent);
+          }
+          else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
+            debugResetKeys(intent);
+          }
+          else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
+            readCard(intent);
+          }
           super.onNewIntent(intent);
-          // tapTagImageView.setVisibility(View.GONE);
       } catch (Exception e) {
           Log.e(TAG, "Some exception occurred", e);
           if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
@@ -320,15 +331,44 @@ public class MainActivity extends ReactActivity {
             params.putString("ndef", "This NFC card has not been formatted.");
             sendEvent("CardHasBeenRead", params);
           }
-          //showMessage("Some exception occurred: "+ e.getMessage(), TOAST_PRINT);
       }
   }
 
-  // public void onNewIntent(Intent intent) {
-  //   Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-  //   //do something with tagFromIntent
-  // }
+  /**
+   * Authenticates with the change key (key 0) and checks the card is the correct type and format.
+   * @param intent
+   * @return
+   */
+  public INTAG424DNA authenticateChangeKey(final Intent intent) throws Exception {
+    Log.e(TAG, "authenticateChangeKey");
 
+    CardType type = libInstance.getCardType(intent); //Get the type of the card
+    if (type == CardType.UnknownCard) {
+      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+      throw new Exception("Unknown Tag. Maybe try again?");
+    }
+    else if (type != CardType.NTAG424DNA) {
+      showMessage("NFC Card must be of type NTAG424DNA", PRINT);
+      throw new Exception("NFC Card must be of type NTAG424DNA");
+    }
+    INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+    byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+    
+    ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+    KeyData aesKeyData = new KeyData();
+    Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+    aesKeyData.setKey(keyDefault);
+    ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+    return ntag424DNA;
+  }
+
+  /**
+   * Reads the NFC card unauthenticated and dumps the first NDEF message along with other
+   * interesting info.
+   * 
+   * @param intent
+   * @throws Exception
+   */
   private void readCard(final Intent intent) throws Exception{
     Log.e(TAG, "readCard");
 
@@ -339,64 +379,41 @@ public class MainActivity extends ReactActivity {
     else if (type == CardType.NTAG424DNA) {
       INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
       byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+      
       String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
       String UID = Utilities.dumpBytes(ntag424DNA.getUID());
-      // String FileCounter = Utilities.dumpBytes(ntag424DNA.getFileCounters(0));
       int totalMem = ntag424DNA.getTotalMemory();
       byte[] getVersion = ntag424DNA.getVersion();
-      String vendor = "Non NXP";
-      if (getVersion[0] == (byte) 0x04) {
-        vendor = "NXP";
-      }         
+      String vendor = (getVersion[0] == (byte) 0x04) ? "NXP" : "Non NXP"; 
 
       String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
         "UID: "+UID+"\r\n"+
         "totalMem: "+totalMem+"\r\n"+
-        // "getVersion: "+Utilities.dumpBytes(getVersion)+"\r\n"+
         "vendor: "+vendor+"\r\n";
 
-      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
-      KeyData aesKeyData = new KeyData();
-      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
-      aesKeyData.setKey(keyDefault);
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-
-      NTAG424DNAFileSettings readSettings2 = ntag424DNA.getFileSettings(2);
-
       INdefMessage ndefRead = ntag424DNA.readNDEF();
-      Log.d(TAG, "***NDEF READ : "+this.decodeHex(ndefRead.toByteArray()));
 
       WritableMap params = Arguments.createMap();
       params.putString("cardReadInfo", cardDataBuilder);
       params.putString("ndef", this.decodeHex(ndefRead.toByteArray()).substring(5));
-      params.putString("cardFileSettings", readSettings2.toString().replace(",", ",\r\n"));
       sendEvent("CardHasBeenRead", params);
-
-
     }
   }
 
+  /**
+   * Writes the NFC card with the lnurlw:// and domain and path specified, 
+   * sets up PICC and MAC mirroring and sets correct PICC and MAC mirror offsets
+   * 
+   * @param intent
+   * @throws Exception
+   */
   private void writeCard(final Intent intent) throws Exception{
     Log.e(TAG, "writeCard");
+    String result = "success";
+    try{
 
-    if (this.nodeURL == null || this.nodeURL.equals("")) {
-      throw new Exception("Lightning node URL must not be empty");
-    }
-
-    CardType type = libInstance.getCardType(intent); //Get the type of the card
-    if (type == CardType.UnknownCard) {
-      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
-    }
-    else if (type == CardType.NTAG424DNA) {
-      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
-      byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-      
-      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
-      KeyData aesKeyData = new KeyData();
-      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
-      aesKeyData.setKey(keyDefault);
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-
+      INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
+    
       NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
         MFPCard.CommunicationMode.Plain,
         (byte) 0xE,
@@ -430,23 +447,194 @@ public class MainActivity extends ReactActivity {
         NdefRecordWrapper.createUri("lnurlw://"+nodeURL+"?p=00000000000000000000000000000000&c=0000000000000000")
       );
 
-      // ntag424DNA.writeData(2, 0, ArrayUtils.addAll(initialBytes, urlbytes));
       ntag424DNA.writeNDEF(msg);
-
 
       INdefMessage ndefAfterRead = ntag424DNA.readNDEF();
       Log.d(TAG, "***NDEF AFTER READ : "+this.decodeHex(ndefAfterRead.toByteArray()));
-
-
-
-      WritableMap params = Arguments.createMap();
-      params.putString("output", "Success");
-      sendEvent("WriteResult", params);
-
     }
+    catch(Exception e) {
+      result = "Error writing card: "+e.getMessage();
+      Log.d(TAG, e.getMessage());
+    }
+
+    WritableMap params = Arguments.createMap();
+    params.putString("output", result);
+    sendEvent("WriteResult", params);
+
   }
-  
-  
+
+  /**
+   * Write the keys stored in memory to the NFC card (assmumes default zero byte keys)
+   * 
+   * @param intent
+   * @throws Exception
+   */
+  private void writeKeys(final Intent intent) throws Exception{
+    Log.e(TAG, "writeKeys");
+    String result = "success";
+    try{
+      INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
+
+      //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
+      int key0newVersion = ntag424DNA.getKeyVersion(0)+1;
+      int key1newVersion = ntag424DNA.getKeyVersion(1)+1;
+      int key2newVersion = ntag424DNA.getKeyVersion(2)+1;
+      Log.d(TAG, "New key versions: "+key0newVersion + ", " + key1newVersion + ", " + key2newVersion);
+
+      //set up the default key
+      KeyData aesKeyData = new KeyData();
+      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+      aesKeyData.setKey(keyDefault);
+
+      // change key 0 last as this is the change key
+      ntag424DNA.changeKey(1, KEY_AES128_DEFAULT, this.key1, (byte) key1newVersion);
+      Log.d(TAG, "Changed Key 1 to "+Utilities.dumpBytes(this.key1));
+      
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(2, KEY_AES128_DEFAULT, this.key2, (byte) key2newVersion);
+      Log.d(TAG, "Changed Key 2 to "+Utilities.dumpBytes(this.key2));
+
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(0, KEY_AES128_DEFAULT, this.key0, (byte) key0newVersion);
+      Log.d(TAG, "Changed Key 0 to "+Utilities.dumpBytes(this.key0));
+    }
+    catch(Exception e) {
+      result = "Error changing keys: "+e.getMessage();
+      Log.d(TAG, "Error changing keys: "+e);
+    }
+    WritableMap params = Arguments.createMap();
+    params.putString("output", result);
+    sendEvent("WriteKeysResult", params);
+  }
+
+  /**
+   * Debug Reset all keys back to zero bytes from 111, 222, 333
+   * @param intent
+   * @throws Exception
+   */
+  private void debugResetKeys(final Intent intent) throws Exception{
+    Log.e(TAG, "debugResetKeys");
+    String result = "success";
+    try{
+      CardType type = libInstance.getCardType(intent); //Get the type of the card
+      if (type == CardType.UnknownCard) {
+        showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+        throw new Exception("Unknown Tag. Maybe try again?");
+      }
+      else if (type != CardType.NTAG424DNA) {
+        showMessage("NFC Card must be of type NTAG424DNA", PRINT);
+        throw new Exception("NFC Card must be of type NTAG424DNA");
+      }
+      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+      byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+      
+      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+      KeyData aesKeyData = new KeyData();
+      Key keyDefault = new SecretKeySpec(this.hexStringToByteArray("11111111111111111111111111111111"), "AES");
+      aesKeyData.setKey(keyDefault);
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+
+      //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
+      int keynewVersion = 0;
+      Log.d(TAG, "New key versions: "+keynewVersion + ", " + keynewVersion + ", " + keynewVersion);
+
+      // change key 0 last as this is the change key
+      ntag424DNA.changeKey(1, this.hexStringToByteArray("22222222222222222222222222222222"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      Log.d(TAG, "Reset Key 1");
+      
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(2, this.hexStringToByteArray("33333333333333333333333333333333"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      Log.d(TAG, "Reset Key 2");
+
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(0, this.hexStringToByteArray("11111111111111111111111111111111"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      Log.d(TAG, "Reset Key 0");
+    }
+    catch(Exception e) {
+      result = "Error resetting keys: "+e.getMessage();
+      Log.d(TAG, "Error resetting keys: "+e);
+    }
+    WritableMap params = Arguments.createMap();
+    params.putString("output", result);
+    sendEvent("ChangeKeysResult", params);
+  }
+
+  /**
+   * Called by react native to set new keys in memory for prepare for writing to the NFC card
+   * @param key0
+   * @param key1
+   * @param key2
+   * @param callBack
+   */
+  public void changeKeys(String key0, String key1, String key2, Callback callBack) {
+    this.cardmode = CARD_MODE_WRITEKEYS;
+    String result = "Success";
+    if(key0 == null && key1 == null && key2 == null) {
+      this.key0 = null;
+      this.key1 = null;
+      this.key2 = null;
+    }
+    try {
+      this.key0 = this.hexStringToByteArray(key0);
+      this.key1 = this.hexStringToByteArray(key1);
+      this.key2 = this.hexStringToByteArray(key2);    
+    }
+    catch(Exception e) {
+      Log.d(TAG, "Error one or more keys are invalid: "+e.getMessage());
+      result = "Error one or more keys are invalid";
+    }
+    callBack.invoke(result);
+  }
+
+  private void sendEvent(String eventName, WritableMap params) {
+    ReactContext reactContext = getReactNativeHost().getReactInstanceManager().getCurrentReactContext();
+    
+    reactContext
+      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+      .emit(eventName, params);
+  }
+
+  /**
+   * This will display message in toast or logcat or on screen or all three.
+   *
+   * @param str           String to be logged or displayed
+   * @param operationType 't' for Toast; 'n' for Logcat and Display in UI; 'd' for Toast, Logcat
+   *                      and
+   *                      Display in UI.
+   */
+  private void showMessage(final String str, final char operationType) {
+    Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
+    NxpLogUtils.i(TAG, getString(R.string.Dump_data) + str);
+    
+  }
+
+  public byte[] hexStringToByteArray(String s) {
+    final int len = s.length();
+    // "111" is not a valid hex encoding.
+    if( len%2 != 0 )
+        throw new IllegalArgumentException("hexBinary needs to be even-length: "+s);
+
+    byte[] out = new byte[len/2];
+
+    for( int i=0; i<len; i+=2 ) {
+        int h = hexToBin(s.charAt(i  ));
+        int l = hexToBin(s.charAt(i+1));
+        if( h==-1 || l==-1 )
+            throw new IllegalArgumentException("contains illegal character for hexBinary: "+s);
+
+        out[i/2] = (byte)(h*16+l);
+    }
+
+    return out;
+  }
+
+  private static int hexToBin( char ch ) {
+    if( '0'<=ch && ch<='9' )    return ch-'0';
+    if( 'A'<=ch && ch<='F' )    return ch-'A'+10;
+    if( 'a'<=ch && ch<='f' )    return ch-'a'+10;
+    return -1;
+  }
+
   protected String decodeHex(byte[] input) throws Exception {
     return this.decodeHex(new BigInteger(1, input).toString(16));
   }
@@ -512,98 +700,11 @@ public class MainActivity extends ReactActivity {
   }
 
   public void setNodeURL(String url) {
-    Log.d(TAG, "MainActivity.setNodeURL: "+url);
     this.nodeURL = url;
-    // callback.invoke(null, "Hello");
   }
 
-  public void setReadMode(boolean readmode) {
-    Log.d(TAG, "MainActivity.setReadMode: "+readmode);
-    this.readmode = readmode;
-    // callback.invoke(null, "Hello");
-  }
-
-  private void sendEvent(String eventName, WritableMap params) {
-    ReactContext reactContext = getReactNativeHost().getReactInstanceManager().getCurrentReactContext();
-    
-    reactContext
-      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-      .emit(eventName, params);
-  }
-
-  // @ReactMethod
-  // public void requestTechnology(ReadableArray techs, Callback callback) {
-  //     synchronized(this) {
-  //         if (!isForegroundEnabled) {
-  //             callback.invoke(ERR_NOT_REGISTERED);
-  //             return;
-  //         }
-
-  //         if (hasPendingRequest()) {
-  //             callback.invoke(ERR_MULTI_REQ);
-  //         } else {
-  //             techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
-  //         }
-  //     }
-  // }
-
-  // @ReactMethod
-  // public void getTag(Callback callback) {
-  //     synchronized (this) {
-  //         if (techRequest != null) {
-  //             Tag tag = techRequest.getTagHandle();
-  //             if (tag != null) {
-  //                 WritableMap parsed = tag2React(tag);
-  //                 if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
-  //                     try {
-  //                         Ndef ndef = Ndef.get(tag);
-  //                         parsed = ndef2React(ndef, new NdefMessage[]{ndef.getCachedNdefMessage()});
-  //                     } catch (Exception ex) {
-  //                     }
-  //                 }
-  //                 callback.invoke(null, parsed);
-  //             } else {
-  //                 callback.invoke(ERR_NO_REFERENCE);
-  //             }
-  //         } else {
-  //             callback.invoke(ERR_NO_TECH_REQ);
-  //         }
-  //     }
-  // }
-
-
-  // @ReactMethod
-  // public void cancelTechnologyRequest(Callback callback) {
-  //     synchronized(this) {
-  //         if (techRequest != null) {
-  //             techRequest.close();
-  //             try {
-  //                 techRequest.getPendingCallback().invoke(ERR_CANCEL);
-  //             } catch (RuntimeException ex) {
-  //                 // the pending callback might already been invoked when there is an ongoing
-  //                 // connected tag, bypass this case explicitly
-  //             }
-  //             techRequest = null;
-  //             callback.invoke();
-  //         } else {
-  //             // explicitly allow this
-  //             callback.invoke();
-  //         }
-  //     }
-  // }
-
-  /**
-   * This will display message in toast or logcat or on screen or all three.
-   *
-   * @param str           String to be logged or displayed
-   * @param operationType 't' for Toast; 'n' for Logcat and Display in UI; 'd' for Toast, Logcat
-   *                      and
-   *                      Display in UI.
-   */
-  private void showMessage(final String str, final char operationType) {
-    Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
-    NxpLogUtils.i(TAG, getString(R.string.Dump_data) + str);
-    
+  public void setCardMode(String cardmode) {
+    this.cardmode = cardmode;
   }
 
   /**

@@ -25,7 +25,7 @@ export default function ReadNFCScreen(props) {
     useFocusEffect(
       React.useCallback(() => {
         console.log('ReadNFCScreen');
-        NativeModules.MyReactModule.setReadMode(true);
+        NativeModules.MyReactModule.setCardMode("read");
       }, [])
     );
     return (

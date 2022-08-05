@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Modal, NativeEventEmitter, NativeModules, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
@@ -15,33 +16,87 @@ function KeyDisplayScreen({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalText, setModalText] = useState();
   const [loading, setLoading] = useState(false);
+  const [readyToChangeKeys, setReadyToChangeKeys] = useState(false);
+  const [writeKeysOutput, setWriteKeysOutput] = useState();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('KeyDisplayScreen');
+      setReadyToChangeKeys(false);
+      setKey0(null);
+      setKey0(null);
+      setKey1(null);
+      setKey2(null);
+      NativeModules.MyReactModule.setCardMode("read");
+      console.log("Set card mode to read")
+    }, [])
+  );
+
+  useEffect(() =>{
+    const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
+    const eventListener = eventEmitter.addListener('WriteKeysResult', (event) => {
+      if(event.output == "success") {
+        setWriteKeysOutput("Keys changed successfully");
+        setReadyToChangeKeys(false);
+        NativeModules.MyReactModule.setCardMode("read");
+      }
+      else {
+        setWriteKeysOutput(event.output);
+      }
+    });
+
+    return () => {
+      eventListener.remove();
+    };
+  }, [])
 
   useEffect(() => {
-      if(data && data != "") {
-      setLoading(true);
-      fetch(data)
-        .then((response) => response.json())
-        .then((json) => {
-          setLoading(false);
-          setKey0(json.k0);
-          setKey1(json.k1);
-          setKey2(json.k2);
+    if(data && data != "") {
+    setLoading(true);
+    fetch(data)
+      .then((response) => response.json())
+      .then((json) => {
+        setLoading(false);
+        setKey0(json.k0);
+        setKey1(json.k1);
+        setKey2(json.k2);
 
-        })
-        .catch((error) => {
-          setLoading(false);
-          console.error(error);
-          setModalText("Problem loading keys, error: " + error.message);
-          setModalVisible(true);
-        });
+        NativeModules.MyReactModule.changeKeys(json.k0, json.k1, json.k2, 
+          (response) => {
+            console.log('Change Keys Callback',response);
+            if (response == "Success") setReadyToChangeKeys(true);
+          }
+        );
+
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.error(error);
+        setModalText("Problem loading keys, error: " + error.message);
+        setModalVisible(true);
+      });
     }
+    
   }, [data, timestamp])
 
   
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Button
+          onPress={() => navigation.navigate('ResetKeysScreen')}
+          title="Debug Reset Keys to Default"
+        />
+        <Text style={{marginTop:30}}></Text>
+        
         <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+        
+        {writeKeysOutput && 
+          <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
+            {writeKeysOutput == "success" && <Ionicons name="checkmark" size={50} color="green" />}
+            {writeKeysOutput}
+          </Text>
+        }
+        {readyToChangeKeys && <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}><Ionicons name="card" size={50} color="green" />Tap NFC card now to change keys</Text>}
         <Text>URL: {data}</Text>
         {loading ? 
           <Text>Loading....</Text>
@@ -56,6 +111,7 @@ function KeyDisplayScreen({ route, navigation }) {
           onPress={() => navigation.navigate('ScanScreen')}
           title="Scan QR code from console"
         />
+       
     </View>
   );
 }

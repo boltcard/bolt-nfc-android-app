@@ -9,6 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import KeyDisplayScreen from './src/screens/KeyDisplayScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
+import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import WriteNFCScreen from './src/screens/WriteNFCScreen';
 
@@ -24,6 +25,7 @@ function KeyManagementStackScreen() {
     <KeyManagementStack.Navigator>
       <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
       <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
+      <KeyManagementStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} />
     </KeyManagementStack.Navigator>
   );
 }
@@ -144,11 +146,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#DDDDDD",
     padding: 10
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
   },
 });
