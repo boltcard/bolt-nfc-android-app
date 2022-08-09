@@ -2,7 +2,7 @@
 
 ## Quick
 
-Download the compiled APK from the [latest release](releases/app-release.apk) and install on your android phone.
+Download the compiled APK from the [latest release](release/app-release.apk) and install on your android phone.
 
 ## Build instructions
 1. Install android studio https://developer.android.com/studio
