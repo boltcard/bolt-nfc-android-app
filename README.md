@@ -1,5 +1,10 @@
 # Setup & Run instructions for Linux with Android
 
+## Quick
+
+Download the compiled APK from the latest release and install on your android phone.
+
+## Build instructions
 1. Install android studio https://developer.android.com/studio
 2. Install Android 12 SDK version 31 reference: https://reactnative.dev/docs/environment-setup
 “Android Studio installs the latest Android SDK by default. Building a React Native app with native
@@ -19,6 +24,12 @@ through the SDK Manager in Android Studio.“
 14. Add app key to ./android/app/src/main/java/com/lightningnfcapp/Constants.java
 15. open another terminal in same dir and type $npx react-native run-android
 
+# Usage
+1. When app has loaded go to the write screen and put your lnurlw domain and path in to the text box.
+2. When finished tap a card on the NFC scanner to write the card.
+3. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL paramters
+4. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.
+5. When the keys are loaded, tap your NFC card on the phone to run the key change on the card. 
 
 ## Useful commands
 
