@@ -7,9 +7,7 @@ Download the compiled APK from the latest release and install on your android ph
 ## Build instructions
 1. Install android studio https://developer.android.com/studio
 2. Install Android 12 SDK version 31 reference: https://reactnative.dev/docs/environment-setup
-“Android Studio installs the latest Android SDK by default. Building a React Native app with native
-code, however, requires the Android 12 (S) SDK in particular. Additional Android SDKs can be installed
-through the SDK Manager in Android Studio.“
+“Android Studio installs the latest Android SDK by default. Building a React Native app with native code, however, requires the Android 12 (S) SDK in particular. Additional Android SDKs can be installed through the SDK Manager in Android Studio.“
 3. Install Google APIs Intel x86 Atom_64 System Image
 4. Install node v14.X or v16.X (v14.20.0 & v16.14.2 are working)
 5. Install NPX https://www.npmjs.com/package/npx
@@ -30,6 +28,7 @@ through the SDK Manager in Android Studio.“
 3. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL paramters
 4. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.
 5. When the keys are loaded, tap your NFC card on the phone to run the key change on the card. 
+Warning! If you lose the keys then you will be unable to reprogram the card again
 
 ## Useful commands
 
