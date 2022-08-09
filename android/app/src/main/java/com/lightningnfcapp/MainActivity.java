@@ -145,16 +145,6 @@ public class MainActivity extends ReactActivity {
    * NxpNfclib instance.
    */
   private NxpNfcLib libInstance = null;
-  /**
-   * text view instance.
-   */
-  private TextView information_textView = null;
-  /**
-   * Image view instance.
-   */
-  private ImageView logoAndCardImageView = null;
-
-  private ImageView tapTagImageView;
 
   private final StringBuilder stringBuilder = new StringBuilder();
 
@@ -200,8 +190,6 @@ public class MainActivity extends ReactActivity {
     // the string in AppRegistry.registerComponent() in index.js
     Bundle initialProperties = new Bundle();
     mReactRootView.startReactApplication(mReactInstanceManager, "main", initialProperties);
-
-    tapTagImageView = findViewById(R.id.tap_tag_image);
 
     boolean readPermission = (ContextCompat.checkSelfPermission(MainActivity.this,
             Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
