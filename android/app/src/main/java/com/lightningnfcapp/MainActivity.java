@@ -319,6 +319,11 @@ public class MainActivity extends ReactActivity {
             params.putString("ndef", "This NFC card has not been formatted.");
             sendEvent("CardHasBeenRead", params);
           }
+          else {
+            WritableMap params = Arguments.createMap();
+            params.putString("ndef", "Error: "+e.getMessage());
+            sendEvent("CardHasBeenRead", params);
+          }
       }
   }
 
@@ -376,8 +381,8 @@ public class MainActivity extends ReactActivity {
 
       String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
         "UID: "+UID+"\r\n"+
-        "totalMem: "+totalMem+"\r\n"+
-        "vendor: "+vendor+"\r\n";
+        "TotalMem: "+totalMem+"\r\n"+
+        "Vendor: "+vendor+"\r\n";
 
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
