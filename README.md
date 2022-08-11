@@ -64,3 +64,7 @@ implementation 'commons-codec:commons-codec:1.13'
 implementation group: 'com.madgag.spongycastle', name: 'pkix', version: '1.54.0.0'  
 implementation group: 'com.madgag.spongycastle', name: 'prov', version: '1.54.0.0'  
 implementation group: 'com.madgag.spongycastle', name: 'core', version: '1.54.0.0'  
+
+## Telegram group
+
+Discussion and support is available at https://t.me/bolt_card .
