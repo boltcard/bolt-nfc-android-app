@@ -30,6 +30,8 @@ Download the compiled APK from the [latest release](release/app-release.apk) and
 5. When the keys are loaded, tap your NFC card on the phone to run the key change on the card. 
 Warning! If you lose the keys then you will be unable to reprogram the card again
 
+also see this document - [Steps for making a bolt card with the Android app](https://github.com/boltcard/boltcard/blob/main/docs/CARD_ANDROID.md)
+
 ## Useful commands
 
 * adb logcat -s "lightningnfcapp"
