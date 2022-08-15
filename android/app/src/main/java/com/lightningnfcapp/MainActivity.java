@@ -72,7 +72,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.codec.binary.Hex;
 
@@ -112,10 +111,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.util.Base64;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.GCMParameterSpec;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -136,7 +140,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import expo.modules.ReactActivityDelegateWrapper;
-
 
 public class MainActivity extends ReactActivity {
 
@@ -386,11 +389,39 @@ public class MainActivity extends ReactActivity {
 
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
+      String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+      String pParam = bolturl.split("p=")[1].substring(0, 32);
+      String cParam = bolturl.split("c=")[1].substring(0, 16);
+      String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
+      Log.e(TAG, "pDecrypt: "+pDecrypt);
+      Log.e(TAG, "UID: "+UID);
+      String defaultKeyUsed = "no";
+      if(pDecrypt.startsWith("0xC7"+UID.substring(2))) {
+        defaultKeyUsed = "yes";
+      }
       WritableMap params = Arguments.createMap();
       params.putString("cardReadInfo", cardDataBuilder);
-      params.putString("ndef", this.decodeHex(ndefRead.toByteArray()).substring(5));
+      params.putString("ndef", bolturl);
+      params.putString("defaultKeyUsed", defaultKeyUsed);
       sendEvent("CardHasBeenRead", params);
     }
+  }
+
+  public String decrypt(byte[] encryptedData) throws Exception {
+    Cipher decryptionCipher = Cipher.getInstance("AES/CBC/NoPadding");
+    // IVParameterSpec spec = new IVParameterSpec(new byte[16]);
+    
+    byte[] ivSpec = new byte[16];
+    Arrays.fill(ivSpec, (byte) 0x00);
+    Log.e(TAG, "ivSpec: "+Utilities.dumpBytes(ivSpec));
+    IvParameterSpec spec = new IvParameterSpec(ivSpec);
+
+    Log.e(TAG, "KEY_AES128_DEFAULT: "+Utilities.dumpBytes(KEY_AES128_DEFAULT));
+
+    Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+    decryptionCipher.init(Cipher.DECRYPT_MODE, keyDefault, spec);
+    byte[] decryptedBytes = decryptionCipher.doFinal(encryptedData);
+    return Utilities.dumpBytes(decryptedBytes);
   }
 
   /**

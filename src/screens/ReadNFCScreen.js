@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { NativeEventEmitter, NativeModules, Text, View } from 'react-native';
+import { ActivityIndicator, NativeEventEmitter, NativeModules, Text, View } from 'react-native';
+import { Card, Paragraph, Title } from 'react-native-paper';
 
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -7,14 +8,15 @@ export default function ReadNFCScreen(props) {
 
     const [cardReadInfo, setCardReadInfo] = useState("")
     const [ndef, setNdef] = useState("pending...")
-    const [cardFileSettings, setCardFileSettings] = useState("")
+    const [defaultKeyUsed, setDefaultKeyUsed] = useState()
     
     useEffect(() =>{
       const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
       const eventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
         setCardReadInfo(event.cardReadInfo)
         setNdef(event.ndef)
-        setCardFileSettings(event.cardFileSettings)
+        console.log('NDEF:'+event.ndef);
+        setDefaultKeyUsed(event.defaultKeyUsed)
       });
   
       return () => {
@@ -29,12 +31,42 @@ export default function ReadNFCScreen(props) {
       }, [])
     );
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-  
-          <Text>Scan to read NFC card</Text>
-          <Text style={{fontWeight:'bold', fontSize:20}}>{ndef}</Text>
-          <Text>{cardReadInfo}</Text>
-          <Text>{cardFileSettings}</Text>
+      <View style={{ }}>
+        
+          <Text style={{ margin: 20, fontWeight:'bold', fontSize:15, textAlign:'center'}}>
+            <ActivityIndicator /> Hold NFC card to Reader 
+          </Text>
+          <Card style={{marginBottom:20, marginHorizontal:10}}>
+            <Card.Content>
+              <Title>NDEF Record</Title>
+              <Paragraph style={{fontWeight:'bold', fontSize:15}}>{ndef}</Paragraph>
+            </Card.Content>
+          </Card>
+          <Card style={{marginBottom:20, marginHorizontal:10}}>
+            <Card.Content>
+              <Title>NFC Card Attributes</Title>
+              <Paragraph>{cardReadInfo}</Paragraph>
+            </Card.Content>
+          </Card>
+          {defaultKeyUsed ? 
+            defaultKeyUsed == "yes" ? 
+            <Card style={{marginBottom:20, marginHorizontal:10}}>
+              <Card.Content>
+                <Title>Default Key Used</Title>
+                <Paragraph>The default keys are still used on this card.</Paragraph>
+              </Card.Content>
+            </Card>
+            :
+            <Card style={{marginBottom:20, marginHorizontal:10}}>
+              <Card.Content>
+                <Title>Key Changed</Title>
+                <Paragraph>One or more keys have been changed on this card.</Paragraph>
+              </Card.Content>
+            </Card>
+            :
+            <></>
+          }
+          <Text></Text>
   
       </View>
     );
