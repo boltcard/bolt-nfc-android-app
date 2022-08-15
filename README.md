@@ -2,7 +2,7 @@
 
 ## Quick
 
-Download the compiled APK from the [latest release](release/app-release.apk) and install on your android phone.
+Download the compiled APK from the [latest release](https://github.com/boltcard/bolt-nfc-android-app/releases) and install on your android phone.
 
 ## Build instructions
 1. Install android studio https://developer.android.com/studio
@@ -19,7 +19,7 @@ Download the compiled APK from the [latest release](release/app-release.apk) and
 11. connect android phone to USB and enable USB debugging on phone.
 12. in the terminal type $npx react-native start
 13. Register an app key for the Taplinx SDK library on https://inspire.nxp.com/mifare/
-14. Add app key to ./android/app/src/main/java/com/lightningnfcapp/Constants.java
+14. Rename .env-example to .env and set the Mifare package key in this file
 15. open another terminal in same dir and type $npx react-native run-android
 
 # Usage
@@ -27,10 +27,8 @@ Download the compiled APK from the [latest release](release/app-release.apk) and
 2. When finished tap a card on the NFC scanner to write the card.
 3. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL paramters
 4. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.
-5. When the keys are loaded, tap your NFC card on the phone to run the key change on the card. 
-Warning! If you lose the keys then you will be unable to reprogram the card again
-
-also see this document - [Steps for making a bolt card with the Android app](https://github.com/boltcard/boltcard/blob/main/docs/CARD_ANDROID.md)
+5. When the keys are loaded, Hold the NFC card to the phone to run the key change on the card. Do not move the card until the key change has completed. 
+Warning! If you lose the new keys then you will be unable to reprogram the card again
 
 ## Useful commands
 
@@ -66,7 +64,3 @@ implementation 'commons-codec:commons-codec:1.13'
 implementation group: 'com.madgag.spongycastle', name: 'pkix', version: '1.54.0.0'  
 implementation group: 'com.madgag.spongycastle', name: 'prov', version: '1.54.0.0'  
 implementation group: 'com.madgag.spongycastle', name: 'core', version: '1.54.0.0'  
-
-## Telegram group
-
-Discussion and support is available at https://t.me/bolt_card .

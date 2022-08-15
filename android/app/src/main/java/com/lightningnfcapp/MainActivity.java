@@ -23,7 +23,6 @@ import static com.lightningnfcapp.Constants.iv;
 import static com.lightningnfcapp.Constants.objKEY_2KTDES;
 import static com.lightningnfcapp.Constants.objKEY_2KTDES_ULC;
 import static com.lightningnfcapp.Constants.objKEY_AES128;
-import static com.lightningnfcapp.Constants.packageKey;
 
 
 import com.lightningnfcapp.R;
@@ -162,6 +161,7 @@ public class MainActivity extends ReactActivity {
   
   private String cardmode = CARD_MODE_READ;
   private String nodeURL = "";
+  private String packageKey = BuildConfig.MIFARE_KEY;
 
   private byte[] key0;
   private byte[] key1;
