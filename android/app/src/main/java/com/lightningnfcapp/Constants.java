@@ -49,9 +49,8 @@ public class Constants {
     static final String EMPTY_SPACE = " ";
     /**
      * Package Key.
-     * Package Key : Copy your package key obtained from mifare.net below
+     * Package Key : Now goes in the .env file in the project root
      */
-    static final String packageKey = "insert-your-package-key-here";
 
 
     static IKeyData objKEY_2KTDES_ULC = null;
