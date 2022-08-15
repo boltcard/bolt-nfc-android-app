@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, NativeEventEmitter, NativeModules, Text, View } from 'react-native';
+import { ActivityIndicator, NativeEventEmitter, NativeModules, ScrollView, Text } from 'react-native';
 import { Card, Paragraph, Title } from 'react-native-paper';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,7 +17,7 @@ export default function ReadNFCScreen(props) {
         setNdef(event.ndef)
         console.log('NDEF:'+event.ndef);
         setDefaultKeyUsed(event.defaultKeyUsed)
-      });
+        });
   
       return () => {
         eventListener.remove();
@@ -31,7 +31,7 @@ export default function ReadNFCScreen(props) {
       }, [])
     );
     return (
-      <View style={{ }}>
+      <ScrollView style={{ }}>
         
           <Text style={{ margin: 20, fontWeight:'bold', fontSize:15, textAlign:'center'}}>
             <ActivityIndicator /> Hold NFC card to Reader 
@@ -68,6 +68,6 @@ export default function ReadNFCScreen(props) {
           }
           <Text></Text>
   
-      </View>
+      </ScrollView>
     );
 }
