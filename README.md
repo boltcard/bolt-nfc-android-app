@@ -1,5 +1,7 @@
 # Setup & Run instructions for Linux with Android
 
+v0.0.3
+
 ## Quick
 
 Download the compiled APK from the [latest release](https://github.com/boltcard/bolt-nfc-android-app/releases) and install on your android phone.
