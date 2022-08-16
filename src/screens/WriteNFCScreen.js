@@ -44,7 +44,8 @@ export default function WriteNFCScreen(props) {
   
           </View>
           <Text>Then scan to write NFC card</Text>
-          <Text style={{color: writeOutput == "success" ? 'green' : 'orange'}}>{writeOutput}</Text>
+          <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>{writeOutput}</Text>
+          { writeOutput.indexOf("91AE") != -1 && <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>This card's write key may have been changed</Text>}
       </View>
     );
 }
