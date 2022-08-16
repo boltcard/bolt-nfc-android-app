@@ -419,23 +419,17 @@ public class MainActivity extends ReactActivity {
         key1Changed = "no";
       }
       
+      String sv2string = "3CC300010080"+pDecrypt.substring(4,24);
+      byte[] sv2 = this.hexStringToByteArray(sv2string);
+
       int cmacPos = bolturl.indexOf("c=")+7;
-      byte[] msg = Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos);
-      Log.e(TAG, "msg :"+ this.decodeHex(msg));
-      Log.e(TAG, "cParam :"+ cParam);
+      byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
+      Log.e(TAG, "sv2string: "+ sv2string);
+      Log.e(TAG, "msg: "+ this.decodeHex(msg));
+      Log.e(TAG, "cParam: "+ cParam);
       
       //Check CMAC to see if key2 is zero.
       String key2Changed = "no";
-      // CipherParameters cipherParams = new KeyParameter(KEY_AES128_DEFAULT);
-      // BlockCipher aes = new AESEngine();
-      // CMac mac = new CMac(aes);
-      // mac.init(cipherParams);
-      // mac.update(msg, 0, msg.length);
-      // byte[] out = new byte[mac.getMacSize()];
-      // mac.doFinal(out, 0);
-
-      // Log.e(TAG, "decrypted CMAC :"+ Utilities.dumpBytes(out));
-
       try {
         int cmacSize = 16;
         BlockCipher cipher = new AESFastEngine();
@@ -446,21 +440,31 @@ public class MainActivity extends ReactActivity {
         byte[] CMAC = new byte[cmacSize];
         cmac.doFinal(CMAC, 0);
 
+        int cmacSize1 = 16;
+        BlockCipher cipher1 = new AESFastEngine();
+        Mac cmac1 = new CMac(cipher1, cmacSize1 * 8);
+        KeyParameter keyParameter1 = new KeyParameter(CMAC);
+        cmac.init(keyParameter1);
+        cmac.update(new byte[0], 0, 0);
+        byte[] CMAC1 = new byte[cmacSize1];
+        cmac.doFinal(CMAC1, 0);
+
         byte[] MFCMAC = new byte[cmacSize / 2];
 
         int j = 0;
-        for (int i = 0; i < CMAC.length; i++) {
+        for (int i = 0; i < CMAC1.length; i++) {
           if (i % 2 != 0) {
-            MFCMAC[j] = CMAC[i];
+            MFCMAC[j] = CMAC1[i];
             j += 1;
           }
         }
 
-        Log.e(TAG, "MFCMAC: "+Utilities.dumpBytes(MFCMAC));
-    
+        if(!Utilities.dumpBytes(MFCMAC).equals("0x"+cParam)) {
+          key2Changed = "yes";
+        }
 
       } catch (Exception ex) {
-        ex.printStackTrace();
+        key2Changed = "yes";
       }
 
       
@@ -473,6 +477,7 @@ public class MainActivity extends ReactActivity {
       sendEvent("CardHasBeenRead", params);
     }
   }
+
 
   public String decrypt(byte[] encryptedData) throws Exception {
     Cipher decryptionCipher = Cipher.getInstance("AES/CBC/NoPadding");    
