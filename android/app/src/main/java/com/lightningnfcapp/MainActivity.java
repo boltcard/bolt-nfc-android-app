@@ -138,6 +138,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.macs.CMac;
+import org.bouncycastle.crypto.BlockCipher;
+import org.bouncycastle.crypto.CipherParameters;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.engines.AESFastEngine;
+import org.bouncycastle.crypto.Mac;
 
 import expo.modules.ReactActivityDelegateWrapper;
 
@@ -389,35 +396,94 @@ public class MainActivity extends ReactActivity {
 
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
+      //Check if auth works to see if key0 is zero.
+      String key0Changed = "no";
+      try {
+        ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+        KeyData aesKeyData = new KeyData();
+        Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+        aesKeyData.setKey(keyDefault);
+        ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      }
+      catch(Exception e) {
+        key0Changed="yes";
+      }
+
+      //check PICC encryption to see if key1 is zero
       String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
       String pParam = bolturl.split("p=")[1].substring(0, 32);
       String cParam = bolturl.split("c=")[1].substring(0, 16);
       String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
-      Log.e(TAG, "pDecrypt: "+pDecrypt);
-      Log.e(TAG, "UID: "+UID);
-      String defaultKeyUsed = "no";
+      String key1Changed = "yes";
       if(pDecrypt.startsWith("0xC7"+UID.substring(2))) {
-        defaultKeyUsed = "yes";
+        key1Changed = "no";
       }
+      
+      String sv2string = "3CC300010080"+pDecrypt.substring(4,24);
+      byte[] sv2 = this.hexStringToByteArray(sv2string);
+
+      int cmacPos = bolturl.indexOf("c=")+7;
+      byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
+      Log.e(TAG, "sv2string: "+ sv2string);
+      Log.e(TAG, "msg: "+ this.decodeHex(msg));
+      Log.e(TAG, "cParam: "+ cParam);
+      
+      //Check CMAC to see if key2 is zero.
+      String key2Changed = "no";
+      try {
+        int cmacSize = 16;
+        BlockCipher cipher = new AESFastEngine();
+        Mac cmac = new CMac(cipher, cmacSize * 8);
+        KeyParameter keyParameter = new KeyParameter(KEY_AES128_DEFAULT);
+        cmac.init(keyParameter);
+        cmac.update(msg, 0, msg.length);
+        byte[] CMAC = new byte[cmacSize];
+        cmac.doFinal(CMAC, 0);
+
+        int cmacSize1 = 16;
+        BlockCipher cipher1 = new AESFastEngine();
+        Mac cmac1 = new CMac(cipher1, cmacSize1 * 8);
+        KeyParameter keyParameter1 = new KeyParameter(CMAC);
+        cmac.init(keyParameter1);
+        cmac.update(new byte[0], 0, 0);
+        byte[] CMAC1 = new byte[cmacSize1];
+        cmac.doFinal(CMAC1, 0);
+
+        byte[] MFCMAC = new byte[cmacSize / 2];
+
+        int j = 0;
+        for (int i = 0; i < CMAC1.length; i++) {
+          if (i % 2 != 0) {
+            MFCMAC[j] = CMAC1[i];
+            j += 1;
+          }
+        }
+
+        if(!Utilities.dumpBytes(MFCMAC).equals("0x"+cParam)) {
+          key2Changed = "yes";
+        }
+
+      } catch (Exception ex) {
+        key2Changed = "yes";
+      }
+
+      
       WritableMap params = Arguments.createMap();
       params.putString("cardReadInfo", cardDataBuilder);
       params.putString("ndef", bolturl);
-      params.putString("defaultKeyUsed", defaultKeyUsed);
+      params.putString("key0Changed", key0Changed);
+      params.putString("key1Changed", key1Changed);
+      params.putString("key2Changed", key2Changed);
       sendEvent("CardHasBeenRead", params);
     }
   }
 
+
   public String decrypt(byte[] encryptedData) throws Exception {
-    Cipher decryptionCipher = Cipher.getInstance("AES/CBC/NoPadding");
-    // IVParameterSpec spec = new IVParameterSpec(new byte[16]);
-    
+    Cipher decryptionCipher = Cipher.getInstance("AES/CBC/NoPadding");    
     byte[] ivSpec = new byte[16];
     Arrays.fill(ivSpec, (byte) 0x00);
-    Log.e(TAG, "ivSpec: "+Utilities.dumpBytes(ivSpec));
     IvParameterSpec spec = new IvParameterSpec(ivSpec);
-
-    Log.e(TAG, "KEY_AES128_DEFAULT: "+Utilities.dumpBytes(KEY_AES128_DEFAULT));
-
     Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
     decryptionCipher.init(Cipher.DECRYPT_MODE, keyDefault, spec);
     byte[] decryptedBytes = decryptionCipher.doFinal(encryptedData);

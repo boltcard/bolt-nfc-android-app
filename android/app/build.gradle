@@ -307,7 +307,8 @@ dependencies {
     
     implementation 'org.apache.commons:commons-lang3:3.6'
     implementation 'commons-codec:commons-codec:1.13'
-    
+    implementation 'org.bouncycastle:bcpkix-jdk15on:1.56'
+
     implementation group: 'com.madgag.spongycastle', name: 'pkix', version: '1.54.0.0'
     implementation group: 'com.madgag.spongycastle', name: 'prov', version: '1.54.0.0'
     implementation group: 'com.madgag.spongycastle', name: 'core', version: '1.54.0.0'

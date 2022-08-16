@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, NativeEventEmitter, NativeModules, Text, View } from 'react-native';
+import { ActivityIndicator, NativeEventEmitter, NativeModules, ScrollView, Text } from 'react-native';
 import { Card, Paragraph, Title } from 'react-native-paper';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -8,7 +8,9 @@ export default function ReadNFCScreen(props) {
 
     const [cardReadInfo, setCardReadInfo] = useState("")
     const [ndef, setNdef] = useState("pending...")
-    const [defaultKeyUsed, setDefaultKeyUsed] = useState()
+    const [key0Changed, setKey0Changed] = useState("Key 0 status pending")
+    const [key1Changed, setKey1Changed] = useState("Key 1 status pending")
+    const [key2Changed, setKey2Changed] = useState("Key 2 status pending")
     
     useEffect(() =>{
       const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
@@ -16,7 +18,9 @@ export default function ReadNFCScreen(props) {
         setCardReadInfo(event.cardReadInfo)
         setNdef(event.ndef)
         console.log('NDEF:'+event.ndef);
-        setDefaultKeyUsed(event.defaultKeyUsed)
+        setKey0Changed(event.key0Changed == "yes" ? "Key 0 has been changed" : "Key 0 still set to default")
+        setKey1Changed(event.key1Changed == "yes" ? "Key 1 has been changed" : "Key 1 still set to default")
+        setKey2Changed(event.key2Changed == "yes" ? "Key 2 has been changed" : "Key 2 still set to default")
       });
   
       return () => {
@@ -31,7 +35,7 @@ export default function ReadNFCScreen(props) {
       }, [])
     );
     return (
-      <View style={{ }}>
+      <ScrollView style={{ }}>
         
           <Text style={{ margin: 20, fontWeight:'bold', fontSize:15, textAlign:'center'}}>
             <ActivityIndicator /> Hold NFC card to Reader 
@@ -48,26 +52,18 @@ export default function ReadNFCScreen(props) {
               <Paragraph>{cardReadInfo}</Paragraph>
             </Card.Content>
           </Card>
-          {defaultKeyUsed ? 
-            defaultKeyUsed == "yes" ? 
-            <Card style={{marginBottom:20, marginHorizontal:10}}>
-              <Card.Content>
-                <Title>Default Key Used</Title>
-                <Paragraph>The default keys are still used on this card.</Paragraph>
-              </Card.Content>
-            </Card>
-            :
-            <Card style={{marginBottom:20, marginHorizontal:10}}>
-              <Card.Content>
-                <Title>Key Changed</Title>
-                <Paragraph>One or more keys have been changed on this card.</Paragraph>
-              </Card.Content>
-            </Card>
-            :
-            <></>
-          }
+          
+          <Card style={{marginBottom:20, marginHorizontal:10}}>
+            <Card.Content>
+              <Title>Card Keys</Title>
+              <Paragraph>{key0Changed}</Paragraph>
+              <Paragraph>{key1Changed}</Paragraph>
+              <Paragraph>{key2Changed}</Paragraph>
+            </Card.Content>
+          </Card>
+          
           <Text></Text>
   
-      </View>
+      </ScrollView>
     );
 }

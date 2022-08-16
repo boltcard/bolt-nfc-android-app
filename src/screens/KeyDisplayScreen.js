@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, NativeEventEmitter, NativeModules, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Modal, NativeEventEmitter, NativeModules, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
+import { Card } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
@@ -81,7 +82,7 @@ function KeyDisplayScreen({ route, navigation }) {
 
   
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <ScrollView>
         <Button
           onPress={() => navigation.navigate('ResetKeysScreen')}
           title="Debug Reset Keys to Default"
@@ -96,23 +97,32 @@ function KeyDisplayScreen({ route, navigation }) {
             {writeKeysOutput}
           </Text>
         }
-        {readyToChangeKeys && <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}><Ionicons name="card" size={50} color="green" />Tap NFC card now to change keys</Text>}
-        <Text>URL: {data}</Text>
-        {loading ? 
-          <Text>Loading....</Text>
-          :
-          <>
-            <Text>Key 0: {key0}</Text>
-            <Text>Key 1: {key1}</Text>
-            <Text>Key 2: {key2}</Text>
-          </>
+        {readyToChangeKeys && 
+          <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
+            <Ionicons name="card" size={50} color="green" />
+            Hold NFC card to phone until all keys are changed.
+          </Text>
         }
+        <Card style={{marginBottom:20, marginHorizontal:10}}>
+          <Card.Content>
+          <Text>URL: {data}</Text>
+            {loading ? 
+              <Text>Loading....</Text>
+              :
+              <>
+                <Text>Key 0: {key0}</Text>
+                <Text>Key 1: {key1}</Text>
+                <Text>Key 2: {key2}</Text>
+              </>
+              }
+          </Card.Content>
+        </Card>
         <Button
           onPress={() => navigation.navigate('ScanScreen')}
           title="Scan QR code from console"
         />
        
-    </View>
+    </ScrollView>
   );
 }
 

@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import HelpScreen from './src/screens/HelpScreen';
 import KeyDisplayScreen from './src/screens/KeyDisplayScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
@@ -38,6 +39,7 @@ function KeyManagementStackScreen() {
       <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
       <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
       <KeyManagementStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} />
+      <KeyManagementStack.Screen name="HelpScreen" component={HelpScreen} />
     </KeyManagementStack.Navigator>
   );
 }
@@ -70,6 +72,8 @@ export default function App(props) {
                 iconName = focused ? 'save' : 'save-outline';
               } else if (route.name === 'Key Management') {
                 iconName = focused ? 'key' : 'key-outline';
+              } else if (route.name === 'Help') {
+                iconName = focused ? 'information' : 'information-outline';
               }
 
               // You can return any component that you like here!
@@ -93,6 +97,11 @@ export default function App(props) {
             name="Key Management" 
             component={KeyManagementStackScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Key Management" {...props} />}} 
+          />
+          <Tab.Screen 
+            name="Help" 
+            component={HelpScreen} 
+            options={{ headerTitle: (props) => <LogoTitle title="Help" {...props} />}} 
           />
         </Tab.Navigator>
       </NavigationContainer>
