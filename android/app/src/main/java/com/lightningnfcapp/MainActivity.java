@@ -397,7 +397,7 @@ public class MainActivity extends ReactActivity {
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
       //Check if auth works to see if key0 is zero.
-      String key0zero = "yes";
+      String key0Changed = "no";
       try {
         ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
         KeyData aesKeyData = new KeyData();
@@ -406,7 +406,7 @@ public class MainActivity extends ReactActivity {
         ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       }
       catch(Exception e) {
-        key0zero="no";
+        key0Changed="yes";
       }
 
       //check PICC encryption to see if key1 is zero
@@ -414,9 +414,9 @@ public class MainActivity extends ReactActivity {
       String pParam = bolturl.split("p=")[1].substring(0, 32);
       String cParam = bolturl.split("c=")[1].substring(0, 16);
       String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
-      String key1zero = "no";
+      String key1Changed = "yes";
       if(pDecrypt.startsWith("0xC7"+UID.substring(2))) {
-        key1zero = "yes";
+        key1Changed = "no";
       }
       
       int cmacPos = bolturl.indexOf("c=")+7;
@@ -425,7 +425,7 @@ public class MainActivity extends ReactActivity {
       Log.e(TAG, "cParam :"+ cParam);
       
       //Check CMAC to see if key2 is zero.
-      String key2zero = "yes";
+      String key2Changed = "no";
       // CipherParameters cipherParams = new KeyParameter(KEY_AES128_DEFAULT);
       // BlockCipher aes = new AESEngine();
       // CMac mac = new CMac(aes);
@@ -467,9 +467,9 @@ public class MainActivity extends ReactActivity {
       WritableMap params = Arguments.createMap();
       params.putString("cardReadInfo", cardDataBuilder);
       params.putString("ndef", bolturl);
-      params.putString("key0zero", key0zero);
-      params.putString("key1zero", key1zero);
-      params.putString("key2zero", key2zero);
+      params.putString("key0Changed", key0Changed);
+      params.putString("key1Changed", key1Changed);
+      params.putString("key2Changed", key2Changed);
       sendEvent("CardHasBeenRead", params);
     }
   }
