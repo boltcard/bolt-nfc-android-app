@@ -220,12 +220,6 @@ public class MainActivity extends ReactActivity {
 
     /* Initialize the Cipher and init vector of 16 bytes with 0xCD */
     initializeCipherinitVector();
-
-    /* Get text view handle to be used further */
-    // initializeView();
-
-    Log.d(TAG, "onCreate");
-
   }
 
   /**
@@ -305,7 +299,6 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   public void onNewIntent(final Intent intent) {
-      Log.d(TAG, "onNewIntent");
       final Bundle extras = intent.getExtras();
       mString = Objects.requireNonNull(extras).get("android.nfc.extra.TAG");
       try {
@@ -343,7 +336,6 @@ public class MainActivity extends ReactActivity {
    * @return
    */
   public INTAG424DNA authenticateChangeKey(final Intent intent) throws Exception {
-    Log.e(TAG, "authenticateChangeKey");
 
     CardType type = libInstance.getCardType(intent); //Get the type of the card
     if (type == CardType.UnknownCard) {
@@ -373,7 +365,6 @@ public class MainActivity extends ReactActivity {
    * @throws Exception
    */
   private void readCard(final Intent intent) throws Exception{
-    Log.e(TAG, "readCard");
 
     CardType type = libInstance.getCardType(intent); //Get the type of the card
     if (type == CardType.UnknownCard) {
@@ -397,8 +388,9 @@ public class MainActivity extends ReactActivity {
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
       //Check if auth works to see if key0 is zero.
-      String key0Changed = "no";
+      String key0Changed = null;
       try {
+        key0Changed="no";
         ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
         KeyData aesKeyData = new KeyData();
         Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
@@ -424,12 +416,9 @@ public class MainActivity extends ReactActivity {
 
       int cmacPos = bolturl.indexOf("c=")+7;
       byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
-      Log.e(TAG, "sv2string: "+ sv2string);
-      Log.e(TAG, "msg: "+ this.decodeHex(msg));
-      Log.e(TAG, "cParam: "+ cParam);
       
       //Check CMAC to see if key2 is zero.
-      String key2Changed = "no";
+      String key2Changed = null;
       try {
         int cmacSize = 16;
         BlockCipher cipher = new AESFastEngine();
@@ -461,6 +450,9 @@ public class MainActivity extends ReactActivity {
 
         if(!Utilities.dumpBytes(MFCMAC).equals("0x"+cParam)) {
           key2Changed = "yes";
+        }
+        else {
+          key2Changed = "no";
         }
 
       } catch (Exception ex) {
@@ -498,7 +490,6 @@ public class MainActivity extends ReactActivity {
    * @throws Exception
    */
   private void writeCard(final Intent intent) throws Exception{
-    Log.e(TAG, "writeCard");
     String result = "success";
     try{
 
@@ -532,15 +523,19 @@ public class MainActivity extends ReactActivity {
       fileSettings.setSdmReadCounterLimit(null);
 
       ntag424DNA.changeFileSettings(2, fileSettings);
-
+      
       NdefMessageWrapper msg = new NdefMessageWrapper(
-        NdefRecordWrapper.createUri("lnurlw://"+nodeURL+"?p=00000000000000000000000000000000&c=0000000000000000")
+        NdefRecordWrapper.createUri(
+          nodeURL.indexOf("?") == -1 ? 
+            "lnurlw://"+nodeURL+"?p=00000000000000000000000000000000&c=0000000000000000"
+          :
+            "lnurlw://"+nodeURL+"&p=00000000000000000000000000000000&c=0000000000000000"
+        )
       );
 
       ntag424DNA.writeNDEF(msg);
 
       INdefMessage ndefAfterRead = ntag424DNA.readNDEF();
-      Log.d(TAG, "***NDEF AFTER READ : "+this.decodeHex(ndefAfterRead.toByteArray()));
     }
     catch(Exception e) {
       result = "Error writing card: "+e.getMessage();
@@ -560,7 +555,6 @@ public class MainActivity extends ReactActivity {
    * @throws Exception
    */
   private void writeKeys(final Intent intent) throws Exception{
-    Log.e(TAG, "writeKeys");
     String result = "success";
     try{
       INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
@@ -569,7 +563,6 @@ public class MainActivity extends ReactActivity {
       int key0newVersion = ntag424DNA.getKeyVersion(0)+1;
       int key1newVersion = ntag424DNA.getKeyVersion(1)+1;
       int key2newVersion = ntag424DNA.getKeyVersion(2)+1;
-      Log.d(TAG, "New key versions: "+key0newVersion + ", " + key1newVersion + ", " + key2newVersion);
 
       //set up the default key
       KeyData aesKeyData = new KeyData();
@@ -578,15 +571,12 @@ public class MainActivity extends ReactActivity {
 
       // change key 0 last as this is the change key
       ntag424DNA.changeKey(1, KEY_AES128_DEFAULT, this.key1, (byte) key1newVersion);
-      Log.d(TAG, "Changed Key 1 to "+Utilities.dumpBytes(this.key1));
       
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(2, KEY_AES128_DEFAULT, this.key2, (byte) key2newVersion);
-      Log.d(TAG, "Changed Key 2 to "+Utilities.dumpBytes(this.key2));
 
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(0, KEY_AES128_DEFAULT, this.key0, (byte) key0newVersion);
-      Log.d(TAG, "Changed Key 0 to "+Utilities.dumpBytes(this.key0));
     }
     catch(Exception e) {
       result = "Error changing keys: "+e.getMessage();
@@ -603,7 +593,6 @@ public class MainActivity extends ReactActivity {
    * @throws Exception
    */
   private void debugResetKeys(final Intent intent) throws Exception{
-    Log.e(TAG, "debugResetKeys");
     String result = "success";
     try{
       CardType type = libInstance.getCardType(intent); //Get the type of the card
@@ -626,23 +615,18 @@ public class MainActivity extends ReactActivity {
 
       //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
       int keynewVersion = 0;
-      Log.d(TAG, "New key versions: "+keynewVersion + ", " + keynewVersion + ", " + keynewVersion);
 
       // change key 0 last as this is the change key
       ntag424DNA.changeKey(1, this.hexStringToByteArray("22222222222222222222222222222222"), KEY_AES128_DEFAULT, (byte) keynewVersion);
-      Log.d(TAG, "Reset Key 1");
       
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(2, this.hexStringToByteArray("33333333333333333333333333333333"), KEY_AES128_DEFAULT, (byte) keynewVersion);
-      Log.d(TAG, "Reset Key 2");
 
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(0, this.hexStringToByteArray("11111111111111111111111111111111"), KEY_AES128_DEFAULT, (byte) keynewVersion);
-      Log.d(TAG, "Reset Key 0");
     }
     catch(Exception e) {
       result = "Error resetting keys: "+e.getMessage();
-      Log.d(TAG, "Error resetting keys: "+e);
     }
     WritableMap params = Arguments.createMap();
     params.putString("output", result);
@@ -737,7 +721,6 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onPause() {
       super.onPause();
-      Log.d(TAG, "onPause");
 
       libInstance.stopForeGroundDispatch();
       if (mReactInstanceManager != null) {
@@ -748,7 +731,6 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onResume() {
       super.onResume();
-      Log.d(TAG, "onResume");
 
       libInstance.startForeGroundDispatch();
       if (mReactInstanceManager != null) {
@@ -759,7 +741,6 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onDestroy() {
       super.onDestroy();
-      Log.d(TAG, "onDestroy");
 
       if (mReactInstanceManager != null) {
           mReactInstanceManager.onHostDestroy(this);
@@ -771,7 +752,6 @@ public class MainActivity extends ReactActivity {
 
   @Override
   public void onBackPressed() {
-    Log.d(TAG, "onBackPressed");
 
     if (mReactInstanceManager != null) {
         mReactInstanceManager.onBackPressed();
