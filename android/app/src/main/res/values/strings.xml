@@ -1,7 +1,7 @@
 <resources>
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
-    <string name="app_name">lightning-nfc-app</string>
-    <string name="info_string">Tap any MIFARE / NTAG / ICODE tag!</string>
+    <string name="app_name">Boltcard NFC Programmer</string>
+    <string name="info_string">Program your blank NFC (NTAG424DNA) cards as boltcards to pay over the Bitcoin Lightning network</string>
     <string name="desc">Launcher image</string>
 
     <string name="about_text">This sample demonstrates use of TapLinx SDK.Please visit TapLinx SDK
