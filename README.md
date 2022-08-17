@@ -1,6 +1,6 @@
 # Setup & Run instructions for Linux with Android
 
-v0.0.3
+v0.0.4
 
 ## Quick
 
