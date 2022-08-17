@@ -26,20 +26,20 @@ export default function WriteNFCScreen(props) {
   
     useFocusEffect(
       React.useCallback(() => {
-        console.log('WriteNFCScreen');
         NativeModules.MyReactModule.setCardMode("write");
       }, [])
     );
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
          <Text>Please enter your node's domain and path</Text>
+         <Text>For boltcard server be sure to add /ln to the end of the domain</Text>
           <View style={{flexDirection:'row'}}>
             <Text style={{lineHeight:60}}>lnurlw://</Text>
             <TextInput 
               style={styles.input} 
               value={nodeURL} 
               onChangeText={(text) => updateNodeUrl(text)}
-              placeholder="yourdomain.com/path"
+              placeholder="yourboltcard.domain.com/ln"
             />
   
           </View>

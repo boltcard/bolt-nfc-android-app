@@ -2,15 +2,15 @@
 import React from 'react';
 
 import {
-    StyleSheet,
-    Text
+  StyleSheet,
+  Text
 } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
 export default function ScanScreen({ navigation }) {
     const onSuccess = e => {
-        navigation.navigate('KeyDisplayScreen', {data: e.data, timestamp: Date.now()})
+      navigation.navigate('KeyDisplayScreen', {data: e.data, timestamp: Date.now()})
     };
 
     return (

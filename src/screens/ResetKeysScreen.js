@@ -9,17 +9,13 @@ export default function ResetKeysScreen({ navigation }) {
     const [writeKeysOutput, setWriteKeysOutput] = useState("pending...");
 
     useFocusEffect(
-        React.useCallback(() => {
-          console.log('ResetKeysScreen');
-          NativeModules.MyReactModule.setCardMode("resetkeys");
-        }, [])
-      );
-      
+      React.useCallback(() => {
+        NativeModules.MyReactModule.setCardMode("resetkeys");
+      }, [])
+    );
+    
     const Done = e => {
-        console.log(e.data);
-
-        navigation.navigate('ResetKeysScreen', {data: e.data, timestamp: Date.now()})
-        
+      navigation.navigate('ResetKeysScreen', {data: e.data, timestamp: Date.now()})
     };
 
     useEffect(() =>{

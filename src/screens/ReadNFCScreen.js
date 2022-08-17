@@ -8,6 +8,7 @@ export default function ReadNFCScreen(props) {
 
     const [cardReadInfo, setCardReadInfo] = useState("")
     const [ndef, setNdef] = useState("pending...")
+    const [cardUID, setCardUID] = useState()
     const [key0Changed, setKey0Changed] = useState("Key 0 status pending")
     const [key1Changed, setKey1Changed] = useState("Key 1 status pending")
     const [key2Changed, setKey2Changed] = useState("Key 2 status pending")
@@ -17,7 +18,7 @@ export default function ReadNFCScreen(props) {
       const eventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
         setCardReadInfo(event.cardReadInfo)
         setNdef(event.ndef)
-        console.log('NDEF:'+event.ndef);
+        setCardUID(event.cardUID)
         setKey0Changed(event.key0Changed == "yes" ? "Key 0 has been changed" : "Key 0 still set to default")
         setKey1Changed(event.key1Changed == "yes" ? "Key 1 has been changed" : "Key 1 still set to default")
         setKey2Changed(event.key2Changed == "yes" ? "Key 2 has been changed" : "Key 2 still set to default")
@@ -30,7 +31,6 @@ export default function ReadNFCScreen(props) {
     
     useFocusEffect(
       React.useCallback(() => {
-        console.log('ReadNFCScreen');
         NativeModules.MyReactModule.setCardMode("read");
       }, [])
     );

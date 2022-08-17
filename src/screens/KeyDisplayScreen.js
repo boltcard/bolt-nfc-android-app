@@ -22,14 +22,8 @@ function KeyDisplayScreen({ route, navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log('KeyDisplayScreen');
       setReadyToChangeKeys(false);
-      setKey0(null);
-      setKey0(null);
-      setKey1(null);
-      setKey2(null);
       NativeModules.MyReactModule.setCardMode("read");
-      console.log("Set card mode to read")
     }, [])
   );
 
@@ -42,7 +36,7 @@ function KeyDisplayScreen({ route, navigation }) {
         NativeModules.MyReactModule.setCardMode("read");
       }
       else {
-        setWriteKeysOutput(event.output);
+        setWriteKeysOutput(event.output + " Keys may have been changed already.");
       }
     });
 
@@ -64,7 +58,6 @@ function KeyDisplayScreen({ route, navigation }) {
 
         NativeModules.MyReactModule.changeKeys(json.k0, json.k1, json.k2, 
           (response) => {
-            console.log('Change Keys Callback',response);
             if (response == "Success") setReadyToChangeKeys(true);
           }
         );
@@ -83,10 +76,7 @@ function KeyDisplayScreen({ route, navigation }) {
   
   return (
     <ScrollView>
-        <Button
-          onPress={() => navigation.navigate('ResetKeysScreen')}
-          title="Debug Reset Keys to Default"
-        />
+        
         <Text style={{marginTop:30}}></Text>
         
         <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
