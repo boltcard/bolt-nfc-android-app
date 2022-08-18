@@ -80,6 +80,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -319,16 +320,10 @@ public class MainActivity extends ReactActivity {
           Log.e(TAG, "Some exception occurred", e);
           if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
             WritableMap params = Arguments.createMap();
-            params.putString("ndef", "This NFC card has not been formatted.");
-            sendEvent("CardHasBeenRead", params);
-            WritableMap params = Arguments.createMap();
             params.putString("message", "This NFC card has not been formatted.");
             sendEvent("NFCError", params);
           }
           else {
-            WritableMap params = Arguments.createMap();
-            params.putString("ndef", "Error: "+e.getMessage());
-            sendEvent("CardHasBeenRead", params);
             WritableMap params = Arguments.createMap();
             params.putString("message", "Error: "+e.getMessage());
             sendEvent("NFCError", params);
@@ -826,4 +821,5 @@ public class MainActivity extends ReactActivity {
     // because it's doing more than {@link Activity#moveTaskToBack} in fact.
     super.invokeDefaultOnBackPressed();
   }
+
 }
