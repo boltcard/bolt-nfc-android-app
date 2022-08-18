@@ -3,7 +3,6 @@ import { NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, View } 
 
 import { useFocusEffect } from '@react-navigation/native';
 
-
 export default function WriteNFCScreen(props) {
     const [nodeURL, setNodeURL] = useState("")
     const [writeOutput, setWriteOutput] = useState("pending...")
@@ -38,6 +37,7 @@ export default function WriteNFCScreen(props) {
             <TextInput 
               style={styles.input} 
               value={nodeURL} 
+              autoCapitalize='none'
               onChangeText={(text) => updateNodeUrl(text)}
               placeholder="yourboltcard.domain.com/ln"
             />
