@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, NativeEventEmitter, NativeModules, ScrollView, Text } from 'react-native';
-import { Card, Paragraph, Title } from 'react-native-paper';
-
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Button, NativeEventEmitter, NativeModules, ScrollView, Text, ToastAndroid, View } from 'react-native';
+import { Card, Paragraph, Title } from 'react-native-paper';
 
 export default function ReadNFCScreen(props) {
 
@@ -18,7 +18,7 @@ export default function ReadNFCScreen(props) {
       const eventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
         setCardReadInfo(event.cardReadInfo)
         setNdef(event.ndef)
-        setCardUID(event.cardUID)
+        setCardUID(event.cardUID && event.cardUID.toLowerCase())
         setKey0Changed(event.key0Changed == "yes" ? "Key 0 has been changed" : "Key 0 still set to default")
         setKey1Changed(event.key1Changed == "yes" ? "Key 1 has been changed" : "Key 1 still set to default")
         setKey2Changed(event.key2Changed == "yes" ? "Key 2 has been changed" : "Key 2 still set to default")
@@ -34,6 +34,16 @@ export default function ReadNFCScreen(props) {
         NativeModules.MyReactModule.setCardMode("read");
       }, [])
     );
+
+    const copyToClipboard = () => {
+      Clipboard.setString(cardUID);
+      ToastAndroid.showWithGravity(
+        "Copied to clipboard",
+        ToastAndroid.SHORT,
+        ToastAndroid.TOP
+      );
+    }
+
     return (
       <ScrollView style={{ }}>
         
@@ -44,6 +54,15 @@ export default function ReadNFCScreen(props) {
             <Card.Content>
               <Title>NDEF Record</Title>
               <Paragraph style={{fontWeight:'bold', fontSize:15}}>{ndef}</Paragraph>
+            </Card.Content>
+          </Card>
+          <Card style={{marginBottom:20, marginHorizontal:10}}>
+            <Card.Content>
+              <Title>Card UID</Title>
+              <View style={{alignItems: 'flex-start', flexDirection: 'row'}}>
+                {cardUID && <Button onPress={copyToClipboard} title="Copy" />}
+                <Text style={{lineHeight:35, marginLeft:10}}>{cardUID}</Text>
+              </View>
             </Card.Content>
           </Card>
           <Card style={{marginBottom:20, marginHorizontal:10}}>
