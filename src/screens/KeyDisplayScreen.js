@@ -73,7 +73,9 @@ function KeyDisplayScreen({ route, navigation }) {
     
   }, [data, timestamp])
 
-  
+  const key0display = key0 ? key0.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key0.substring(28) : "pending...";
+  const key1display = key1 ? key1.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key1.substring(28) : "pending...";
+  const key2display = key2 ? key2.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key2.substring(28) : "pending...";
   return (
     <ScrollView>
         
@@ -100,9 +102,9 @@ function KeyDisplayScreen({ route, navigation }) {
               <Text>Loading....</Text>
               :
               <>
-                <Text>Key 0: {key0}</Text>
-                <Text>Key 1: {key1}</Text>
-                <Text>Key 2: {key2}</Text>
+                <Text>Key 0: {key0display}</Text>
+                <Text>Key 1: {key1display}</Text>
+                <Text>Key 2: {key2display}</Text>
               </>
               }
           </Card.Content>
