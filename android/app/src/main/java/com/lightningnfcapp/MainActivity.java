@@ -321,12 +321,19 @@ public class MainActivity extends ReactActivity {
             WritableMap params = Arguments.createMap();
             params.putString("ndef", "This NFC card has not been formatted.");
             sendEvent("CardHasBeenRead", params);
+            WritableMap params = Arguments.createMap();
+            params.putString("message", "This NFC card has not been formatted.");
+            sendEvent("NFCError", params);
           }
           else {
             WritableMap params = Arguments.createMap();
             params.putString("ndef", "Error: "+e.getMessage());
             sendEvent("CardHasBeenRead", params);
+            WritableMap params = Arguments.createMap();
+            params.putString("message", "Error: "+e.getMessage());
+            sendEvent("NFCError", params);
           }
+          
       }
   }
 
@@ -466,6 +473,7 @@ public class MainActivity extends ReactActivity {
       params.putString("key0Changed", key0Changed);
       params.putString("key1Changed", key1Changed);
       params.putString("key2Changed", key2Changed);
+      params.putString("cardUID", UID.substring(2));
       sendEvent("CardHasBeenRead", params);
     }
   }

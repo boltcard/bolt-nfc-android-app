@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, NativeEventEmitter, NativeModules, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { Card } from 'react-native-paper';
@@ -13,6 +13,7 @@ function KeyDisplayScreen({ route, navigation }) {
   const [key0, setKey0] = useState()
   const [key1, setKey1] = useState()
   const [key2, setKey2] = useState()
+  const [cardUID, setCardUID] = useState()
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalText, setModalText] = useState();
@@ -28,8 +29,11 @@ function KeyDisplayScreen({ route, navigation }) {
   );
 
   useEffect(() =>{
-    const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
-    const eventListener = eventEmitter.addListener('WriteKeysResult', (event) => {
+    const eventEmitter = new NativeEventEmitter();
+    const readCardEventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
+      setCardUID(event.cardUID)
+    });
+    const writeKeyseventListener = eventEmitter.addListener('WriteKeysResult', (event) => {
       if(event.output == "success") {
         setWriteKeysOutput("Keys changed successfully");
         setReadyToChangeKeys(false);
@@ -37,11 +41,13 @@ function KeyDisplayScreen({ route, navigation }) {
       }
       else {
         setWriteKeysOutput(event.output + " Keys may have been changed already.");
+        showModalError(event.output + " Keys may have been changed already.");
       }
     });
 
     return () => {
-      eventListener.remove();
+      readCardEventListener.remove();
+      writeKeyseventListener.remove();
     };
   }, [])
 
@@ -68,6 +74,8 @@ function KeyDisplayScreen({ route, navigation }) {
         console.error(error);
         setModalText("Problem loading keys, error: " + error.message);
         setModalVisible(true);
+        showModalError("Problem loading keys, error: " + error.message);
+
       });
     }
     
@@ -78,116 +86,55 @@ function KeyDisplayScreen({ route, navigation }) {
   const key2display = key2 ? key2.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key2.substring(28) : "pending...";
   return (
     <ScrollView>
-        
-        <Text style={{marginTop:30}}></Text>
-        
-        <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
-        
-        {writeKeysOutput && 
-          <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
-            {writeKeysOutput == "success" && <Ionicons name="checkmark" size={50} color="green" />}
-            {writeKeysOutput}
-          </Text>
-        }
-        {readyToChangeKeys && 
-          <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
-            <Ionicons name="card" size={50} color="green" />
-            Hold NFC card to phone until all keys are changed.
-          </Text>
-        }
-        <Card style={{marginBottom:20, marginHorizontal:10}}>
-          <Card.Content>
-          <Text>URL: {data}</Text>
-            {loading ? 
-              <Text>Loading....</Text>
-              :
-              <>
-                <Text>Key 0: {key0display}</Text>
-                <Text>Key 1: {key1display}</Text>
-                <Text>Key 2: {key2display}</Text>
-              </>
-              }
-          </Card.Content>
-        </Card>
-        <Button
-          onPress={() => navigation.navigate('ScanScreen')}
-          title="Scan QR code from console"
-        />
-       
+      <Text style={{marginTop:30}}></Text>
+
+      <Card style={{marginBottom:20, marginHorizontal:10}}>
+        <Card.Content>
+          <Text style={{...styles.paragraph, fontSize:20}}>Scan QR code</Text>
+          <Text style={styles.paragraph}>Run the ./createboltcard command on the server as per docs, then press below to scan the QR code shown</Text>
+          <Button
+            onPress={() => navigation.navigate('ScanScreen')}
+            title="Scan QR code from console"
+          />
+        </Card.Content>
+      </Card>
+     
+      {writeKeysOutput && 
+        <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
+          {writeKeysOutput == "success" && <Ionicons name="checkmark" size={50} color="green" />}
+          {writeKeysOutput}
+        </Text>
+      }
+      {readyToChangeKeys && 
+        <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
+          <Ionicons name="card" size={50} color="green" />
+          Hold NFC card to phone until all keys are changed.
+        </Text>
+      }
+      <Card style={{marginBottom:20, marginHorizontal:10}}>
+        <Card.Content>
+        <Text>URL: {data}</Text>
+          {loading ? 
+            <Text>Loading....</Text>
+            :
+            <>
+              <Text>Key 0: {key0display}</Text>
+              <Text>Key 1: {key1display}</Text>
+              <Text>Key 2: {key2display}</Text>
+            </>
+            }
+        </Card.Content>
+      </Card>
+      
+      
     </ScrollView>
   );
 }
 
-const ErrorModal = (props) => {
-  const {modalVisible, setModalVisible, modalText} = props;
-  return (
-    <View style={styles.centeredView}>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Ionicons name="warning" size={50} color="red" />
-            <Text style={styles.modalText}>{modalText}</Text>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalVisible(!modalVisible)}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
-};
 
 const styles = StyleSheet.create({
-  centeredView: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
-  },
-  button: {
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2
-  },
-  buttonOpen: {
-    backgroundColor: "#F194FF",
-  },
-  buttonClose: {
-    backgroundColor: "#2196F3",
-  },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center"
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center"
+  paragraph: {
+    marginBottom:5
   }
 });
 

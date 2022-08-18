@@ -1,4 +1,4 @@
-# Boltcard NFC App
+# Boltcard NFC Programming App
 
 Quickly program a blank NFC card (NTAG424DNA) to act as your own personal Boltcard. A contactless / paywave like experience for the Lightning network. Before programming your NFC card you must set up your own [boltcard server](https://github.com/boltcard/boltcard).
 
