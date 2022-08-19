@@ -12,3 +12,5 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 
 # Add any project specific keep options here:
+-keepattributes LineNumberTable,SourceFile
+-renamesourcefileattribute SourceFile
