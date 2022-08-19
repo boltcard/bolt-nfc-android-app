@@ -5,7 +5,7 @@ Quickly program a blank NFC card (NTAG424DNA) to act as your own personal Boltca
 The boltcard can be used with Lightning PoS terminals that have NFC support, or Breez wallet PoS App.
 
 ## Current Version
-v0.0.6
+v0.0.7
 
 ## Setup & Run instructions for Linux with Android
 
