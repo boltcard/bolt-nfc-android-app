@@ -158,10 +158,6 @@ public class MainActivity extends ReactActivity {
 
   private final StringBuilder stringBuilder = new StringBuilder();
 
-  static Object mString;
-
-  CardLogic mCardLogic;
-
   private ReactRootView mReactRootView; //change
   private ReactInstanceManager mReactInstanceManager;
 
@@ -211,8 +207,6 @@ public class MainActivity extends ReactActivity {
                 STORAGE_PERMISSION_WRITE
         );
     }
-
-    mCardLogic = CardLogic.getInstance();
 
     /* Initialize the library and register to this activity */
     initializeLibrary();
@@ -300,36 +294,39 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   public void onNewIntent(final Intent intent) {
-      final Bundle extras = intent.getExtras();
-      mString = Objects.requireNonNull(extras).get("android.nfc.extra.TAG");
-      try {
-          if(this.cardmode.equals(CARD_MODE_WRITE)) {
-            writeCard(intent);
-          }
-          else if(this.cardmode.equals(CARD_MODE_WRITEKEYS)) {
-            writeKeys(intent);
-          }
-          else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
-            debugResetKeys(intent);
-          }
-          else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
-            readCard(intent);
-          }
-          super.onNewIntent(intent);
-      } catch (Exception e) {
-          Log.e(TAG, "Some exception occurred", e);
-          if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
-            WritableMap params = Arguments.createMap();
-            params.putString("message", "This NFC card has not been formatted.");
-            sendEvent("NFCError", params);
-          }
-          else {
-            WritableMap params = Arguments.createMap();
-            params.putString("message", "Error: "+e.getMessage());
-            sendEvent("NFCError", params);
-          }
-          
+    // Log.w(TAG, "onNewIntent() action:"+intent.getAction());
+    //if intent is not an NDEF discovery then do super and return;
+    if (!intent.getAction().equals("android.nfc.action.NDEF_DISCOVERED")) {
+      super.onNewIntent(intent);
+      return;
+    }
+    try {
+      if(this.cardmode.equals(CARD_MODE_WRITE)) {
+        writeCard(intent);
       }
+      else if(this.cardmode.equals(CARD_MODE_WRITEKEYS)) {
+        writeKeys(intent);
+      }
+      else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
+        debugResetKeys(intent);
+      }
+      else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
+        readCard(intent);
+      }
+      super.onNewIntent(intent);
+    } catch (Exception e) {
+      Log.e(TAG, "Some exception occurred", e);
+      if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
+        WritableMap params = Arguments.createMap();
+        params.putString("message", "This NFC card has not been formatted.");
+        sendEvent("NFCError", params);
+      }
+      else {
+        WritableMap params = Arguments.createMap();
+        params.putString("message", "Error: "+e.getMessage());
+        sendEvent("NFCError", params);
+      }
+    }
   }
 
   /**
@@ -370,7 +367,7 @@ public class MainActivity extends ReactActivity {
 
     CardType type = libInstance.getCardType(intent); //Get the type of the card
     if (type == CardType.UnknownCard) {
-      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+          showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
     }
     else if (type == CardType.NTAG424DNA) {
       INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());

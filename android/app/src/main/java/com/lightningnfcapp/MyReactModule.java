@@ -29,19 +29,19 @@ public class MyReactModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setCardMode(String cardmode) {
         MainActivity activity = (MainActivity) getCurrentActivity();
-        activity.setCardMode(cardmode);
+        if(activity != null) activity.setCardMode(cardmode);
     }
 
     @ReactMethod
     public void setNodeURL(String url) {
         MainActivity activity = (MainActivity) getCurrentActivity();
-        activity.setNodeURL(url);
+        if(activity != null) activity.setNodeURL(url);
     }
 
     @ReactMethod
     public void changeKeys(String key0, String key1, String key2, Callback callBack) {
         MainActivity activity = (MainActivity) getCurrentActivity();
-        activity.changeKeys(key0, key1, key2, callBack);
+        if(activity != null) activity.changeKeys(key0, key1, key2, callBack);
     }
 
 }
