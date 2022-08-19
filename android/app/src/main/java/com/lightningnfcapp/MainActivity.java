@@ -777,7 +777,8 @@ public class MainActivity extends ReactActivity {
   }
 
   public void setCardMode(String cardmode) {
-    this.cardmode = cardmode;
+    if(cardmode != null) this.cardmode = cardmode;
+    else Log.d(TAG, "*** setCardMode called with null string");
   }
 
   /**
