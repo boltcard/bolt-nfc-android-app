@@ -31,6 +31,9 @@ export default function HelpScreen({ navigation }) {
                     5. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.
                 </Text>
                 <Text style={styles.paragraph}>
+                    5.1. Please note, once you have changed the keys on your card you can then no longer change your boltcard's URL without resetting the keys.
+                </Text>
+                <Text style={styles.paragraph}>
                     6. When the keys are loaded, Hold the NFC card to the phone to run the key change on the card. Do not move the card until the key change has completed. 
                 </Text>
                 <Text style={styles.paragraph}>
