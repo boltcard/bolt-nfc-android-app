@@ -1,12 +1,19 @@
-# Setup & Run instructions for Linux with Android
+# Boltcard NFC Programming App
 
-v0.0.4
+Quickly program a blank NFC card (NTAG424DNA) to act as your own personal Boltcard. A contactless / paywave like experience for the Lightning network. Before programming your NFC card you must set up your own [boltcard server](https://github.com/boltcard/boltcard).
 
-## Quick
+The boltcard can be used with Lightning PoS terminals that have NFC support, or Breez wallet PoS App.
+
+## Current Version
+v0.0.5
+
+## Setup & Run instructions for Linux with Android
+
+### Quick
 
 Download the compiled APK from the [latest release](https://github.com/boltcard/bolt-nfc-android-app/releases) and install on your android phone.
 
-## Build instructions
+### Build instructions
 1. Install android studio https://developer.android.com/studio
 2. Install Android 12 SDK version 31 reference: https://reactnative.dev/docs/environment-setup
 “Android Studio installs the latest Android SDK by default. Building a React Native app with native code, however, requires the Android 12 (S) SDK in particular. Additional Android SDKs can be installed through the SDK Manager in Android Studio.“
@@ -24,7 +31,7 @@ Download the compiled APK from the [latest release](https://github.com/boltcard/
 14. Rename .env-example to .env and set the Mifare package key in this file
 15. open another terminal in same dir and type $npx react-native run-android
 
-# Usage
+## Usage
 
 1. Install [boltcard server](https://github.com/boltcard/boltcard) and aquire some blank NTAG424DNA tags. 
 2. When app has loaded go to the write screen and put your lnurlw domain and path in to the text box.
@@ -38,3 +45,4 @@ Warning! If you lose the new keys then you will be unable to reprogram the card 
 
 * adb logcat -s "lightningnfcapp"
 * java --module-path ~/Android/javafx-sdk-18.0.2/lib --add-modules javafx.controls,javafx.fxml -jar TagXplorer-v1.2.jar
+* ./gradlew assembleRelease
