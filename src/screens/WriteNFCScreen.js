@@ -34,7 +34,7 @@ export default function WriteNFCScreen(props) {
             <Text style={{textAlign:'center'}}>Please enter your node's domain and path</Text>
             <Text style={{textAlign:'center'}}>For boltcard server be sure to add /ln to the end of the domain</Text>
           </View>
-          <View style={{flexDirection:'column', flex: 1, padding: 20}}>
+          <View style={{flexDirection:'column', flex: 3, padding: 20}}>
           <Text style={{textAlign:'center', marginTop:30}}>lnurlw://</Text>
             <TextInput 
               style={styles.input} 
@@ -47,8 +47,8 @@ export default function WriteNFCScreen(props) {
             />
           </View>
           <View style={{flex:1}}>
-            <Text style={{}}>Then scan to write NFC card</Text>
-            <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>{writeOutput}</Text>
+            <Text style={{textAlign:'center'}}>Scan when ready to write NFC card</Text>
+            <Text style={{textAlign:'center', color: writeOutput == "success" ? 'green' : 'red'}}>{writeOutput}</Text>
             { writeOutput.indexOf("91AE") != -1 && <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>This card's write key may have been changed</Text>}
           </View>
       </View>
