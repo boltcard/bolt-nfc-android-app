@@ -5,7 +5,7 @@ Quickly program a blank NFC card (NTAG424DNA) to act as your own personal Boltca
 The boltcard can be used with Lightning PoS terminals that have NFC support, or Breez wallet PoS App.
 
 ## Current Version
-v0.0.6
+v0.0.7
 
 ## Setup & Run instructions for Linux with Android
 
@@ -40,6 +40,12 @@ Download the compiled APK from the [latest release](https://github.com/boltcard/
 5. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.
 6. When the keys are loaded, Hold the NFC card to the phone to run the key change on the card. Do not move the card until the key change has completed. 
 Warning! If you lose the new keys then you will be unable to reprogram the card again
+
+# Dependencies / Security considerations
+
+We rely on the Taplinx 2.0 Android library supplied by NXP. 
+
+React native libraries are also used to make building the UI easier.
 
 ## Useful commands
 
