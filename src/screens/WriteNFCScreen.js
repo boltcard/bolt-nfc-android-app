@@ -29,11 +29,13 @@ export default function WriteNFCScreen(props) {
       }, [])
     );
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-         <Text>Please enter your node's domain and path</Text>
-         <Text>For boltcard server be sure to add /ln to the end of the domain</Text>
-          <View style={{flexDirection:'column'}}>
-            <Text style={{textAlign:'center', marginTop:30}}>lnurlw://</Text>
+      <View style={{ flex: 1, flexDirection:'column', justifyContent: 'center', alignItems: 'center' }}>
+          <View>
+            <Text style={{textAlign:'center'}}>Please enter your node's domain and path</Text>
+            <Text style={{textAlign:'center'}}>For boltcard server be sure to add /ln to the end of the domain</Text>
+          </View>
+          <View style={{flexDirection:'column', flex: 1, padding: 20}}>
+          <Text style={{textAlign:'center', marginTop:30}}>lnurlw://</Text>
             <TextInput 
               style={styles.input} 
               value={nodeURL} 
@@ -43,11 +45,12 @@ export default function WriteNFCScreen(props) {
               onChangeText={(text) => updateNodeUrl(text)}
               placeholder="yourboltcard.domain.com/ln"
             />
-  
           </View>
-          <Text>Then scan to write NFC card</Text>
-          <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>{writeOutput}</Text>
-          { writeOutput.indexOf("91AE") != -1 && <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>This card's write key may have been changed</Text>}
+          <View style={{flex:1}}>
+            <Text style={{}}>Then scan to write NFC card</Text>
+            <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>{writeOutput}</Text>
+            { writeOutput.indexOf("91AE") != -1 && <Text style={{color: writeOutput == "success" ? 'green' : 'red'}}>This card's write key may have been changed</Text>}
+          </View>
       </View>
     );
 }
@@ -56,6 +59,7 @@ const styles = StyleSheet.create({
       height: 160,
       margin: 12,
       borderWidth: 1,
+      flexWrap: 'wrap',
       padding: 10,
       fontFamily: 'monospace',
       textAlignVertical: 'top'
