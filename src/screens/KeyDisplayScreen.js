@@ -13,8 +13,11 @@ function KeyDisplayScreen({ route, navigation }) {
   const [key0, setKey0] = useState()
   const [key1, setKey1] = useState()
   const [key2, setKey2] = useState()
+  const [key3, setKey3] = useState()
+  const [key4, setKey4] = useState()
+  const [lnurlw_base, setlnurlw_base] = useState()
   const [cardUID, setCardUID] = useState()
-
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [modalText, setModalText] = useState();
   const [loading, setLoading] = useState(false);
@@ -58,11 +61,20 @@ function KeyDisplayScreen({ route, navigation }) {
       .then((response) => response.json())
       .then((json) => {
         setLoading(false);
+        setlnurlw_base(json.lnurlw_base);
         setKey0(json.k0);
         setKey1(json.k1);
         setKey2(json.k2);
+        setKey3(json.k3);
+        setKey4(json.k4);
 
-        NativeModules.MyReactModule.changeKeys(json.k0, json.k1, json.k2, 
+        NativeModules.MyReactModule.changeKeys(
+          lnurlw_base,
+          json.k0, 
+          json.k1, 
+          json.k2, 
+          json.k3, 
+          json.k4, 
           (response) => {
             if (response == "Success") setReadyToChangeKeys(true);
           }
@@ -84,6 +96,8 @@ function KeyDisplayScreen({ route, navigation }) {
   const key0display = key0 ? key0.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key0.substring(28) : "pending...";
   const key1display = key1 ? key1.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key1.substring(28) : "pending...";
   const key2display = key2 ? key2.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key2.substring(28) : "pending...";
+  const key3display = key3 ? key3.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key3.substring(28) : "pending...";
+  const key4display = key4 ? key4.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key4.substring(28) : "pending...";
   return (
     <ScrollView>
       <Text style={{marginTop:30}}></Text>
@@ -108,19 +122,22 @@ function KeyDisplayScreen({ route, navigation }) {
       {readyToChangeKeys && 
         <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
           <Ionicons name="card" size={50} color="green" />
-          Hold NFC card to phone until all keys are changed.
+          Ready to write card. Hold NFC card to phone until all keys are changed.
         </Text>
       }
       <Card style={{marginBottom:20, marginHorizontal:10}}>
         <Card.Content>
-        <Text>URL: {data}</Text>
+        <Text>QR Code URL: {data}</Text>
           {loading ? 
             <Text>Loading....</Text>
             :
             <>
+              <Text>lnurl: {lnurlw_base}</Text>
               <Text>Key 0: {key0display}</Text>
               <Text>Key 1: {key1display}</Text>
               <Text>Key 2: {key2display}</Text>
+              <Text>Key 3: {key3display}</Text>
+              <Text>Key 4: {key4display}</Text>
             </>
             }
         </Card.Content>

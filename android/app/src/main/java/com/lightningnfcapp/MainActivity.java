@@ -167,12 +167,14 @@ public class MainActivity extends ReactActivity {
   private final String CARD_MODE_DEBUGRESETKEYS = "resetkeys";
   
   private String cardmode = CARD_MODE_READ;
-  private String nodeURL = "";
+  private String lnurlw_base = "";
   private String packageKey = BuildConfig.MIFARE_KEY;
 
   private byte[] key0;
   private byte[] key1;
   private byte[] key2;
+  private byte[] key3;
+  private byte[] key4;
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -517,10 +519,10 @@ public class MainActivity extends ReactActivity {
         (byte) 0x0
       );
 
-      //picc offset = 9 + nodeURL length + 3 +7(junk at start?)
-      //mac offset = 9 + nodeURL length + 38 +7(junk at start?)
-      int piccOffset = 9 + nodeURL.length() + 3 + 7;
-      int macOffset = 9 + nodeURL.length() + 38 + 7;
+      //picc offset = 9 + lnurlw_base length + 3 +7(junk at start?)
+      //mac offset = 9 + lnurlw_base length + 38 +7(junk at start?)
+      int piccOffset = 9 + lnurlw_base.length() + 3 + 7;
+      int macOffset = 9 + lnurlw_base.length() + 38 + 7;
       fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
       fileSettings.setSDMEnabled(true);
       fileSettings.setUIDMirroringEnabled(true);
@@ -540,10 +542,10 @@ public class MainActivity extends ReactActivity {
       
       NdefMessageWrapper msg = new NdefMessageWrapper(
         NdefRecordWrapper.createUri(
-          nodeURL.indexOf("?") == -1 ? 
-            "lnurlw://"+nodeURL+"?p=00000000000000000000000000000000&c=0000000000000000"
+          lnurlw_base.indexOf("?") == -1 ? 
+            "lnurlw://"+lnurlw_base+"?p=00000000000000000000000000000000&c=0000000000000000"
           :
-            "lnurlw://"+nodeURL+"&p=00000000000000000000000000000000&c=0000000000000000"
+            "lnurlw://"+lnurlw_base+"&p=00000000000000000000000000000000&c=0000000000000000"
         )
       );
 
@@ -674,6 +676,32 @@ public class MainActivity extends ReactActivity {
     callBack.invoke(result);
   }
 
+  
+  public void changeKeys(String lnurlw_base, String key0, String key1, String key2, String key3, String key4, Callback callBack) {
+    this.cardmode = CARD_MODE_WRITEKEYS;
+    String result = "Success";
+    if(key0 == null && key1 == null && key2 == null && key3 == null && key4 == null) {
+      this.key0 = null;
+      this.key1 = null;
+      this.key2 = null;
+      this.key3 = null;
+      this.key4 = null;
+    }
+    try {
+      this.lnurlw_base = lnurlw_base;
+      this.key0 = this.hexStringToByteArray(key0);
+      this.key1 = this.hexStringToByteArray(key1);
+      this.key2 = this.hexStringToByteArray(key2);    
+      this.key3 = this.hexStringToByteArray(key3);    
+      this.key4 = this.hexStringToByteArray(key4);    
+    }
+    catch(Exception e) {
+      Log.d(TAG, "Error one or more keys are invalid: "+e.getMessage());
+      result = "Error one or more keys are invalid";
+    }
+    callBack.invoke(result);
+  }
+
   private void sendEvent(String eventName, WritableMap params) {
     ReactContext reactContext = getReactNativeHost().getReactInstanceManager().getCurrentReactContext();
     
@@ -784,7 +812,7 @@ public class MainActivity extends ReactActivity {
   }
 
   public void setNodeURL(String url) {
-    this.nodeURL = url;
+    this.lnurlw_base = url;
   }
 
   public void setCardMode(String cardmode) {
