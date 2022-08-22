@@ -387,7 +387,7 @@ public class MainActivity extends ReactActivity {
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
       //Check if auth works to see if key0 is zero.
-      String key0Changed = null;
+      String key0Changed = "unsure";
       try {
         key0Changed="no";
         ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
@@ -400,13 +400,27 @@ public class MainActivity extends ReactActivity {
         key0Changed="yes";
       }
 
-      //check PICC encryption to see if key1 is zero
+      String key1Changed = "unsure";
+      String key2Changed = "unsure";
+
       String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+      //if we dont have a p and a c we cant check the keys
+      if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
+        WritableMap params = Arguments.createMap();
+        params.putString("cardReadInfo", cardDataBuilder);
+        params.putString("ndef", bolturl);
+        params.putString("key0Changed", key0Changed);
+        params.putString("key1Changed", key1Changed);
+        params.putString("key2Changed", key2Changed);
+        params.putString("cardUID", UID.substring(2));
+        sendEvent("CardHasBeenRead", params);
+        return;
+      }
+      //check PICC encryption to see if key1 is zero
       String pParam = bolturl.split("p=")[1].substring(0, 32);
-      String cParam = bolturl.split("c=")[1].substring(0, 16);
       String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
-      String key1Changed = "yes";
-      if(pDecrypt.startsWith("0xC7"+UID.substring(2))) {
+      String UIDwithout0x = UID.substring(2);
+      if(pDecrypt.startsWith("0xC7"+UIDwithout0x)) {
         key1Changed = "no";
       }
       
@@ -417,8 +431,8 @@ public class MainActivity extends ReactActivity {
       byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
       
       //Check CMAC to see if key2 is zero.
-      String key2Changed = null;
       try {
+        String cParam = bolturl.split("c=")[1].substring(0, 16);
         int cmacSize = 16;
         BlockCipher cipher = new AESFastEngine();
         Mac cmac = new CMac(cipher, cmacSize * 8);
