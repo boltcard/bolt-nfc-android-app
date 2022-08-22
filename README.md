@@ -41,6 +41,12 @@ Download the compiled APK from the [latest release](https://github.com/boltcard/
 6. When the keys are loaded, Hold the NFC card to the phone to run the key change on the card. Do not move the card until the key change has completed. 
 Warning! If you lose the new keys then you will be unable to reprogram the card again
 
+# Dependencies / Security considerations
+
+We rely on the Taplinx 2.0 Android library supplied by NXP. 
+
+React native libraries are also used to make building the UI easier.
+
 ## Useful commands
 
 * adb logcat -s "lightningnfcapp"
