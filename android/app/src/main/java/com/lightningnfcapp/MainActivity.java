@@ -401,7 +401,7 @@ public class MainActivity extends ReactActivity {
     }});
 
     try {
-      // ntag424DNA = this.authenticateChangeKey(intent);
+      ntag424DNA = this.authenticateChangeKey(intent);
       this.writeNDEF(intent, ntag424DNA);
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
         put("ndefWritten", "success");
