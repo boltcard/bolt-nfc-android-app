@@ -2,14 +2,14 @@
 
 import { Button, Linking, ScrollView, StyleSheet, Text } from 'react-native';
 import { Card, Title } from 'react-native-paper';
-
+import gitinfo from '../../gitinfo.json';
 export default function HelpScreen({ navigation }) {
 
     return (
         <ScrollView>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
               <Card.Content>
-                <Title>v0.0.7</Title>
+                <Title selectable={true}>v0.0.7 ({gitinfo.commit})</Title>
               </Card.Content>
             </Card>
             <Card style={{marginBottom:20, marginHorizontal:10}}>

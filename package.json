@@ -6,7 +6,8 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "run-android": "echo \"{\\\"commit\\\":\\\"`git rev-parse --short HEAD`\\\"}\" > gitinfo.json && npx react-native run-android"
   },
   "dependencies": {
     "@react-native-clipboard/clipboard": "^1.10.0",
