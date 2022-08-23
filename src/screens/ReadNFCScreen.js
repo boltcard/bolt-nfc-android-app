@@ -51,44 +51,44 @@ export default function ReadNFCScreen(props) {
     return (
       <ScrollView style={{ }}>
         
-          <Text style={{ margin: 20, fontWeight:'bold', fontSize:15, textAlign:'center'}}>
-            <ActivityIndicator /> Hold NFC card to Reader 
-          </Text>
-          <Card style={{marginBottom:20, marginHorizontal:10}}>
-            <Card.Content>
-              <Title>NDEF Record</Title>
-              <Paragraph style={{fontWeight:'bold', fontSize:15}}>{ndef}</Paragraph>
-            </Card.Content>
-          </Card>
-          <Card style={{marginBottom:20, marginHorizontal:10}}>
-            <Card.Content>
-              <Title>Card UID</Title>
-              <View style={{alignItems: 'flex-start', flexDirection: 'row'}}>
-                {cardUID && <Button onPress={copyToClipboard} title="Copy" />}
-                <Text style={{lineHeight:35, marginLeft:10}}>{cardUID}</Text>
-              </View>
-            </Card.Content>
-          </Card>
-          <Card style={{marginBottom:20, marginHorizontal:10}}>
-            <Card.Content>
-              <Title>NFC Card Attributes</Title>
-              <Paragraph>{cardReadInfo}</Paragraph>
-            </Card.Content>
-          </Card>
-          
-          <Card style={{marginBottom:20, marginHorizontal:10}}>
-            <Card.Content>
-              <Title>Card Keys</Title>
-              <Paragraph>{key0Changed}</Paragraph>
-              <Paragraph>{key1Changed}</Paragraph>
-              <Paragraph>{key2Changed}</Paragraph>
-              <Paragraph>{key3Changed}</Paragraph>
-              <Paragraph>{key4Changed}</Paragraph>
-            </Card.Content>
-          </Card>
-          
-          <Text></Text>
-  
+        <Text style={{ margin: 20, fontWeight:'bold', fontSize:15, textAlign:'center'}}>
+          <ActivityIndicator /> Hold NFC card to Reader 
+        </Text>
+        <Card style={{marginBottom:20, marginHorizontal:10}}>
+          <Card.Content>
+            <Title>NDEF Record</Title>
+            <Paragraph style={{fontWeight:'bold', fontSize:15}}>{ndef}</Paragraph>
+          </Card.Content>
+        </Card>
+        <Card style={{marginBottom:20, marginHorizontal:10}}>
+          <Card.Content>
+            <Title>Card UID</Title>
+            <View style={{alignItems: 'flex-start', flexDirection: 'row'}}>
+              {cardUID && <Button onPress={copyToClipboard} title="Copy" />}
+              <Text style={{lineHeight:35, marginLeft:10}}>{cardUID}</Text>
+            </View>
+          </Card.Content>
+        </Card>
+        <Card style={{marginBottom:20, marginHorizontal:10}}>
+          <Card.Content>
+            <Title>NFC Card Attributes</Title>
+            <Paragraph>{cardReadInfo}</Paragraph>
+          </Card.Content>
+        </Card>
+        
+        <Card style={{marginBottom:20, marginHorizontal:10}}>
+          <Card.Content>
+            <Title>Card Keys</Title>
+            <Paragraph>{key0Changed}</Paragraph>
+            <Paragraph>{key1Changed}</Paragraph>
+            <Paragraph>{key2Changed}</Paragraph>
+            <Paragraph>{key3Changed}</Paragraph>
+            <Paragraph>{key4Changed}</Paragraph>
+          </Card.Content>
+        </Card>
+        
+        <Text></Text>
+
       </ScrollView>
     );
 }

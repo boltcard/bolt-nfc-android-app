@@ -4,7 +4,7 @@ import { NativeEventEmitter, NativeModules, StyleSheet, Text, TextInput, View } 
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function WriteNFCScreen(props) {
-    const [nodeURL, setNodeURL] = useState("")
+    const [nodeURL, setNodeURL] = useState()
     const [writeOutput, setWriteOutput] = useState("pending...")
   
     useEffect(() =>{
@@ -31,11 +31,11 @@ export default function WriteNFCScreen(props) {
     return (
       <View style={{ flex: 1, flexDirection:'column', justifyContent: 'center', alignItems: 'center' }}>
           <View>
-            <Text style={{textAlign:'center'}}>Please enter your node's domain and path</Text>
+            <Text style={{textAlign:'center'}}>Please enter your lnurlw (must start with lnurlw://)</Text>
             <Text style={{textAlign:'center'}}>For boltcard server be sure to add /ln to the end of the domain</Text>
           </View>
           <View style={{flexDirection:'column', flex: 3, padding: 20}}>
-          <Text style={{textAlign:'center', marginTop:30}}>lnurlw://</Text>
+          <Text style={{textAlign:'center', marginTop:30}}></Text>
             <TextInput 
               style={styles.input} 
               value={nodeURL} 
@@ -43,7 +43,7 @@ export default function WriteNFCScreen(props) {
               numberOfLines = {4}
               autoCapitalize='none'
               onChangeText={(text) => updateNodeUrl(text)}
-              placeholder="yourboltcard.domain.com/ln"
+              placeholder="lnurlw://yourboltcard.domain.com/ln"
             />
           </View>
           <View style={{flex:1}}>

@@ -2,28 +2,39 @@
 import React from 'react';
 
 import {
+  Button,
   StyleSheet,
   Text
 } from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
-export default function ScanScreen({ navigation }) {
-    const onSuccess = e => {
-      navigation.navigate('KeyDisplayScreen', {data: e.data, timestamp: Date.now()})
-    };
+export default function ScanScreen({ route, navigation }) {
 
-    return (
-        <QRCodeScanner
-        onRead={onSuccess}
-        topContent={
-            <Text style={styles.centerText}>
-           Scan the QR code
-            </Text>
-        }
-        />
-    );
-  
+  const { backScreen } = route.params;
+
+  const onSuccess = e => {
+    navigation.navigate(backScreen, {data: e.data, timestamp: Date.now()})
+  };
+
+  const goBack = e => {
+    navigation.navigate(backScreen);
+  };
+
+  return (
+    <>
+      <QRCodeScanner
+      onRead={onSuccess}
+      topContent={
+          <Text style={styles.centerText}>
+          Scan the QR code
+          </Text>
+      }
+      />
+      <Button onPress={goBack} title="Close" />
+    </>
+  );
+
 }
 
 const styles = StyleSheet.create({

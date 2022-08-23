@@ -28,8 +28,10 @@ public class MyReactModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setCardMode(String cardmode) {
+        Log.d(TAG, "setCardMode: "+cardmode );
         MainActivity activity = (MainActivity) getCurrentActivity();
         if(activity != null) activity.setCardMode(cardmode);
+        else Log.e(TAG, "Error: Activity is null, cant change mode");
     }
 
     @ReactMethod

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Card } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-
-function KeyDisplayScreen({ route, navigation }) {
+function KeyDisplayScreen({ route }) {
   //auth url will be in the data
   const { data, timestamp } = route.params;
-  
+  const navigation = useNavigation();
+
   const [key0, setKey0] = useState()
   const [key1, setKey1] = useState()
   const [key2, setKey2] = useState()
@@ -41,10 +41,14 @@ function KeyDisplayScreen({ route, navigation }) {
         setWriteKeysOutput("Keys changed successfully");
         setReadyToChangeKeys(false);
         NativeModules.MyReactModule.setCardMode("read");
+        fetch(lnurlw_base.replace('lnurlw://', 'https://'))
+        .then((response) => response.json())
+        .then((json) => {
+          console.log('Calling boltserver: '+ lnurlw_base.replace('lnurlw://', 'https://'), json)
+        });
       }
       else {
         setWriteKeysOutput(event.output + " Keys may have been changed already.");
-        showModalError(event.output + " Keys may have been changed already.");
       }
     });
 
@@ -69,13 +73,14 @@ function KeyDisplayScreen({ route, navigation }) {
         setKey4(json.k4);
 
         NativeModules.MyReactModule.changeKeys(
-          lnurlw_base,
+          json.lnurlw_base,
           json.k0, 
           json.k1, 
           json.k2, 
           json.k3, 
           json.k4, 
           (response) => {
+            console.log('Change keys response', response)
             if (response == "Success") setReadyToChangeKeys(true);
           }
         );
@@ -84,20 +89,17 @@ function KeyDisplayScreen({ route, navigation }) {
       .catch((error) => {
         setLoading(false);
         console.error(error);
-        setModalText("Problem loading keys, error: " + error.message);
-        setModalVisible(true);
-        showModalError("Problem loading keys, error: " + error.message);
-
+        showModalError(error);
       });
     }
     
   }, [data, timestamp])
 
-  const key0display = key0 ? key0.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key0.substring(28) : "pending...";
-  const key1display = key1 ? key1.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key1.substring(28) : "pending...";
-  const key2display = key2 ? key2.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key2.substring(28) : "pending...";
-  const key3display = key3 ? key3.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key3.substring(28) : "pending...";
-  const key4display = key4 ? key4.substring(0, 4)+" XXXX XXXX XXXX XXXX XXXX XXXX "+ key4.substring(28) : "pending...";
+  const key0display = key0 ? key0.substring(0, 4)+"............"+ key0.substring(28) : "pending...";
+  const key1display = key1 ? key1.substring(0, 4)+"............"+ key1.substring(28) : "pending...";
+  const key2display = key2 ? key2.substring(0, 4)+"............"+ key2.substring(28) : "pending...";
+  const key3display = key3 ? key3.substring(0, 4)+"............"+ key3.substring(28) : "pending...";
+  const key4display = key4 ? key4.substring(0, 4)+"............"+ key4.substring(28) : "pending...";
   return (
     <ScrollView>
       <Text style={{marginTop:30}}></Text>
@@ -107,7 +109,7 @@ function KeyDisplayScreen({ route, navigation }) {
           <Text style={{...styles.paragraph, fontSize:20}}>Scan QR code</Text>
           <Text style={styles.paragraph}>Run the ./createboltcard command on the server as per docs, then press below to scan the QR code shown</Text>
           <Button
-            onPress={() => navigation.navigate('ScanScreen')}
+            onPress={() => navigation.navigate('ScanScreen', {backScreen: 'KeyDisplayScreen'})}
             title="Scan QR code from console"
           />
         </Card.Content>
@@ -119,30 +121,33 @@ function KeyDisplayScreen({ route, navigation }) {
           {writeKeysOutput}
         </Text>
       }
-      {readyToChangeKeys && 
-        <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
-          <Ionicons name="card" size={50} color="green" />
-          Ready to write card. Hold NFC card to phone until all keys are changed.
-        </Text>
-      }
+      
       <Card style={{marginBottom:20, marginHorizontal:10}}>
         <Card.Content>
-        <Text>QR Code URL: {data}</Text>
+        <Text>QR code URL:</Text>
+        <Text style={{...styles.monospace, marginBottom: 20}}>{data}</Text>
           {loading ? 
-            <Text>Loading....</Text>
+            <Text><ActivityIndicator /> Loading....</Text>
             :
             <>
-              <Text>lnurl: {lnurlw_base}</Text>
-              <Text>Key 0: {key0display}</Text>
-              <Text>Key 1: {key1display}</Text>
-              <Text>Key 2: {key2display}</Text>
-              <Text>Key 3: {key3display}</Text>
-              <Text>Key 4: {key4display}</Text>
+              <Text style={styles.monospace}>lnurl: {lnurlw_base}</Text>
+              <Text style={styles.monospace}>Key 0: {key0display}</Text>
+              <Text style={styles.monospace}>Key 1: {key1display}</Text>
+              <Text style={styles.monospace}>Key 2: {key2display}</Text>
+              <Text style={styles.monospace}>Key 3: {key3display}</Text>
+              <Text style={styles.monospace}>Key 4: {key4display}</Text>
             </>
             }
         </Card.Content>
       </Card>
-      
+      {readyToChangeKeys && 
+        <Card style={{marginBottom:20, marginHorizontal:10}}>
+          <Text style={{fontSize:30, textAlign: 'center', borderColor:'black'}}>
+            <Ionicons name="card" size={50} color="green" />
+            Ready to write card. Hold NFC card to phone until all keys are changed.
+          </Text>
+        </Card>
+      }
       
     </ScrollView>
   );
@@ -152,6 +157,10 @@ function KeyDisplayScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   paragraph: {
     marginBottom:5
+  },
+  monospace: {
+    
+    fontFamily: "monospace"
   }
 });
 

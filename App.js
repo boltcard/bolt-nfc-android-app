@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
 import KeyDisplayScreen from './src/screens/KeyDisplayScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
@@ -32,17 +33,28 @@ const theme = {
 
 const Tab = createBottomTabNavigator();
 const KeyManagementStack = createNativeStackNavigator();
+const CreateBoltcardStack = createNativeStackNavigator();
 
 function KeyManagementStackScreen() {
   return (
     <KeyManagementStack.Navigator>
-      <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
+      <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: null }}/>
       <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
       <KeyManagementStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} />
       <KeyManagementStack.Screen name="HelpScreen" component={HelpScreen} />
     </KeyManagementStack.Navigator>
   );
 }
+
+function CreateBoltcardStackScreen() {
+  return (
+    <CreateBoltcardStack.Navigator>
+      <CreateBoltcardStack.Screen name="CreateBoltcardScreen" component={CreateBoltcardScreen} initialParams={{ data: null }}/>
+      <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
+    </CreateBoltcardStack.Navigator>
+  );
+}
+
 
 function LogoTitle(props) {
   return (
@@ -121,10 +133,12 @@ export default function App(props) {
                 iconName = focused ? 'book' : 'book-outline';
               } else if (route.name === 'Write NFC') {
                 iconName = focused ? 'save' : 'save-outline';
-              } else if (route.name === 'Key Management') {
-                iconName = focused ? 'key' : 'key-outline';
+              } else if (route.name === 'Create Boltcard') {
+                iconName = focused ? 'card' : 'card-outline';
               } else if (route.name === 'Help') {
                 iconName = focused ? 'information' : 'information-outline';
+              } else if (route.name === 'Key Management') {
+                iconName = focused ? 'key' : 'key-outline';
               }
 
               // You can return any component that you like here!
@@ -135,6 +149,16 @@ export default function App(props) {
           })}
         >
           <Tab.Screen 
+            name="Create Boltcard" 
+            children={() => <CreateBoltcardStackScreen />} 
+            options={{ headerTitle: (props) => <LogoTitle title="Create Boltcard" {...props} />}} 
+          />
+          <Tab.Screen 
+            name="Key Management" 
+            children={() => <KeyManagementStackScreen />} 
+            options={{ headerTitle: (props) => <LogoTitle title="Key Management" {...props} />}} 
+          />
+          <Tab.Screen 
             name="Read NFC" 
             component={ReadNFCScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Read NFC" {...props} />}} 
@@ -144,11 +168,8 @@ export default function App(props) {
             component={WriteNFCScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Write NFC" {...props} />}} 
           />
-          <Tab.Screen 
-            name="Key Management" 
-            children={() => <KeyManagementStackScreen props={{showModalError}} />} 
-            options={{ headerTitle: (props) => <LogoTitle title="Key Management" {...props} />}} 
-          />
+          
+          
           <Tab.Screen 
             name="Help" 
             component={HelpScreen} 

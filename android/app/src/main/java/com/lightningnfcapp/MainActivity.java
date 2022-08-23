@@ -146,8 +146,10 @@ import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.Mac;
-
 import expo.modules.ReactActivityDelegateWrapper;
+
+import javax.util.HashMap;
+import com.google.common.collect.ImmutableMap;
 
 public class MainActivity extends ReactActivity {
 
@@ -165,6 +167,7 @@ public class MainActivity extends ReactActivity {
   private final String CARD_MODE_WRITE = "write";
   private final String CARD_MODE_WRITEKEYS = "writekeys";
   private final String CARD_MODE_DEBUGRESETKEYS = "resetkeys";
+  private final String CARD_MODE_CREATEBOLTCARD = "createBoltcard";
   
   private String cardmode = CARD_MODE_READ;
   private String lnurlw_base = "";
@@ -312,6 +315,9 @@ public class MainActivity extends ReactActivity {
       else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
         debugResetKeys(intent);
       }
+      else if(this.cardmode.equals(CARD_MODE_CREATEBOLTCARD)) {
+        createBoltCard(intent);
+      }
       else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
         readCard(intent);
       }
@@ -358,6 +364,70 @@ public class MainActivity extends ReactActivity {
     return ntag424DNA;
   }
 
+
+  private void createBoltCard(final Intent intent) throws Exception{
+    
+    CardType type = libInstance.getCardType(intent); //Get the type of the card
+    if (type == CardType.UnknownCard) {
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("tagTypeError", R.string.UNKNOWN_TAG);
+      }});
+      Log.d(TAG, "CardType.UnknownCard");
+    }
+    else if (type != CardType.NTAG424DNA) {
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("tagTypeError", type.toString());
+      }});
+      Log.d(TAG, "tagTypeError "+type.toString());
+    }
+    INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+    byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+    
+    String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
+    String UID = Utilities.dumpBytes(ntag424DNA.getUID());
+    sendEvent("CreateBoltCard",ImmutableMap.of(
+      "tagname", tagname,
+      "cardUID", UID.substring(2)
+    ));
+    
+    String [] keyChecks = checkKeys(ntag424DNA);
+    sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+      put("key0Changed", keyChecks[0]);
+      put("key1Changed", keyChecks[1]);
+      put("key2Changed", keyChecks[2]);
+      put("key3Changed", keyChecks[3]);
+      put("key4Changed", keyChecks[4]);
+    }});
+
+    try {
+      ntag424DNA = this.authenticateChangeKey(intent);
+      this.writeNDEF(intent, ntag424DNA);
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("ndefWritten", "success");
+      }});
+    }
+    catch(Exception e) {
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("ndefWritten", "Error: "+e.getMessage());
+      }});  
+      Log.e(TAG, "ndefWritten Error "+e.getMessage());
+      return;
+    }
+    try {
+      this.writeKeys(intent);
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("writekeys", "success");
+      }});
+    }
+    catch(Exception e) {
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("writekeys", "Error: "+e.getMessage());
+      }});  
+      Log.e(TAG, "writekeys Error"+e.getMessage());
+      return;
+    }
+  }
+
   /**
    * Reads the NFC card unauthenticated and dumps the first NDEF message along with other
    * interesting info.
@@ -369,7 +439,7 @@ public class MainActivity extends ReactActivity {
 
     CardType type = libInstance.getCardType(intent); //Get the type of the card
     if (type == CardType.UnknownCard) {
-          showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
     }
     else if (type == CardType.NTAG424DNA) {
       INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
@@ -388,93 +458,44 @@ public class MainActivity extends ReactActivity {
 
       INdefMessage ndefRead = ntag424DNA.readNDEF();
 
-      //Check if auth works to see if key0 is zero.
-      String key0Changed = "unsure";
-      try {
-        key0Changed="no";
-        ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
-        KeyData aesKeyData = new KeyData();
-        Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
-        aesKeyData.setKey(keyDefault);
-        ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      }
-      catch(Exception e) {
-        key0Changed="yes";
-      }
+      KeyData aesKeyData = new KeyData();
+      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+      aesKeyData.setKey(keyDefault);
 
-      String key1Changed = "unsure";
-      String key2Changed = "unsure";
+      String [] keyChecks = checkKeys(ntag424DNA);
 
-      String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
-      //if we dont have a p and a c we cant check the keys
-      if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
-        WritableMap params = Arguments.createMap();
-        params.putString("cardReadInfo", cardDataBuilder);
-        params.putString("ndef", bolturl);
-        params.putString("key0Changed", key0Changed);
-        params.putString("key1Changed", key1Changed);
-        params.putString("key2Changed", key2Changed);
-        params.putString("cardUID", UID.substring(2));
-        sendEvent("CardHasBeenRead", params);
-        return;
-      }
-      //check PICC encryption to see if key1 is zero
-      String pParam = bolturl.split("p=")[1].substring(0, 32);
-      String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
-      String UIDwithout0x = UID.substring(2);
-      if(pDecrypt.startsWith("0xC7"+UIDwithout0x)) {
-        key1Changed = "no";
-      }
-      
-      String sv2string = "3CC300010080"+pDecrypt.substring(4,24);
-      byte[] sv2 = this.hexStringToByteArray(sv2string);
+      WritableMap params = Arguments.createMap();
+      params.putString("tagname", tagname);
+      params.putString("cardReadInfo", cardDataBuilder);
+      params.putString("ndef", bolturl);
+      params.putString("key0Changed", keyChecks[0]);
+      params.putString("key1Changed", keyChecks[1]);
+      params.putString("key2Changed", keyChecks[2]);
+      params.putString("key3Changed", keyChecks[3]);
+      params.putString("key4Changed", keyChecks[4]);
+      params.putString("cardUID", UID.substring(2));
+      sendEvent("CardHasBeenRead", params);
+    }
+  }
 
-      int cmacPos = bolturl.indexOf("c=")+7;
-      byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
-      
-      //Check CMAC to see if key2 is zero.
-      try {
-        String cParam = bolturl.split("c=")[1].substring(0, 16);
-        int cmacSize = 16;
-        BlockCipher cipher = new AESFastEngine();
-        Mac cmac = new CMac(cipher, cmacSize * 8);
-        KeyParameter keyParameter = new KeyParameter(KEY_AES128_DEFAULT);
-        cmac.init(keyParameter);
-        cmac.update(msg, 0, msg.length);
-        byte[] CMAC = new byte[cmacSize];
-        cmac.doFinal(CMAC, 0);
+  public String[] checkKeys(INTAG424DNA ntag424DNA) throws Exception {
+    //Check if auth works to see if key0 is zero.
+    String key0Changed = "unsure";
+    try {
+      key0Changed="no";
+      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+    }
+    catch(Exception e) {
+      key0Changed="yes";
+    }
 
-        int cmacSize1 = 16;
-        BlockCipher cipher1 = new AESFastEngine();
-        Mac cmac1 = new CMac(cipher1, cmacSize1 * 8);
-        KeyParameter keyParameter1 = new KeyParameter(CMAC);
-        cmac.init(keyParameter1);
-        cmac.update(new byte[0], 0, 0);
-        byte[] CMAC1 = new byte[cmacSize1];
-        cmac.doFinal(CMAC1, 0);
+    String key1Changed = "unsure";
+    String key2Changed = "unsure";
 
-        byte[] MFCMAC = new byte[cmacSize / 2];
-
-        int j = 0;
-        for (int i = 0; i < CMAC1.length; i++) {
-          if (i % 2 != 0) {
-            MFCMAC[j] = CMAC1[i];
-            j += 1;
-          }
-        }
-
-        if(!Utilities.dumpBytes(MFCMAC).equals("0x"+cParam)) {
-          key2Changed = "yes";
-        }
-        else {
-          key2Changed = "no";
-        }
-
-      } catch (Exception ex) {
-        key2Changed = "yes";
-      }
-
-      
+    String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+    //if we dont have a p and a c we cant check the keys
+    if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
       WritableMap params = Arguments.createMap();
       params.putString("cardReadInfo", cardDataBuilder);
       params.putString("ndef", bolturl);
@@ -483,7 +504,76 @@ public class MainActivity extends ReactActivity {
       params.putString("key2Changed", key2Changed);
       params.putString("cardUID", UID.substring(2));
       sendEvent("CardHasBeenRead", params);
+      return;
     }
+    //check PICC encryption to see if key1 is zero
+    String pParam = bolturl.split("p=")[1].substring(0, 32);
+    String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
+    String UIDwithout0x = UID.substring(2);
+    key1Changed = pDecrypt.startsWith("0xC7"+UIDwithout0x) ? "no" : "yes";
+    
+    String sv2string = "3CC300010080"+pDecrypt.substring(4,24);
+    byte[] sv2 = this.hexStringToByteArray(sv2string);
+
+    int cmacPos = bolturl.indexOf("c=")+7;
+    byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
+    
+    //Check CMAC to see if key2 is zero.
+    try {
+      String cParam = bolturl.split("c=")[1].substring(0, 16);
+      int cmacSize = 16;
+      BlockCipher cipher = new AESFastEngine();
+      Mac cmac = new CMac(cipher, cmacSize * 8);
+      KeyParameter keyParameter = new KeyParameter(KEY_AES128_DEFAULT);
+      cmac.init(keyParameter);
+      cmac.update(msg, 0, msg.length);
+      byte[] CMAC = new byte[cmacSize];
+      cmac.doFinal(CMAC, 0);
+
+      int cmacSize1 = 16;
+      BlockCipher cipher1 = new AESFastEngine();
+      Mac cmac1 = new CMac(cipher1, cmacSize1 * 8);
+      KeyParameter keyParameter1 = new KeyParameter(CMAC);
+      cmac.init(keyParameter1);
+      cmac.update(new byte[0], 0, 0);
+      byte[] CMAC1 = new byte[cmacSize1];
+      cmac.doFinal(CMAC1, 0);
+
+      byte[] MFCMAC = new byte[cmacSize / 2];
+
+      int j = 0;
+      for (int i = 0; i < CMAC1.length; i++) {
+        if (i % 2 != 0) {
+          MFCMAC[j] = CMAC1[i];
+          j += 1;
+        }
+      }
+
+      key2Changed = Utilities.dumpBytes(MFCMAC).equals("0x"+cParam) ? "no" : "yes";
+
+    } catch (Exception ex) {
+      key2Changed = "yes";
+    }
+    //try to change key 3 and 4 from default key to default key
+    String key3Changed = "no";
+    try {
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(3, KEY_AES128_DEFAULT, KEY_AES128_DEFAULT, (byte) 0);
+    }
+    catch(Exception e) {
+      key3Changed = "yes";
+    }
+
+    String key4Changed = "no";
+    try {
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(4, KEY_AES128_DEFAULT, KEY_AES128_DEFAULT, (byte) 0);
+    }
+    catch(Exception e) {
+      key4Changed = "yes";
+    }
+
+    return new String[]{key0Changed, key1Changed, key2Changed, key3Changed, key4Changed};
   }
 
 
@@ -508,50 +598,10 @@ public class MainActivity extends ReactActivity {
   private void writeCard(final Intent intent) throws Exception{
     String result = "success";
     try{
-
       INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
-    
-      NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
-        MFPCard.CommunicationMode.Plain,
-        (byte) 0xE,
-        (byte) 0xE,
-        (byte) 0xE,
-        (byte) 0x0
-      );
 
-      //picc offset = 9 + lnurlw_base length + 3 +7(junk at start?)
-      //mac offset = 9 + lnurlw_base length + 38 +7(junk at start?)
-      int piccOffset = 9 + lnurlw_base.length() + 3 + 7;
-      int macOffset = 9 + lnurlw_base.length() + 38 + 7;
-      fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
-      fileSettings.setSDMEnabled(true);
-      fileSettings.setUIDMirroringEnabled(true);
-      fileSettings.setSDMReadCounterEnabled(true);
-      fileSettings.setSDMReadCounterLimitEnabled(false);
-      fileSettings.setSDMEncryptFileDataEnabled(false);
-      fileSettings.setUidOffset(null);
-      fileSettings.setSdmReadCounterOffset(null);
-      fileSettings.setPiccDataOffset(new byte[] {(byte) piccOffset, (byte) 0, (byte) 0});
-      fileSettings.setSdmMacInputOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
-      fileSettings.setSdmEncryptionOffset(null);
-      fileSettings.setSdmEncryptionLength(null);
-      fileSettings.setSdmMacOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
-      fileSettings.setSdmReadCounterLimit(null);
+      this.writeNDEF(intent, ntag424DNA);
 
-      ntag424DNA.changeFileSettings(2, fileSettings);
-      
-      NdefMessageWrapper msg = new NdefMessageWrapper(
-        NdefRecordWrapper.createUri(
-          lnurlw_base.indexOf("?") == -1 ? 
-            "lnurlw://"+lnurlw_base+"?p=00000000000000000000000000000000&c=0000000000000000"
-          :
-            "lnurlw://"+lnurlw_base+"&p=00000000000000000000000000000000&c=0000000000000000"
-        )
-      );
-
-      ntag424DNA.writeNDEF(msg);
-
-      INdefMessage ndefAfterRead = ntag424DNA.readNDEF();
     }
     catch(Exception e) {
       result = "Error writing card: "+e.getMessage();
@@ -565,6 +615,56 @@ public class MainActivity extends ReactActivity {
   }
 
   /**
+   * Writes the NDEF and sets the File Settings to enable PICC and MAC with correct offsets
+   * @param intent
+   * @param ntag424DNA
+   * @throws Exception
+   */
+  private void writeNDEF(final Intent intent, INTAG424DNA ntag424DNA) throws Exception {
+  
+    NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
+      MFPCard.CommunicationMode.Plain,
+      (byte) 0xE,
+      (byte) 0xE,
+      (byte) 0xE,
+      (byte) 0x0
+    );
+
+    //picc offset = 9 + lnurlw_base length + 3 +7(junk at start?)
+    //mac offset = 9 + lnurlw_base length + 38 +7(junk at start?)
+    int piccOffset = 9 + this.lnurlw_base.length() + 3;
+    int macOffset = 9 + this.lnurlw_base.length() + 38;
+    fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
+    fileSettings.setSDMEnabled(true);
+    fileSettings.setUIDMirroringEnabled(true);
+    fileSettings.setSDMReadCounterEnabled(true);
+    fileSettings.setSDMReadCounterLimitEnabled(false);
+    fileSettings.setSDMEncryptFileDataEnabled(false);
+    fileSettings.setUidOffset(null);
+    fileSettings.setSdmReadCounterOffset(null);
+    fileSettings.setPiccDataOffset(new byte[] {(byte) piccOffset, (byte) 0, (byte) 0});
+    fileSettings.setSdmMacInputOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
+    fileSettings.setSdmEncryptionOffset(null);
+    fileSettings.setSdmEncryptionLength(null);
+    fileSettings.setSdmMacOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
+    fileSettings.setSdmReadCounterLimit(null);
+
+    ntag424DNA.changeFileSettings(2, fileSettings);
+    
+    NdefMessageWrapper msg = new NdefMessageWrapper(
+      NdefRecordWrapper.createUri(
+        this.lnurlw_base.indexOf("?") == -1 ? 
+          this.lnurlw_base+"?p=00000000000000000000000000000000&c=0000000000000000"
+        :
+          this.lnurlw_base+"&p=00000000000000000000000000000000&c=0000000000000000"
+      )
+    );
+
+    ntag424DNA.writeNDEF(msg);
+
+  }
+
+  /**
    * Write the keys stored in memory to the NFC card (assmumes default zero byte keys)
    * 
    * @param intent
@@ -572,13 +672,28 @@ public class MainActivity extends ReactActivity {
    */
   private void writeKeys(final Intent intent) throws Exception{
     String result = "success";
+    INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
+
+    try {
+
+      this.writeNDEF(intent, ntag424DNA);
+    }
+    catch(Exception e){
+      result = "Error changing keys: "+e.getMessage();
+      WritableMap params = Arguments.createMap();
+      params.putString("output", result);
+      sendEvent("NFCError", params);
+      throw e;
+    }
+
     try{
-      INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
 
       //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
       int key0newVersion = ntag424DNA.getKeyVersion(0)+1;
       int key1newVersion = ntag424DNA.getKeyVersion(1)+1;
       int key2newVersion = ntag424DNA.getKeyVersion(2)+1;
+      int key3newVersion = ntag424DNA.getKeyVersion(3)+1;
+      int key4newVersion = ntag424DNA.getKeyVersion(4)+1;
 
       //set up the default key
       KeyData aesKeyData = new KeyData();
@@ -586,17 +701,25 @@ public class MainActivity extends ReactActivity {
       aesKeyData.setKey(keyDefault);
 
       // change key 0 last as this is the change key
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(1, KEY_AES128_DEFAULT, this.key1, (byte) key1newVersion);
       
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(2, KEY_AES128_DEFAULT, this.key2, (byte) key2newVersion);
 
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(3, KEY_AES128_DEFAULT, this.key3, (byte) key3newVersion);
+
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(4, KEY_AES128_DEFAULT, this.key4, (byte) key4newVersion);
+
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
       ntag424DNA.changeKey(0, KEY_AES128_DEFAULT, this.key0, (byte) key0newVersion);
     }
     catch(Exception e) {
       result = "Error changing keys: "+e.getMessage();
-      Log.d(TAG, "Error changing keys: "+e);
+      // Log.d(TAG, "Error changing keys: "+e);
+      throw e;
     }
     WritableMap params = Arguments.createMap();
     params.putString("output", result);
@@ -680,13 +803,19 @@ public class MainActivity extends ReactActivity {
   public void changeKeys(String lnurlw_base, String key0, String key1, String key2, String key3, String key4, Callback callBack) {
     this.cardmode = CARD_MODE_WRITEKEYS;
     String result = "Success";
-    if(key0 == null && key1 == null && key2 == null && key3 == null && key4 == null) {
+    if (lnurlw_base.indexOf("lnurlw://") == -1) {
+      Log.e(TAG, "lnurlw_base is not a valid lnurlw");
+      callBack.invoke("lnurlw_base is not a valid lnurlw");;
+    }
+    if(lnurlw_base == null && key0 == null && key1 == null && key2 == null && key3 == null && key4 == null) {
+      this.lnurlw_base = null;
       this.key0 = null;
       this.key1 = null;
       this.key2 = null;
       this.key3 = null;
       this.key4 = null;
     }
+
     try {
       this.lnurlw_base = lnurlw_base;
       this.key0 = this.hexStringToByteArray(key0);
@@ -701,6 +830,17 @@ public class MainActivity extends ReactActivity {
     }
     callBack.invoke(result);
   }
+
+  private void sendEvent(String eventName, HashMap<String,String> params) {
+    WritableMap params = Arguments.createMap();
+    for (Map.Entry<String, String> entry : params.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      params.putString(key, value);
+    }
+    sendEvent(eventName, params);
+  }
+
 
   private void sendEvent(String eventName, WritableMap params) {
     ReactContext reactContext = getReactNativeHost().getReactInstanceManager().getCurrentReactContext();
