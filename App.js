@@ -133,7 +133,7 @@ export default function App(props) {
                 iconName = focused ? 'book' : 'book-outline';
               } else if (route.name === 'Write NFC') {
                 iconName = focused ? 'save' : 'save-outline';
-              } else if (route.name === 'Create Boltcard') {
+              } else if (route.name === 'Create Bolt Card') {
                 iconName = focused ? 'card' : 'card-outline';
               } else if (route.name === 'Help') {
                 iconName = focused ? 'information' : 'information-outline';
@@ -149,9 +149,9 @@ export default function App(props) {
           })}
         >
           <Tab.Screen 
-            name="Create Boltcard" 
+            name="Create Bolt Card" 
             children={() => <CreateBoltcardStackScreen />} 
-            options={{ headerTitle: (props) => <LogoTitle title="Create Boltcard" {...props} />}} 
+            options={{ headerTitle: (props) => <LogoTitle title="Create Bolt Card" {...props} />}} 
           />
           <Tab.Screen 
             name="Key Management" 

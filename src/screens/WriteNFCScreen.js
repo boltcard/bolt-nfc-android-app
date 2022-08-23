@@ -32,7 +32,7 @@ export default function WriteNFCScreen(props) {
       <View style={{ flex: 1, flexDirection:'column', justifyContent: 'center', alignItems: 'center' }}>
           <View>
             <Text style={{textAlign:'center'}}>Please enter your lnurlw (must start with lnurlw://)</Text>
-            <Text style={{textAlign:'center'}}>For boltcard server be sure to add /ln to the end of the domain</Text>
+            <Text style={{textAlign:'center'}}>For Bolt Card server be sure to add /ln to the end of the domain</Text>
           </View>
           <View style={{flexDirection:'column', flex: 3, padding: 20}}>
           <Text style={{textAlign:'center', marginTop:30}}></Text>

@@ -16,7 +16,7 @@ export default function HelpScreen({ navigation }) {
               <Card.Content>
                 <Title>Usage Instructions</Title>
                 <Text style={styles.paragraph}>
-                    1. Install Boltcard Server and aquire some blank NTAG424DNA tags. 
+                    1. Install Bolt Card Server and aquire some blank NTAG424DNA tags. 
                 </Text>
                 <Text style={styles.paragraph}>
                     2. When app has loaded go to the write screen and put your lnurlw domain and path in to the text box.
@@ -45,10 +45,10 @@ export default function HelpScreen({ navigation }) {
                 <Card.Content>
                     <Title>Links</Title>
                     <Text style={styles.paragraph}>
-                        <Button title="Boltcard Telegram Help Channel" onPress={() => Linking.openURL("https://t.me/bolt_card")}/>
+                        <Button title="Bolt Card Telegram Help Channel" onPress={() => Linking.openURL("https://t.me/bolt_card")}/>
                     </Text>
                     <Text style={styles.paragraph}>
-                        <Button title="Boltcard Github" onPress={() => Linking.openURL("https://github.com/boltcard")}/>
+                        <Button title="Bolt Card Github" onPress={() => Linking.openURL("https://github.com/boltcard")}/>
                     </Text>
                 </Card.Content>
             </Card>
@@ -57,7 +57,7 @@ export default function HelpScreen({ navigation }) {
                 <Card.Content>
                     <Title>Key Change Instructions</Title>
                     <Text style={styles.paragraph}>
-                        On your boltcard server, run the createboltcard command. You might have to compile this executable first.
+                        On your Bolt Card server, run the createboltcard command. You might have to compile this executable first.
                     </Text>
                     <Text style={styles.paragraph}>
                         Scan the QR code in the console with the phone to load the keys
