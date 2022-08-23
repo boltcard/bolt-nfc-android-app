@@ -41,7 +41,7 @@ export default function DisplayAuthInfo(props) {
                 .catch((error) => {
                     setLoading(false);
                     console.error(error);
-                    setError(error);
+                    setError(error.message);
                 });
         }
     }, [data])

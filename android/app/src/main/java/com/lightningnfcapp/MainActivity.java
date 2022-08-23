@@ -148,7 +148,8 @@ import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.Mac;
 import expo.modules.ReactActivityDelegateWrapper;
 
-import javax.util.HashMap;
+import java.util.HashMap;
+import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 public class MainActivity extends ReactActivity {
@@ -370,7 +371,7 @@ public class MainActivity extends ReactActivity {
     CardType type = libInstance.getCardType(intent); //Get the type of the card
     if (type == CardType.UnknownCard) {
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
-        put("tagTypeError", R.string.UNKNOWN_TAG);
+        put("tagTypeError", "Unknown tag type");
       }});
       Log.d(TAG, "CardType.UnknownCard");
     }
@@ -385,10 +386,10 @@ public class MainActivity extends ReactActivity {
     
     String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
     String UID = Utilities.dumpBytes(ntag424DNA.getUID());
-    sendEvent("CreateBoltCard",ImmutableMap.of(
-      "tagname", tagname,
-      "cardUID", UID.substring(2)
-    ));
+    sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+      put("tagname", tagname);
+      put("cardUID", UID.substring(2));
+    }});
     
     String [] keyChecks = checkKeys(ntag424DNA);
     sendEvent("CreateBoltCard",new HashMap<String, String>() {{
@@ -400,7 +401,7 @@ public class MainActivity extends ReactActivity {
     }});
 
     try {
-      ntag424DNA = this.authenticateChangeKey(intent);
+      // ntag424DNA = this.authenticateChangeKey(intent);
       this.writeNDEF(intent, ntag424DNA);
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
         put("ndefWritten", "success");
@@ -411,7 +412,6 @@ public class MainActivity extends ReactActivity {
         put("ndefWritten", "Error: "+e.getMessage());
       }});  
       Log.e(TAG, "ndefWritten Error "+e.getMessage());
-      return;
     }
     try {
       this.writeKeys(intent);
@@ -424,7 +424,6 @@ public class MainActivity extends ReactActivity {
         put("writekeys", "Error: "+e.getMessage());
       }});  
       Log.e(TAG, "writekeys Error"+e.getMessage());
-      return;
     }
   }
 
@@ -450,35 +449,51 @@ public class MainActivity extends ReactActivity {
       int totalMem = ntag424DNA.getTotalMemory();
       byte[] getVersion = ntag424DNA.getVersion();
       String vendor = (getVersion[0] == (byte) 0x04) ? "NXP" : "Non NXP"; 
-
+      
       String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
         "UID: "+UID+"\r\n"+
         "TotalMem: "+totalMem+"\r\n"+
         "Vendor: "+vendor+"\r\n";
 
       INdefMessage ndefRead = ntag424DNA.readNDEF();
+      String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+      if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
+        WritableMap params = Arguments.createMap();
+        params.putString("cardReadInfo", cardDataBuilder);
+        params.putString("ndef", bolturl);
+        params.putString("cardUID", UID.substring(2));
+        sendEvent("CardHasBeenRead", params);
+      }
+      else {
 
-      KeyData aesKeyData = new KeyData();
-      Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
-      aesKeyData.setKey(keyDefault);
+        String [] keyChecks = checkKeys(ntag424DNA);
 
-      String [] keyChecks = checkKeys(ntag424DNA);
-
-      WritableMap params = Arguments.createMap();
-      params.putString("tagname", tagname);
-      params.putString("cardReadInfo", cardDataBuilder);
-      params.putString("ndef", bolturl);
-      params.putString("key0Changed", keyChecks[0]);
-      params.putString("key1Changed", keyChecks[1]);
-      params.putString("key2Changed", keyChecks[2]);
-      params.putString("key3Changed", keyChecks[3]);
-      params.putString("key4Changed", keyChecks[4]);
-      params.putString("cardUID", UID.substring(2));
-      sendEvent("CardHasBeenRead", params);
+        WritableMap params = Arguments.createMap();
+        params.putString("tagname", tagname);
+        params.putString("cardReadInfo", cardDataBuilder);
+        params.putString("ndef", bolturl);
+        params.putString("key0Changed", keyChecks[0]);
+        params.putString("key1Changed", keyChecks[1]);
+        params.putString("key2Changed", keyChecks[2]);
+        params.putString("key3Changed", keyChecks[3]);
+        params.putString("key4Changed", keyChecks[4]);
+        params.putString("cardUID", UID.substring(2));
+        sendEvent("CardHasBeenRead", params);
+      }
     }
   }
 
   public String[] checkKeys(INTAG424DNA ntag424DNA) throws Exception {
+    
+    INdefMessage ndefRead = ntag424DNA.readNDEF();
+    byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+
+    KeyData aesKeyData = new KeyData();
+    Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+    aesKeyData.setKey(keyDefault);
+
+    String UID = Utilities.dumpBytes(ntag424DNA.getUID());
+    
     //Check if auth works to see if key0 is zero.
     String key0Changed = "unsure";
     try {
@@ -495,17 +510,7 @@ public class MainActivity extends ReactActivity {
 
     String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
     //if we dont have a p and a c we cant check the keys
-    if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
-      WritableMap params = Arguments.createMap();
-      params.putString("cardReadInfo", cardDataBuilder);
-      params.putString("ndef", bolturl);
-      params.putString("key0Changed", key0Changed);
-      params.putString("key1Changed", key1Changed);
-      params.putString("key2Changed", key2Changed);
-      params.putString("cardUID", UID.substring(2));
-      sendEvent("CardHasBeenRead", params);
-      return;
-    }
+    
     //check PICC encryption to see if key1 is zero
     String pParam = bolturl.split("p=")[1].substring(0, 32);
     String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
@@ -630,10 +635,8 @@ public class MainActivity extends ReactActivity {
       (byte) 0x0
     );
 
-    //picc offset = 9 + lnurlw_base length + 3 +7(junk at start?)
-    //mac offset = 9 + lnurlw_base length + 38 +7(junk at start?)
-    int piccOffset = 9 + this.lnurlw_base.length() + 3;
-    int macOffset = 9 + this.lnurlw_base.length() + 38;
+    int piccOffset = this.lnurlw_base.length() + 10;
+    int macOffset = this.lnurlw_base.length() + 45;
     fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
     fileSettings.setSDMEnabled(true);
     fileSettings.setUIDMirroringEnabled(true);
@@ -831,9 +834,9 @@ public class MainActivity extends ReactActivity {
     callBack.invoke(result);
   }
 
-  private void sendEvent(String eventName, HashMap<String,String> params) {
+  private void sendEvent(String eventName, HashMap<String,String> map) {
     WritableMap params = Arguments.createMap();
-    for (Map.Entry<String, String> entry : params.entrySet()) {
+    for (Map.Entry<String, String> entry : map.entrySet()) {
       String key = entry.getKey();
       String value = entry.getValue();
       params.putString(key, value);
