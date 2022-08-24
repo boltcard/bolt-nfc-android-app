@@ -64,7 +64,7 @@ function AdvancedTabScreen() {
               // You can return any component that you like here!
               return <Ionicons name={iconName} size={size} color={color} />;
             },
-            tabBarActiveTintColor: 'orange',
+            tabBarActiveTintColor: '#f58340',
             tabBarInactiveTintColor: 'gray',
           })}
         >
@@ -169,7 +169,7 @@ export default function App(props) {
               // You can return any component that you like here!
               return <Ionicons name={iconName} size={size} color={color} />;
             },
-            tabBarActiveTintColor: 'orange',
+            tabBarActiveTintColor: '#f58340',
             tabBarInactiveTintColor: 'gray',
           })}
         >

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
+import { ActivityIndicator, Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
@@ -69,9 +69,10 @@ export default function ResetKeysScreen() {
 
   return (
     <ScrollView style={{ padding:10 }}>
-      <Text style={{fontSize:20, textAlign: 'center', borderColor:'black'}}>{writeKeysOutput}</Text>
-
-      <Text>Key 0 <Button title="Clear" size="small" onPress={()=> setKey0(defaultKey)} /></Text>
+      <View style={styles.titlecontainer}>
+        <Text style={styles.title}>Key 0</Text>
+        <Button title="Clear" size="small" onPress={()=> setKey0(defaultKey)} />
+      </View>
       <TextInput 
         style={styles.input} 
         value={key0} 
@@ -82,7 +83,10 @@ export default function ResetKeysScreen() {
         onChangeText={(text) => setKey0(text)}
         placeholder={defaultKey}
       />
-      <Text>Key 1</Text>
+      <View style={styles.titlecontainer}>
+        <Text style={styles.title}>Key 1</Text>
+        <Button title="Clear" size="small" onPress={()=> setKey1(defaultKey)} />
+      </View>
       <TextInput 
         style={styles.input} 
         value={key1} 
@@ -93,7 +97,10 @@ export default function ResetKeysScreen() {
         onChangeText={(text) => setKey1(text)}
         placeholder={defaultKey}
       />
-      <Text>Key 2</Text>
+      <View style={styles.titlecontainer}>
+        <Text style={styles.title}>Key 2</Text>
+        <Button title="Clear" size="small" onPress={()=> setKey2(defaultKey)} />
+      </View>
       <TextInput 
         style={styles.input} 
         value={key2} 
@@ -104,7 +111,10 @@ export default function ResetKeysScreen() {
         onChangeText={(text) => setKey2(text)}
         placeholder={defaultKey}
       />
-      <Text>Key 3</Text>
+      <View style={styles.titlecontainer}>
+        <Text style={styles.title}>Key 3</Text>
+        <Button title="Clear" size="small" onPress={()=> setKey3(defaultKey)} />
+      </View>
       <TextInput 
         style={styles.input} 
         value={key3} 
@@ -115,7 +125,10 @@ export default function ResetKeysScreen() {
         onChangeText={(text) => setKey3(text)}
         placeholder={defaultKey}
       />
-      <Text>Key 4</Text>
+      <View style={styles.titlecontainer}>
+        <Text style={styles.title}>Key 4</Text>
+        <Button title="Clear" size="small" onPress={()=> setKey4(defaultKey)} />
+      </View>
       <TextInput 
         style={styles.input} 
         value={key4} 
@@ -129,9 +142,10 @@ export default function ResetKeysScreen() {
       
       <Text style={{fontSize:20, textAlign: 'center', borderColor:'black'}}>
           <Ionicons name="card" size={30} color="green" />
-          Tap NFC card when ready to reset keys
+          Hold NFC card to reader when ready <ActivityIndicator />
       </Text>    
 
+      <Text style={{fontSize:20, textAlign: 'center', borderColor:'black'}}>{writeKeysOutput}</Text>
 
     </ScrollView>
   );
@@ -139,6 +153,13 @@ export default function ResetKeysScreen() {
 }
 
 const styles = StyleSheet.create({
+  title: {
+    fontSize:20
+  },
+  titlecontainer: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between'
+  },
   centerText: {
     flex: 1,
     fontSize: 18,

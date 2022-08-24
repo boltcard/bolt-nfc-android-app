@@ -71,6 +71,7 @@ export default function DisplayAuthInfo(props) {
                         </View>
                     :
                     <View>
+                        <Text>URL: {data}</Text>
                         <Text>Error: {error}</Text>
                     </View>
             }

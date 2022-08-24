@@ -469,7 +469,7 @@ public class MainActivity extends ReactActivity {
     Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
     aesKeyData.setKey(keyDefault);
 
-    String UID = Utilities.dumpBytes(ntag424DNA.getUID());
+    // String UID = Utilities.dumpBytes(ntag424DNA.getUID());
     
     //Check if auth works to see if key0 is zero.
     String key0Changed = "unsure";
@@ -482,60 +482,78 @@ public class MainActivity extends ReactActivity {
     }
 
     String key1Changed = "unsure";
-    String key2Changed = "unsure";
-
-    INdefMessage ndefRead = ntag424DNA.readNDEF();
-    String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
-    //if we dont have a p and a c we cant check the keys
-    
-    //check PICC encryption to see if key1 is zero
-    String pParam = bolturl.split("p=")[1].substring(0, 32);
-    String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
-    String UIDwithout0x = UID.substring(2);
-    key1Changed = pDecrypt.startsWith("0xC7"+UIDwithout0x) ? "no" : "yes";
-    
-    String sv2string = "3CC300010080"+pDecrypt.substring(4,24);
-    byte[] sv2 = this.hexStringToByteArray(sv2string);
-
-    int cmacPos = bolturl.indexOf("c=")+7;
-    byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
-    
-    //Check CMAC to see if key2 is zero.
     try {
-      String cParam = bolturl.split("c=")[1].substring(0, 16);
-      int cmacSize = 16;
-      BlockCipher cipher = new AESFastEngine();
-      Mac cmac = new CMac(cipher, cmacSize * 8);
-      KeyParameter keyParameter = new KeyParameter(KEY_AES128_DEFAULT);
-      cmac.init(keyParameter);
-      cmac.update(msg, 0, msg.length);
-      byte[] CMAC = new byte[cmacSize];
-      cmac.doFinal(CMAC, 0);
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(1, KEY_AES128_DEFAULT, KEY_AES128_DEFAULT, (byte) 0);
+    }
+    catch(Exception e) {
+      key1Changed = "yes";
+    }
 
-      int cmacSize1 = 16;
-      BlockCipher cipher1 = new AESFastEngine();
-      Mac cmac1 = new CMac(cipher1, cmacSize1 * 8);
-      KeyParameter keyParameter1 = new KeyParameter(CMAC);
-      cmac.init(keyParameter1);
-      cmac.update(new byte[0], 0, 0);
-      byte[] CMAC1 = new byte[cmacSize1];
-      cmac.doFinal(CMAC1, 0);
-
-      byte[] MFCMAC = new byte[cmacSize / 2];
-
-      int j = 0;
-      for (int i = 0; i < CMAC1.length; i++) {
-        if (i % 2 != 0) {
-          MFCMAC[j] = CMAC1[i];
-          j += 1;
-        }
-      }
-
-      key2Changed = Utilities.dumpBytes(MFCMAC).equals("0x"+cParam) ? "no" : "yes";
-
-    } catch (Exception ex) {
+    String key2Changed = "unsure";
+    try {
+      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      ntag424DNA.changeKey(2, KEY_AES128_DEFAULT, KEY_AES128_DEFAULT, (byte) 0);
+    }
+    catch(Exception e) {
       key2Changed = "yes";
     }
+    // INdefMessage ndefRead = ntag424DNA.readNDEF();
+    // String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+    // //if we dont have a p and a c we cant check the keys
+    // if(bolturl.indexOf("p=")!=-1 && bolturl.indexOf("c=")!=-1) {
+        
+    //   //check PICC encryption to see if key1 is zero
+    //   String pParam = bolturl.split("p=")[1].substring(0, 32);
+    //   String pDecrypt = this.decrypt(this.hexStringToByteArray(pParam));
+    //   String UIDwithout0x = UID.substring(2);
+    //   key1Changed = pDecrypt.startsWith("0xC7"+UIDwithout0x) ? "no" : "yes";
+      
+    //   String sv2string = "3CC300010080"+pDecrypt.substring(4,24);
+    //   byte[] sv2 = this.hexStringToByteArray(sv2string);
+
+    //   int cmacPos = bolturl.indexOf("c=")+7;
+    //   byte[] msg = sv2; //Arrays.copyOfRange(ndefRead.toByteArray(), 0, cmacPos-1);
+      
+    //   //Check CMAC to see if key2 is zero.
+    //   try {
+    //     String cParam = bolturl.split("c=")[1].substring(0, 16);
+    //     int cmacSize = 16;
+    //     BlockCipher cipher = new AESFastEngine();
+    //     Mac cmac = new CMac(cipher, cmacSize * 8);
+    //     KeyParameter keyParameter = new KeyParameter(KEY_AES128_DEFAULT);
+    //     cmac.init(keyParameter);
+    //     cmac.update(msg, 0, msg.length);
+    //     byte[] CMAC = new byte[cmacSize];
+    //     cmac.doFinal(CMAC, 0);
+
+    //     int cmacSize1 = 16;
+    //     BlockCipher cipher1 = new AESFastEngine();
+    //     Mac cmac1 = new CMac(cipher1, cmacSize1 * 8);
+    //     KeyParameter keyParameter1 = new KeyParameter(CMAC);
+    //     cmac.init(keyParameter1);
+    //     cmac.update(new byte[0], 0, 0);
+    //     byte[] CMAC1 = new byte[cmacSize1];
+    //     cmac.doFinal(CMAC1, 0);
+
+    //     byte[] MFCMAC = new byte[cmacSize / 2];
+
+    //     int j = 0;
+    //     for (int i = 0; i < CMAC1.length; i++) {
+    //       if (i % 2 != 0) {
+    //         MFCMAC[j] = CMAC1[i];
+    //         j += 1;
+    //       }
+    //     }
+
+    //     key2Changed = Utilities.dumpBytes(MFCMAC).equals("0x"+cParam) ? "no" : "yes";
+
+    //   } catch (Exception ex) {
+    //     key2Changed = "yes";
+    //   }
+
+    // }
+
     //try to change key 3 and 4 from default key to default key
     String key3Changed = "no";
     try {
