@@ -302,7 +302,7 @@ public class MainActivity extends ReactActivity {
   public void onNewIntent(final Intent intent) {
     // Log.w(TAG, "onNewIntent() action:"+intent.getAction());
     //if intent is not an NDEF discovery then do super and return;
-    if (!intent.getAction().equals("android.nfc.action.NDEF_DISCOVERED")) {
+    if (!intent.getAction().equals("android.nfc.action.NDEF_DISCOVERED") && !intent.getAction().equals("android.nfc.action.TAG_DISCOVERED")) {
       super.onNewIntent(intent);
       return;
     }
