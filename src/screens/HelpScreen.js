@@ -9,7 +9,7 @@ export default function HelpScreen({ navigation }) {
         <ScrollView>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
               <Card.Content>
-                <Title>v0.0.7</Title>
+                <Title>v0.0.7.1</Title>
               </Card.Content>
             </Card>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
