@@ -179,6 +179,9 @@ public class MainActivity extends ReactActivity {
   private byte[] key2;
   private byte[] key3;
   private byte[] key4;
+
+  private String[] resetKeys;
+
   
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -304,38 +307,54 @@ public class MainActivity extends ReactActivity {
     //if intent is not an NDEF discovery then do super and return;
     if (!intent.getAction().equals("android.nfc.action.NDEF_DISCOVERED") && !intent.getAction().equals("android.nfc.action.TAG_DISCOVERED")) {
       super.onNewIntent(intent);
-      return;
     }
-    try {
-      if(this.cardmode.equals(CARD_MODE_WRITE)) {
-        writeCard(intent);
-      }
-      else if(this.cardmode.equals(CARD_MODE_WRITEKEYS)) {
-        writeKeys(intent);
-      }
-      else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
-        debugResetKeys(intent);
-      }
-      else if(this.cardmode.equals(CARD_MODE_CREATEBOLTCARD)) {
-        createBoltCard(intent);
-      }
-      else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
-        readCard(intent);
-      }
-      super.onNewIntent(intent);
-    } catch (Exception e) {
-      Log.e(TAG, "Some exception occurred", e);
-      if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
-        WritableMap params = Arguments.createMap();
-        params.putString("message", "This NFC card has not been formatted.");
-        sendEvent("NFCError", params);
-      }
-      else {
-        WritableMap params = Arguments.createMap();
-        params.putString("message", "Error: "+e.getMessage());
-        sendEvent("NFCError", params);
+    else {
+      try {
+        CardType type = libInstance.getCardType(intent); //Get the type of the card
+        if (type == CardType.UnknownCard) {
+          showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+          throw new Exception("Unknown Tag. Maybe try again?");
+        }
+        else if (type != CardType.NTAG424DNA) {
+          showMessage("NFC Card must be of type NTAG424DNA", PRINT);
+          throw new Exception("NFC Card must be of type NTAG424DNA");
+        }
+        INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+        byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
+        ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+        
+        if(this.cardmode.equals(CARD_MODE_WRITE)) {
+          writeCard(ntag424DNA);
+        }
+        else if(this.cardmode.equals(CARD_MODE_WRITEKEYS)) {
+          writeKeys(ntag424DNA);
+        }
+        else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
+          debugResetKeys(ntag424DNA);
+        }
+        else if(this.cardmode.equals(CARD_MODE_CREATEBOLTCARD)) {
+          createBoltCard(ntag424DNA);
+        }
+        else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
+          readCard(ntag424DNA);
+        }
+        super.onNewIntent(intent);
+      } 
+      catch (Exception e) {
+        Log.e(TAG, "Some exception occurred", e);
+        if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
+          WritableMap params = Arguments.createMap();
+          params.putString("message", "This NFC card has not been formatted.");
+          sendEvent("NFCError", params);
+        }
+        else {
+          WritableMap params = Arguments.createMap();
+          params.putString("message", "Error: "+e.getMessage());
+          sendEvent("NFCError", params);
+        }
       }
     }
+    
   }
 
   /**
@@ -343,21 +362,7 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @return
    */
-  public INTAG424DNA authenticateChangeKey(final Intent intent) throws Exception {
-
-    CardType type = libInstance.getCardType(intent); //Get the type of the card
-    if (type == CardType.UnknownCard) {
-      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
-      throw new Exception("Unknown Tag. Maybe try again?");
-    }
-    else if (type != CardType.NTAG424DNA) {
-      showMessage("NFC Card must be of type NTAG424DNA", PRINT);
-      throw new Exception("NFC Card must be of type NTAG424DNA");
-    }
-    INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
-    byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-    
-    ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+  public INTAG424DNA authenticateWithDefaultChangeKey(INTAG424DNA ntag424DNA) throws Exception {
     KeyData aesKeyData = new KeyData();
     Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
     aesKeyData.setKey(keyDefault);
@@ -366,24 +371,7 @@ public class MainActivity extends ReactActivity {
   }
 
 
-  private void createBoltCard(final Intent intent) throws Exception{
-    
-    CardType type = libInstance.getCardType(intent); //Get the type of the card
-    if (type == CardType.UnknownCard) {
-      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
-        put("tagTypeError", "Unknown tag type");
-      }});
-      Log.d(TAG, "CardType.UnknownCard");
-    }
-    else if (type != CardType.NTAG424DNA) {
-      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
-        put("tagTypeError", type.toString());
-      }});
-      Log.d(TAG, "tagTypeError "+type.toString());
-    }
-    INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
-    byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-    
+  private void createBoltCard(INTAG424DNA ntag424DNA) throws Exception{
     String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
     String UID = Utilities.dumpBytes(ntag424DNA.getUID());
     sendEvent("CreateBoltCard",new HashMap<String, String>() {{
@@ -401,8 +389,8 @@ public class MainActivity extends ReactActivity {
     }});
 
     try {
-      ntag424DNA = this.authenticateChangeKey(intent);
-      this.writeNDEF(intent, ntag424DNA);
+      this.authenticateWithDefaultChangeKey(ntag424DNA);
+      this.writeNDEF(ntag424DNA);
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
         put("ndefWritten", "success");
       }});
@@ -414,7 +402,7 @@ public class MainActivity extends ReactActivity {
       Log.e(TAG, "ndefWritten Error "+e.getMessage());
     }
     try {
-      this.writeKeys(intent);
+      this.writeKeys(ntag424DNA);
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
         put("writekeys", "success");
       }});
@@ -434,60 +422,49 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @throws Exception
    */
-  private void readCard(final Intent intent) throws Exception{
+  private void readCard(INTAG424DNA ntag424DNA) throws Exception{
 
-    CardType type = libInstance.getCardType(intent); //Get the type of the card
-    if (type == CardType.UnknownCard) {
-      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+    String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
+    String UID = Utilities.dumpBytes(ntag424DNA.getUID());
+    int totalMem = ntag424DNA.getTotalMemory();
+    byte[] getVersion = ntag424DNA.getVersion();
+    String vendor = (getVersion[0] == (byte) 0x04) ? "NXP" : "Non NXP"; 
+    
+    String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
+      "UID: "+UID+"\r\n"+
+      "TotalMem: "+totalMem+"\r\n"+
+      "Vendor: "+vendor+"\r\n";
+
+    INdefMessage ndefRead = ntag424DNA.readNDEF();
+    String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+    if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
+      WritableMap params = Arguments.createMap();
+      params.putString("cardReadInfo", cardDataBuilder);
+      params.putString("ndef", bolturl);
+      params.putString("cardUID", UID.substring(2));
+      sendEvent("CardHasBeenRead", params);
     }
-    else if (type == CardType.NTAG424DNA) {
-      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
-      byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-      
-      String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
-      String UID = Utilities.dumpBytes(ntag424DNA.getUID());
-      int totalMem = ntag424DNA.getTotalMemory();
-      byte[] getVersion = ntag424DNA.getVersion();
-      String vendor = (getVersion[0] == (byte) 0x04) ? "NXP" : "Non NXP"; 
-      
-      String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
-        "UID: "+UID+"\r\n"+
-        "TotalMem: "+totalMem+"\r\n"+
-        "Vendor: "+vendor+"\r\n";
+    else {
 
-      INdefMessage ndefRead = ntag424DNA.readNDEF();
-      String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
-      if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
-        WritableMap params = Arguments.createMap();
-        params.putString("cardReadInfo", cardDataBuilder);
-        params.putString("ndef", bolturl);
-        params.putString("cardUID", UID.substring(2));
-        sendEvent("CardHasBeenRead", params);
-      }
-      else {
+      String [] keyChecks = checkKeys(ntag424DNA);
 
-        String [] keyChecks = checkKeys(ntag424DNA);
-
-        WritableMap params = Arguments.createMap();
-        params.putString("tagname", tagname);
-        params.putString("cardReadInfo", cardDataBuilder);
-        params.putString("ndef", bolturl);
-        params.putString("key0Changed", keyChecks[0]);
-        params.putString("key1Changed", keyChecks[1]);
-        params.putString("key2Changed", keyChecks[2]);
-        params.putString("key3Changed", keyChecks[3]);
-        params.putString("key4Changed", keyChecks[4]);
-        params.putString("cardUID", UID.substring(2));
-        sendEvent("CardHasBeenRead", params);
-      }
+      WritableMap params = Arguments.createMap();
+      params.putString("tagname", tagname);
+      params.putString("cardReadInfo", cardDataBuilder);
+      params.putString("ndef", bolturl);
+      params.putString("key0Changed", keyChecks[0]);
+      params.putString("key1Changed", keyChecks[1]);
+      params.putString("key2Changed", keyChecks[2]);
+      params.putString("key3Changed", keyChecks[3]);
+      params.putString("key4Changed", keyChecks[4]);
+      params.putString("cardUID", UID.substring(2));
+      sendEvent("CardHasBeenRead", params);
     }
+    
   }
 
   public String[] checkKeys(INTAG424DNA ntag424DNA) throws Exception {
-    
-    INdefMessage ndefRead = ntag424DNA.readNDEF();
-    byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-
+   
     KeyData aesKeyData = new KeyData();
     Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
     aesKeyData.setKey(keyDefault);
@@ -498,7 +475,6 @@ public class MainActivity extends ReactActivity {
     String key0Changed = "unsure";
     try {
       key0Changed="no";
-      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
       ntag424DNA.authenticateEV2First(0, aesKeyData, null);
     }
     catch(Exception e) {
@@ -508,6 +484,7 @@ public class MainActivity extends ReactActivity {
     String key1Changed = "unsure";
     String key2Changed = "unsure";
 
+    INdefMessage ndefRead = ntag424DNA.readNDEF();
     String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
     //if we dont have a p and a c we cant check the keys
     
@@ -600,13 +577,11 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @throws Exception
    */
-  private void writeCard(final Intent intent) throws Exception{
+  private void writeCard(INTAG424DNA ntag424DNA) throws Exception{
     String result = "success";
     try{
-      INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
-
-      this.writeNDEF(intent, ntag424DNA);
-
+      this.authenticateWithDefaultChangeKey(ntag424DNA);
+      this.writeNDEF(ntag424DNA);
     }
     catch(Exception e) {
       result = "Error writing card: "+e.getMessage();
@@ -616,7 +591,6 @@ public class MainActivity extends ReactActivity {
     WritableMap params = Arguments.createMap();
     params.putString("output", result);
     sendEvent("WriteResult", params);
-
   }
 
   /**
@@ -625,7 +599,7 @@ public class MainActivity extends ReactActivity {
    * @param ntag424DNA
    * @throws Exception
    */
-  private void writeNDEF(final Intent intent, INTAG424DNA ntag424DNA) throws Exception {
+  private void writeNDEF(INTAG424DNA ntag424DNA) throws Exception {
   
     NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
       MFPCard.CommunicationMode.Plain,
@@ -662,9 +636,7 @@ public class MainActivity extends ReactActivity {
           this.lnurlw_base+"&p=00000000000000000000000000000000&c=0000000000000000"
       )
     );
-
     ntag424DNA.writeNDEF(msg);
-
   }
 
   /**
@@ -673,13 +645,13 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @throws Exception
    */
-  private void writeKeys(final Intent intent) throws Exception{
+  private void writeKeys(INTAG424DNA ntag424DNA) throws Exception{
     String result = "success";
-    INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
+    this.authenticateWithDefaultChangeKey(ntag424DNA);
 
     try {
 
-      this.writeNDEF(intent, ntag424DNA);
+      this.writeNDEF(ntag424DNA);
     }
     catch(Exception e){
       result = "Error changing keys: "+e.getMessage();
@@ -734,41 +706,61 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @throws Exception
    */
-  private void debugResetKeys(final Intent intent) throws Exception{
-    String result = "success";
+  private void debugResetKeys(INTAG424DNA ntag424DNA) throws Exception{
+    String result = "";
+    
+    KeyData currentChangeKeyAesKeyData = new KeyData();
+    Key currentChangeKey = new SecretKeySpec(this.hexStringToByteArray(resetKeys[0]), "AES");
+    currentChangeKeyAesKeyData.setKey(currentChangeKey);
+
+    KeyData defaultaesKeyData = new KeyData();
+    Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
+    defaultaesKeyData.setKey(keyDefault);
+
+    //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
+    int keynewVersion = 0;
     try{
-      CardType type = libInstance.getCardType(intent); //Get the type of the card
-      if (type == CardType.UnknownCard) {
-        showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
-        throw new Exception("Unknown Tag. Maybe try again?");
-      }
-      else if (type != CardType.NTAG424DNA) {
-        showMessage("NFC Card must be of type NTAG424DNA", PRINT);
-        throw new Exception("NFC Card must be of type NTAG424DNA");
-      }
-      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
-      byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-      
-      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
-      KeyData aesKeyData = new KeyData();
-      Key keyDefault = new SecretKeySpec(this.hexStringToByteArray("11111111111111111111111111111111"), "AES");
-      aesKeyData.setKey(keyDefault);
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-
-      //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
-      int keynewVersion = 0;
-
-      // change key 0 last as this is the change key
-      ntag424DNA.changeKey(1, this.hexStringToByteArray("22222222222222222222222222222222"), KEY_AES128_DEFAULT, (byte) keynewVersion);
-      
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      ntag424DNA.changeKey(2, this.hexStringToByteArray("33333333333333333333333333333333"), KEY_AES128_DEFAULT, (byte) keynewVersion);
-
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      ntag424DNA.changeKey(0, this.hexStringToByteArray("11111111111111111111111111111111"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      ntag424DNA.authenticateEV2First(0, currentChangeKeyAesKeyData, null);
+      ntag424DNA.changeKey(0, this.hexStringToByteArray(resetKeys[0]), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      result += "Change Key0: Success\r\n";
     }
     catch(Exception e) {
-      result = "Error resetting keys: "+e.getMessage();
+      result += "Change Key0: "+e.getMessage()+"\r\n";
+    }
+    try{
+      ntag424DNA.authenticateEV2First(0, defaultaesKeyData, null);
+      ntag424DNA.changeKey(1, this.hexStringToByteArray(resetKeys[1]), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      result += "Change Key1: Success\r\n";
+    }
+    catch(Exception e) {
+      result += "Change Key1: "+e.getMessage()+"\r\n";
+    }
+    
+    try{
+      ntag424DNA.authenticateEV2First(0, defaultaesKeyData, null);
+      ntag424DNA.changeKey(2, this.hexStringToByteArray(resetKeys[2]), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      result += "Change Key2: Success\r\n";
+    }
+    catch(Exception e) {
+      result += "Change Key2: "+e.getMessage()+"\r\n";
+    }
+
+    try{
+      ntag424DNA.authenticateEV2First(0, defaultaesKeyData, null);
+      ntag424DNA.changeKey(3, this.hexStringToByteArray(resetKeys[3]), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      result += "Change Key3: Success\r\n";
+    }
+    catch(Exception e) {
+      result += "Change Key3: "+e.getMessage()+"\r\n";
+    }
+
+    try{
+      ntag424DNA.authenticateEV2First(0, defaultaesKeyData, null);
+      ntag424DNA.changeKey(4, this.hexStringToByteArray(resetKeys[4]), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      result += "Change Key4: Success\r\n";
+    }
+    catch(Exception e) {
+      result += "Change Key4: "+e.getMessage()+"\r\n";
     }
     WritableMap params = Arguments.createMap();
     params.putString("output", result);
@@ -961,6 +953,10 @@ public class MainActivity extends ReactActivity {
   public void setCardMode(String cardmode) {
     if(cardmode != null) this.cardmode = cardmode;
     else Log.d(TAG, "*** setCardMode called with null string");
+  }
+
+  public void setResetKeys(String[] keys, Callback callBack) {
+    this.resetKeys = keys;
   }
 
   /**

@@ -4,7 +4,7 @@ import { ActivityIndicator, NativeModules, StyleSheet, Text, View } from 'react-
 
 export default function DisplayAuthInfo(props) {
     
-    const {data, keys, setKeys, lnurlw_base, setlnurlw_base, setReadyToWrite} = props;
+    const {data, keys, setKeys, lnurlw_base, setlnurlw_base, setReadyToWrite, cardName, setCardName} = props;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
 
@@ -17,6 +17,7 @@ export default function DisplayAuthInfo(props) {
                 .then((json) => {
                     setLoading(false);
                     setlnurlw_base(json.lnurlw_base);
+                    setCardName(json.card_name);
                     // setKey0(json.k0);
                     // setKey1(json.k1);
                     // setKey2(json.k2);
@@ -61,6 +62,7 @@ export default function DisplayAuthInfo(props) {
                     !error ? 
                         <View>
                             <Text style={styles.monospace}>lnurl: {lnurlw_base}</Text>
+                            <Text style={styles.monospace}>card_name: {cardName}</Text>
                             <Text style={styles.monospace}>Key 0: {key0display}</Text>
                             <Text style={styles.monospace}>Key 1: {key1display}</Text>
                             <Text style={styles.monospace}>Key 2: {key2display}</Text>
