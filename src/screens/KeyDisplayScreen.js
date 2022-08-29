@@ -4,6 +4,7 @@ import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text
 import { useFocusEffect } from '@react-navigation/native';
 import { Card } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Dialog from "react-native-dialog";
 
 
 function KeyDisplayScreen({ route, navigation }) {
@@ -20,6 +21,8 @@ function KeyDisplayScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [readyToChangeKeys, setReadyToChangeKeys] = useState(false);
   const [writeKeysOutput, setWriteKeysOutput] = useState();
+  const [promptVisible, setPromptVisible] = useState(false);
+  const [pasteUrlValue, setPasteUrlValue] = useState();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -96,6 +99,10 @@ function KeyDisplayScreen({ route, navigation }) {
             onPress={() => navigation.navigate('ScanScreen')}
             title="Scan QR code from console"
           />
+          <Button
+            onPress={() => setPromptVisible(true)}
+            title="Paste Auth URL from Console"
+          />
         </Card.Content>
       </Card>
      
@@ -126,7 +133,26 @@ function KeyDisplayScreen({ route, navigation }) {
         </Card.Content>
       </Card>
       
-      
+      <Dialog.Container visible={promptVisible}>
+        <Dialog.Title>Enter Auth URL</Dialog.Title>
+        <Dialog.Description>
+          Paste your Auth URL from the console here to import the keys.
+        </Dialog.Description>
+        <Dialog.Input label="Auth URL" onChangeText={setPasteUrlValue} value={pasteUrlValue} />
+        <Dialog.Button
+          label="Cancel"
+          onPress={() => {
+            setPromptVisible(false);
+            setPasteUrlValue();
+          }} />
+        <Dialog.Button
+          label="Continue"
+          onPress={() => {
+            setPromptVisible(false);
+            setPasteUrlValue();
+            navigation.navigate('KeyDisplayScreen', {data: pasteUrlValue, timestamp: Date.now()});
+          }} />
+      </Dialog.Container>
     </ScrollView>
   );
 }
