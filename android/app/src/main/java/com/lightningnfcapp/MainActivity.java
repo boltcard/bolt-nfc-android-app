@@ -388,6 +388,7 @@ public class MainActivity extends ReactActivity {
       put("key4Changed", keyChecks[4]);
     }});
 
+    //write the NDEF and the file settings
     try {
       this.authenticateWithDefaultChangeKey(ntag424DNA);
       this.writeNDEF(ntag424DNA);
@@ -401,6 +402,8 @@ public class MainActivity extends ReactActivity {
       }});  
       Log.e(TAG, "ndefWritten Error "+e.getMessage());
     }
+
+    //write the keys to the card
     try {
       this.writeKeys(ntag424DNA);
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
@@ -413,6 +416,24 @@ public class MainActivity extends ReactActivity {
       }});  
       Log.e(TAG, "writekeys Error"+e.getMessage());
     }
+
+    //finally get the read message from the card and pass to the server, so the
+    //server can set the current counter value and card UID
+    try {
+      INdefMessage ndefRead = ntag424DNA.readNDEF();
+      String bolturl = this.decodeHex(ndefRead.toByteArray()).substring(5);
+
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("readNDEF", bolturl);
+      }});
+    }
+    catch(Exception e) {
+      sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+        put("readNDEF", "Error: "+e.getMessage());
+      }});  
+      Log.e(TAG, "writekeys Error"+e.getMessage());
+    }
+    
   }
 
   /**
@@ -812,7 +833,16 @@ public class MainActivity extends ReactActivity {
     callBack.invoke(result);
   }
 
-  
+  /**
+   * Change keys function that allows setting all 5 keys and the LNURLW at the same time.
+   * @param lnurlw_base
+   * @param key0
+   * @param key1
+   * @param key2
+   * @param key3
+   * @param key4
+   * @param callBack
+   */
   public void changeKeys(String lnurlw_base, String key0, String key1, String key2, String key3, String key4, Callback callBack) {
     this.cardmode = CARD_MODE_WRITEKEYS;
     String result = "Success";

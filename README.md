@@ -49,6 +49,8 @@ React native libraries are also used to make building the UI easier.
 
 ## Useful commands
 
+* npm run run-android
 * adb logcat -s "lightningnfcapp"
 * java --module-path ~/Android/javafx-sdk-18.0.2/lib --add-modules javafx.controls,javafx.fxml -jar TagXplorer-v1.2.jar
 * ./gradlew assembleRelease
+* \copy (select * from cards order by card_id) to export.csv CSV HEADER;
