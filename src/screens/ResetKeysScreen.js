@@ -69,6 +69,7 @@ export default function ResetKeysScreen() {
 
   return (
     <ScrollView style={{ padding:10 }}>
+      <Text>Enter the card's keys here and then tap and hold to reset them back to manufacturer's default</Text>
       <View style={styles.titlecontainer}>
         <Text style={styles.title}>Key 0</Text>
         <Button title="Clear" size="small" onPress={()=> setKey0(defaultKey)} />
