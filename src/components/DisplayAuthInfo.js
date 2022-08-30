@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, NativeModules, StyleSheet, Text, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function DisplayAuthInfo(props) {
     
@@ -16,16 +17,19 @@ export default function DisplayAuthInfo(props) {
                 .then((response) => response.json())
                 .then((json) => {
                     setLoading(false);
+                    if(json.status == "ERROR") {
+                        setError(json.reason);
+                        return;
+                    }
+                    if(!(json.lnurlw_base && json.k0 && json.k1 && json.k2 && json.k3 && json.k4)) {
+                        setError("The JSON response must contain lnurlw_base, k0, k1, k2, k3, k4 ");
+                        return;
+                    }
+                    
                     setlnurlw_base(json.lnurlw_base);
-                    setCardName(json.card_name);
-                    // setKey0(json.k0);
-                    // setKey1(json.k1);
-                    // setKey2(json.k2);
-                    // setKey3(json.k3);
-                    // setKey4(json.k4);
-
+                    if(json.card_name) setCardName(json.card_name);
                     setKeys([json.k0,json.k1,json.k2,json.k3,json.k4]);
-            
+        
                     NativeModules.MyReactModule.changeKeys(
                         json.lnurlw_base,
                         json.k0, 
@@ -38,6 +42,8 @@ export default function DisplayAuthInfo(props) {
                             if (response == "Success") setReadyToWrite(true);
                         }
                     );
+                    
+                    
                 })
                 .catch((error) => {
                     setLoading(false);
@@ -72,7 +78,7 @@ export default function DisplayAuthInfo(props) {
                     :
                     <View>
                         <Text>URL: {data}</Text>
-                        <Text>Error: {error}</Text>
+                        <Text><Ionicons name="alert-circle"  size={20} color="red" /> Error: {error}</Text>
                     </View>
             }
             
