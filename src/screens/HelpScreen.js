@@ -25,7 +25,7 @@ export default function HelpScreen({ navigation }) {
                     3. When finished tap a card on the NFC scanner to write the card.
                 </Text>
                 <Text style={styles.paragraph}>
-                    4. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL paramters
+                    4. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL parameters
                 </Text>
                 <Text style={styles.paragraph}>
                     5. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.

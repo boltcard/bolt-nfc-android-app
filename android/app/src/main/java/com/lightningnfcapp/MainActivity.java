@@ -24,20 +24,16 @@ import static com.lightningnfcapp.Constants.objKEY_2KTDES;
 import static com.lightningnfcapp.Constants.objKEY_2KTDES_ULC;
 import static com.lightningnfcapp.Constants.objKEY_AES128;
 
-
 import com.lightningnfcapp.R;
 import com.nxp.nfclib.CardType;
 import com.nxp.nfclib.NxpNfcLib;
 import com.nxp.nfclib.classic.ClassicFactory;
 import com.nxp.nfclib.defaultimpl.KeyData;
-import com.nxp.nfclib.desfire.DESFireFactory;
 import com.nxp.nfclib.desfire.IDESFireEV2;
 import com.nxp.nfclib.desfire.IDESFireEV3;
 import com.nxp.nfclib.desfire.IDESFireEV3C;
 import com.nxp.nfclib.desfire.IDESFireLight;
 import com.nxp.nfclib.desfire.IMIFAREIdentity;
-import com.nxp.nfclib.desfire.INTAG424DNA;
-import com.nxp.nfclib.desfire.NTAG424DNAFileSettings;
 import com.nxp.nfclib.exceptions.NxpNfcLibException;
 import com.nxp.nfclib.icode.ICodeFactory;
 import com.nxp.nfclib.ntag.NTagFactory;
@@ -53,7 +49,6 @@ import com.nxp.nfclib.plus.PlusSL1Factory;
 import com.nxp.nfclib.ultralight.UltralightFactory;
 import com.nxp.nfclib.utils.NxpLogUtils;
 import com.nxp.nfclib.utils.Utilities;
-import com.nxp.nfclib.desfire.MFPCard;
 import com.nxp.nfclib.ndef.INdefMessage;
 import com.nxp.nfclib.ndef.NdefMessageWrapper;
 import com.nxp.nfclib.ndef.NdefRecordWrapper;
@@ -334,26 +329,21 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @return
    */
-  public INTAG424DNA authenticateChangeKey(final Intent intent) throws Exception {
+  public BoltCardWrapper authenticateChangeKey(final Intent intent) throws Exception {
 
     CardType type = libInstance.getCardType(intent); //Get the type of the card
-    if (type == CardType.UnknownCard) {
-      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
-      throw new Exception("Unknown Tag. Maybe try again?");
-    }
-    else if (type != CardType.NTAG424DNA) {
-      showMessage("NFC Card must be of type NTAG424DNA", PRINT);
-      throw new Exception("NFC Card must be of type NTAG424DNA");
-    }
-    INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+
+    this.checkCardType(type);
+
+    BoltCardWrapper boltCardWrapper = new BoltCardWrapper(libInstance, type);
     byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-    
-    ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+
+    boltCardWrapper.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
     KeyData aesKeyData = new KeyData();
     Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
     aesKeyData.setKey(keyDefault);
-    ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-    return ntag424DNA;
+    boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
+    return boltCardWrapper;
   }
 
   /**
@@ -369,14 +359,17 @@ public class MainActivity extends ReactActivity {
     if (type == CardType.UnknownCard) {
           showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
     }
-    else if (type == CardType.NTAG424DNA) {
-      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+
+    else if (type == CardType.NTAG424DNA || type == CardType.NTAG424DNATagTamper) {
+
+      BoltCardWrapper boltCardWrapper = new BoltCardWrapper(libInstance, type);
+
       byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
       
-      String tagname = ntag424DNA.getType().getTagName() + ntag424DNA.getType().getDescription();
-      String UID = Utilities.dumpBytes(ntag424DNA.getUID());
-      int totalMem = ntag424DNA.getTotalMemory();
-      byte[] getVersion = ntag424DNA.getVersion();
+      String tagname = boltCardWrapper.getType().getTagName() + boltCardWrapper.getType().getDescription();
+      String UID = Utilities.dumpBytes(boltCardWrapper.getUID());
+      int totalMem = boltCardWrapper.getTotalMemory();
+      byte[] getVersion = boltCardWrapper.getVersion();
       String vendor = (getVersion[0] == (byte) 0x04) ? "NXP" : "Non NXP"; 
 
       String cardDataBuilder = "Tagname: "+tagname+"\r\n"+
@@ -384,17 +377,17 @@ public class MainActivity extends ReactActivity {
         "TotalMem: "+totalMem+"\r\n"+
         "Vendor: "+vendor+"\r\n";
 
-      INdefMessage ndefRead = ntag424DNA.readNDEF();
+      INdefMessage ndefRead = boltCardWrapper.readNDEF();
 
       //Check if auth works to see if key0 is zero.
       String key0Changed = "unsure";
       try {
         key0Changed="no";
-        ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+        boltCardWrapper.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
         KeyData aesKeyData = new KeyData();
         Key keyDefault = new SecretKeySpec(KEY_AES128_DEFAULT, "AES");
         aesKeyData.setKey(keyDefault);
-        ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+        boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
       }
       catch(Exception e) {
         key0Changed="yes";
@@ -507,37 +500,15 @@ public class MainActivity extends ReactActivity {
     String result = "success";
     try{
 
-      INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
+      BoltCardWrapper boltCardWrapper = this.authenticateChangeKey(intent);
     
-      NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
-        MFPCard.CommunicationMode.Plain,
-        (byte) 0xE,
-        (byte) 0xE,
-        (byte) 0xE,
-        (byte) 0x0
-      );
-
       //picc offset = 9 + nodeURL length + 3 +7(junk at start?)
       //mac offset = 9 + nodeURL length + 38 +7(junk at start?)
       int piccOffset = 9 + nodeURL.length() + 3 + 7;
       int macOffset = 9 + nodeURL.length() + 38 + 7;
-      fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
-      fileSettings.setSDMEnabled(true);
-      fileSettings.setUIDMirroringEnabled(true);
-      fileSettings.setSDMReadCounterEnabled(true);
-      fileSettings.setSDMReadCounterLimitEnabled(false);
-      fileSettings.setSDMEncryptFileDataEnabled(false);
-      fileSettings.setUidOffset(null);
-      fileSettings.setSdmReadCounterOffset(null);
-      fileSettings.setPiccDataOffset(new byte[] {(byte) piccOffset, (byte) 0, (byte) 0});
-      fileSettings.setSdmMacInputOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
-      fileSettings.setSdmEncryptionOffset(null);
-      fileSettings.setSdmEncryptionLength(null);
-      fileSettings.setSdmMacOffset(new byte[] {(byte) macOffset, (byte) 0, (byte) 0});
-      fileSettings.setSdmReadCounterLimit(null);
 
-      ntag424DNA.changeFileSettings(2, fileSettings);
-      
+      boltCardWrapper.setAndChangeFileSettings(piccOffset, macOffset);
+
       NdefMessageWrapper msg = new NdefMessageWrapper(
         NdefRecordWrapper.createUri(
           nodeURL.indexOf("?") == -1 ? 
@@ -547,9 +518,9 @@ public class MainActivity extends ReactActivity {
         )
       );
 
-      ntag424DNA.writeNDEF(msg);
+      boltCardWrapper.writeNDEF(msg);
 
-      INdefMessage ndefAfterRead = ntag424DNA.readNDEF();
+      INdefMessage ndefAfterRead = boltCardWrapper.readNDEF();
     }
     catch(Exception e) {
       result = "Error writing card: "+e.getMessage();
@@ -571,12 +542,12 @@ public class MainActivity extends ReactActivity {
   private void writeKeys(final Intent intent) throws Exception{
     String result = "success";
     try{
-      INTAG424DNA ntag424DNA = this.authenticateChangeKey(intent);
+      BoltCardWrapper boltCardWrapper = this.authenticateChangeKey(intent);
 
       //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
-      int key0newVersion = ntag424DNA.getKeyVersion(0)+1;
-      int key1newVersion = ntag424DNA.getKeyVersion(1)+1;
-      int key2newVersion = ntag424DNA.getKeyVersion(2)+1;
+      int key0newVersion = boltCardWrapper.getKeyVersion(0)+1;
+      int key1newVersion = boltCardWrapper.getKeyVersion(1)+1;
+      int key2newVersion = boltCardWrapper.getKeyVersion(2)+1;
 
       //set up the default key
       KeyData aesKeyData = new KeyData();
@@ -584,13 +555,13 @@ public class MainActivity extends ReactActivity {
       aesKeyData.setKey(keyDefault);
 
       // change key 0 last as this is the change key
-      ntag424DNA.changeKey(1, KEY_AES128_DEFAULT, this.key1, (byte) key1newVersion);
-      
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      ntag424DNA.changeKey(2, KEY_AES128_DEFAULT, this.key2, (byte) key2newVersion);
+      boltCardWrapper.changeKey(1, KEY_AES128_DEFAULT, this.key1, (byte) key1newVersion);
 
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      ntag424DNA.changeKey(0, KEY_AES128_DEFAULT, this.key0, (byte) key0newVersion);
+      boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
+      boltCardWrapper.changeKey(2, KEY_AES128_DEFAULT, this.key2, (byte) key2newVersion);
+
+      boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
+      boltCardWrapper.changeKey(0, KEY_AES128_DEFAULT, this.key0, (byte) key0newVersion);
     }
     catch(Exception e) {
       result = "Error changing keys: "+e.getMessage();
@@ -602,6 +573,23 @@ public class MainActivity extends ReactActivity {
   }
 
   /**
+   * @param type
+   * @throws Exception
+   */
+  private void checkCardType(CardType type) throws Exception
+  {
+    if (type == CardType.UnknownCard) {
+      showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
+      throw new Exception("Unknown Tag. Maybe try again?");
+    }
+    else if (type != CardType.NTAG424DNA && type != CardType.NTAG424DNATagTamper) {
+      String errorMessage = "NFC Card must be of type NTAG424DNA or NTAG424DNATT";
+      showMessage(errorMessage, PRINT);
+      throw new Exception(errorMessage);
+    }
+  }
+
+  /**
    * Debug Reset all keys back to zero bytes from 111, 222, 333
    * @param intent
    * @throws Exception
@@ -610,34 +598,29 @@ public class MainActivity extends ReactActivity {
     String result = "success";
     try{
       CardType type = libInstance.getCardType(intent); //Get the type of the card
-      if (type == CardType.UnknownCard) {
-        showMessage(getString(R.string.UNKNOWN_TAG), PRINT);
-        throw new Exception("Unknown Tag. Maybe try again?");
-      }
-      else if (type != CardType.NTAG424DNA) {
-        showMessage("NFC Card must be of type NTAG424DNA", PRINT);
-        throw new Exception("NFC Card must be of type NTAG424DNA");
-      }
-      INTAG424DNA ntag424DNA = DESFireFactory.getInstance().getNTAG424DNA(libInstance.getCustomModules());
+
+      this.checkCardType(type);
+
+      BoltCardWrapper boltCardWrapper = new BoltCardWrapper(libInstance, type);
       byte[] NTAG424DNA_APP_NAME = {(byte) 0xD2, (byte) 0x76, 0x00, 0x00, (byte) 0x85, 0x01, 0x01};
-      
-      ntag424DNA.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
+
+      boltCardWrapper.isoSelectApplicationByDFName(NTAG424DNA_APP_NAME);
       KeyData aesKeyData = new KeyData();
       Key keyDefault = new SecretKeySpec(this.hexStringToByteArray("11111111111111111111111111111111"), "AES");
       aesKeyData.setKey(keyDefault);
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
+      boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
 
       //changeKey(int keyNumber, byte[] currentKeyData, byte[] newKeyData, byte newKeyVersion)
       int keynewVersion = 0;
 
       // change key 0 last as this is the change key
-      ntag424DNA.changeKey(1, this.hexStringToByteArray("22222222222222222222222222222222"), KEY_AES128_DEFAULT, (byte) keynewVersion);
-      
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      ntag424DNA.changeKey(2, this.hexStringToByteArray("33333333333333333333333333333333"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      boltCardWrapper.changeKey(1, this.hexStringToByteArray("22222222222222222222222222222222"), KEY_AES128_DEFAULT, (byte) keynewVersion);
 
-      ntag424DNA.authenticateEV2First(0, aesKeyData, null);
-      ntag424DNA.changeKey(0, this.hexStringToByteArray("11111111111111111111111111111111"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+      boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
+      boltCardWrapper.changeKey(2, this.hexStringToByteArray("33333333333333333333333333333333"), KEY_AES128_DEFAULT, (byte) keynewVersion);
+
+      boltCardWrapper.authenticateEV2First(0, aesKeyData, null);
+      boltCardWrapper.changeKey(0, this.hexStringToByteArray("11111111111111111111111111111111"), KEY_AES128_DEFAULT, (byte) keynewVersion);
     }
     catch(Exception e) {
       result = "Error resetting keys: "+e.getMessage();

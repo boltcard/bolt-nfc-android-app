@@ -36,7 +36,7 @@ Download the compiled APK from the [latest release](https://github.com/boltcard/
 1. Install [boltcard server](https://github.com/boltcard/boltcard) and aquire some blank NTAG424DNA tags. 
 2. When app has loaded go to the write screen and put your lnurlw domain and path in to the text box.
 3. When finished tap a card on the NFC scanner to write the card.
-4. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL paramters
+4. Go to the read screen and check that your URL looks correct. Should also be outputting the PICC and CMAC as URL parameters
 5. To change your keys (to prevent malicious re-writing of your card) Go to the boltcard server terminal and run the command to show the card key change URL in QR code form and then scan this with the phone camera to load the server keys.
 6. When the keys are loaded, Hold the NFC card to the phone to run the key change on the card. Do not move the card until the key change has completed. 
 Warning! If you lose the new keys then you will be unable to reprogram the card again
