@@ -4,8 +4,10 @@ Quickly program a blank NFC card (NTAG424DNA) to act as your own personal Boltca
 
 The boltcard can be used with Lightning PoS terminals that have NFC support, or Breez wallet PoS App.
 
+Android only due to the NXP Taplinx library dependency which does not have an iOS version available.
+
 ## Current Version
-v0.0.7.1
+v0.1.0
 
 ## Setup & Run instructions for Linux with Android
 
@@ -47,8 +49,12 @@ We rely on the Taplinx 2.0 Android library supplied by NXP.
 
 React native libraries are also used to make building the UI easier.
 
-## Useful commands
+Keep all your keys secret, and be careful when creating your cards that there are no other potential listening devices in range. 
 
+## Useful debug commands
+
+* npm run run-android
 * adb logcat -s "lightningnfcapp"
 * java --module-path ~/Android/javafx-sdk-18.0.2/lib --add-modules javafx.controls,javafx.fxml -jar TagXplorer-v1.2.jar
 * ./gradlew assembleRelease
+* \copy (select * from cards order by card_id) to export.csv CSV HEADER;

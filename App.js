@@ -8,8 +8,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
-import KeyDisplayScreen from './src/screens/KeyDisplayScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
@@ -31,16 +31,58 @@ const theme = {
 };
 
 const Tab = createBottomTabNavigator();
-const KeyManagementStack = createNativeStackNavigator();
+const CreateBoltcardStack = createNativeStackNavigator();
+const AdvancedStack = createNativeStackNavigator();
 
-function KeyManagementStackScreen() {
+function CreateBoltcardStackScreen() {
   return (
-    <KeyManagementStack.Navigator>
-      <KeyManagementStack.Screen name="KeyDisplayScreen" component={KeyDisplayScreen} initialParams={{ data: "" }}/>
-      <KeyManagementStack.Screen name="ScanScreen" component={ScanScreen} />
-      <KeyManagementStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} />
-      <KeyManagementStack.Screen name="HelpScreen" component={HelpScreen} />
-    </KeyManagementStack.Navigator>
+    <CreateBoltcardStack.Navigator screenOptions={{
+      headerShown: false
+    }}>
+      <CreateBoltcardStack.Screen name="CreateBoltcardScreen" component={CreateBoltcardScreen} initialParams={{ data: null }}/>
+      <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
+    </CreateBoltcardStack.Navigator>
+  );
+}
+
+function AdvancedTabScreen() {
+  return (
+    <Tab.Navigator
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
+
+              if (route.name === 'Read NFC') {
+                iconName = focused ? 'book' : 'book-outline';
+              } else if (route.name === 'Write NFC') {
+                iconName = focused ? 'save' : 'save-outline';
+              } else if (route.name === 'Reset Keys') {
+                iconName = focused ? 'key' : 'key-outline';
+              }
+
+              // You can return any component that you like here!
+              return <Ionicons name={iconName} size={size} color={color} />;
+            },
+            tabBarActiveTintColor: '#f58340',
+            tabBarInactiveTintColor: 'gray',
+          })}
+        >
+      
+      <Tab.Screen 
+        name="Reset Keys" 
+        children={() => <ResetKeysScreen />} 
+      />
+      <Tab.Screen 
+        name="Read NFC" 
+        component={ReadNFCScreen} 
+      />
+      <Tab.Screen 
+        name="Write NFC" 
+        component={WriteNFCScreen} 
+      />
+    </Tab.Navigator>
+    
   );
 }
 
@@ -48,7 +90,7 @@ function LogoTitle(props) {
   return (
     <View style={{flexDirection:'row'}}>
       <Image
-        style={{width: 50, height: 50, marginRight:10 }}
+        style={{width: 50, height: 50, marginRight:10, marginTop:0}}
         source={{uri:'https://avatars.githubusercontent.com/u/109875636?s=200&v=4'}}
       />
       <Text style={{lineHeight:50, fontSize:20}}>{props.title}</Text>
@@ -72,7 +114,7 @@ const ErrorModal = (props) => {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Ionicons name="warning" size={50} color="red" />
+            <Ionicons name="warning" size={30} color="red" />
             <Text style={styles.modalText}>{modalText}</Text>
             <Pressable
               style={[styles.button, styles.buttonClose]}
@@ -110,52 +152,48 @@ export default function App(props) {
 
   return (
     <PaperProvider theme={theme}>
-      <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
       <NavigationContainer>
         <Tab.Navigator
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
               let iconName;
 
-              if (route.name === 'Read NFC') {
-                iconName = focused ? 'book' : 'book-outline';
-              } else if (route.name === 'Write NFC') {
-                iconName = focused ? 'save' : 'save-outline';
-              } else if (route.name === 'Key Management') {
-                iconName = focused ? 'key' : 'key-outline';
+              if (route.name === 'Create Bolt Card') {
+                iconName = focused ? 'card' : 'card-outline';
               } else if (route.name === 'Help') {
                 iconName = focused ? 'information' : 'information-outline';
+              } else if (route.name === 'Advanced') {
+                iconName = focused ? 'settings' : 'settings-outline';
               }
 
               // You can return any component that you like here!
               return <Ionicons name={iconName} size={size} color={color} />;
             },
-            tabBarActiveTintColor: 'tomato',
+            tabBarActiveTintColor: '#f58340',
             tabBarInactiveTintColor: 'gray',
           })}
         >
           <Tab.Screen 
-            name="Read NFC" 
-            component={ReadNFCScreen} 
-            options={{ headerTitle: (props) => <LogoTitle title="Read NFC" {...props} />}} 
+            name="Create Bolt Card" 
+            children={() => <CreateBoltcardStackScreen />} 
+            options={{ headerTitle: (props) => <LogoTitle title="Create Bolt Card" {...props} />}} 
           />
+          
           <Tab.Screen 
-            name="Write NFC" 
-            component={WriteNFCScreen} 
-            options={{ headerTitle: (props) => <LogoTitle title="Write NFC" {...props} />}} 
-          />
-          <Tab.Screen 
-            name="Key Management" 
-            children={() => <KeyManagementStackScreen props={{showModalError}} />} 
-            options={{ headerTitle: (props) => <LogoTitle title="Key Management" {...props} />}} 
+            name="Advanced" 
+            component={AdvancedTabScreen} 
+            options={{ headerTitle: (props) => <LogoTitle title="Advanced" {...props} />}} 
           />
           <Tab.Screen 
             name="Help" 
             component={HelpScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Help" {...props} />}} 
           />
+          
         </Tab.Navigator>
       </NavigationContainer>
+      <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+      
     </PaperProvider>
   );
 }
@@ -175,7 +213,6 @@ const styles = StyleSheet.create({
   centeredView: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22
   },
   modalView: {
     margin: 20,
