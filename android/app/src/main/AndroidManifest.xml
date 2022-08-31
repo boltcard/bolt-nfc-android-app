@@ -9,7 +9,6 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <!-- These require runtime permissions on M -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.NFC" />
   <!-- END OPTIONAL PERMISSIONS -->
 

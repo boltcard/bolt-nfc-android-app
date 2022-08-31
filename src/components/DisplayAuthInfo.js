@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, NativeModules, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, NativeModules, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function DisplayAuthInfo(props) {
@@ -8,6 +8,20 @@ export default function DisplayAuthInfo(props) {
     const {data, keys, setKeys, lnurlw_base, setlnurlw_base, setReadyToWrite, cardName, setCardName} = props;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
+
+    useEffect(() => {
+        const appStateSub = AppState.addEventListener("change", nextAppState => {
+          if (nextAppState.match(/inactive|background/)) {
+            setKeys([]);
+            setlnurlw_base(null);
+            setCardName(null);
+            setLoading(false);
+        }
+        });
+        return () => {
+          appStateSub.remove();
+        };
+      }, []);
 
     //Load the auth info from the URL
     useEffect(() => {

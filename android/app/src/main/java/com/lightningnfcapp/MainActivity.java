@@ -946,7 +946,7 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onPause() {
       super.onPause();
-
+      this.clearData();
       libInstance.stopForeGroundDispatch();
       if (mReactInstanceManager != null) {
           mReactInstanceManager.onHostPause(this);
@@ -992,6 +992,17 @@ public class MainActivity extends ReactActivity {
           return true;
       }
       return super.onKeyUp(keyCode, event);
+  }
+
+  private void clearData() {
+    Log.d(TAG, "Clearing data.");
+    this.lnurlw_base = null;
+    this.key0 = null;
+    this.key1 = null;
+    this.key2 = null;
+    this.key3 = null;
+    this.key4 = null;
+    this.resetKeys = new String[5];
   }
 
   public void setNodeURL(String url) {
