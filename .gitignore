@@ -54,4 +54,5 @@ buck-out/
 web-build/
 dist/
 
-.env
+.env*
+gitinfo.json

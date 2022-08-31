@@ -28,8 +28,10 @@ public class MyReactModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setCardMode(String cardmode) {
+        Log.d(TAG, "setCardMode: "+cardmode );
         MainActivity activity = (MainActivity) getCurrentActivity();
         if(activity != null) activity.setCardMode(cardmode);
+        else Log.e(TAG, "Error: Activity is null, cant change mode");
     }
 
     @ReactMethod
@@ -38,10 +40,37 @@ public class MyReactModule extends ReactContextBaseJavaModule {
         if(activity != null) activity.setNodeURL(url);
     }
 
+    //API v0 just returns 3 keys
     @ReactMethod
-    public void changeKeys(String key0, String key1, String key2, Callback callBack) {
+    public void changeKeys(
+        String key0, 
+        String key1, 
+        String key2, 
+        Callback callBack
+    ) {
         MainActivity activity = (MainActivity) getCurrentActivity();
         if(activity != null) activity.changeKeys(key0, key1, key2, callBack);
+    }
+
+    //API v1 returns lnurl and 5 keys
+    @ReactMethod
+    public void changeKeys(
+        String lnurlw_base, 
+        String key0, 
+        String key1, 
+        String key2, 
+        String key3, 
+        String key4, 
+        Callback callBack
+    ) {
+        MainActivity activity = (MainActivity) getCurrentActivity();
+        if(activity != null) activity.changeKeys(lnurlw_base, key0, key1, key2, key3, key4, callBack);
+    }
+
+    @ReactMethod
+    public void setResetKeys(String key0, String key1, String key2, String key3, String key4, Callback callBack) {
+        MainActivity activity = (MainActivity) getCurrentActivity();
+        if(activity != null) activity.setResetKeys(new String[]{key0, key1, key2, key3, key4}, callBack);
     }
 
 }

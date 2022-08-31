@@ -6,7 +6,8 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "run-android": "echo \"{\\\"commit\\\":\\\"`git rev-parse --short HEAD`\\\"}\" > gitinfo.json && npx react-native run-android"
   },
   "dependencies": {
     "@react-native-clipboard/clipboard": "^1.10.0",
@@ -21,6 +22,7 @@
     "react-native": "0.68.2",
     "react-native-camera": "^4.2.1",
     "react-native-config": "^1.4.6",
+    "react-native-dialog": "^9.2.2",
     "react-native-paper": "^4.12.4",
     "react-native-permissions": "^3.6.0",
     "react-native-qrcode-scanner": "^1.5.5",
