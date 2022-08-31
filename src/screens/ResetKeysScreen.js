@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
-  ActivityIndicator, AppState, NativeEventEmitter, NativeModules,
+  ActivityIndicator, NativeEventEmitter, NativeModules,
   ScrollView, StyleSheet, Text, TextInput, View
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -57,21 +57,6 @@ export default function ResetKeysScreen() {
         eventListener.remove();
     };
   }, [])
-
-  useEffect(() => {
-    const appStateSub = AppState.addEventListener("change", nextAppState => {
-      if (nextAppState.match(/inactive|background/)) {
-        setKey0("11111111111111111111111111111111")
-        setKey1("22222222222222222222222222222222")
-        setKey2("33333333333333333333333333333333")
-        setKey3("44444444444444444444444444444444")
-        setKey4("55555555555555555555555555555555")
-      }
-    });
-    return () => {
-      appStateSub.remove();
-    };
-  }, []);
 
   useEffect(() =>{
     NativeModules.MyReactModule.setResetKeys(key0,key1,key2,key3,key4, ()=> {
