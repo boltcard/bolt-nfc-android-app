@@ -37,7 +37,11 @@ export default function CreateBoltcardScreen({route}) {
 
     const [ndefWritten, setNdefWritten] = useState()
     const [writekeys, setWriteKeys] = useState()
+    const [ndefRead, setNdefRead] = useState()
+    const [testp, setTestp] = useState()
+    const [testc, setTestc] = useState()
     const [testBolt, setTestBolt] = useState()
+
 
     useFocusEffect(
         React.useCallback(() => {
@@ -62,6 +66,7 @@ export default function CreateBoltcardScreen({route}) {
             if(event.writekeys) setWriteKeys(event.writekeys);
             
             if(event.readNDEF) {
+                setNdefRead(event.readNDEF)
                 //we have the latest read from the card fire it off to the server.
                 const httpsLNURL = event.readNDEF.replace("lnurlw://", "https://");
                 fetch(httpsLNURL)
@@ -70,9 +75,13 @@ export default function CreateBoltcardScreen({route}) {
                         setTestBolt("success");
                     })
                     .catch(error => {
-                        setTestBolt("Bolt call test failed");
+                        setTestBolt("Error: "+error.message);
                     });
             }
+
+            if(event.testp) setTestp(event.testp);
+            if(event.testc) setTestc(event.testc);
+
 
             NativeModules.MyReactModule.setCardMode('read');
             setWriteMode(false);
@@ -215,16 +224,13 @@ export default function CreateBoltcardScreen({route}) {
                         {tagTypeError && <Text>Tag Type Error: {tagTypeError}<Ionicons name="alert-circle"  size={20} color="red" /></Text>}
                         {cardUID && <Text>Card UID: {cardUID}<Ionicons name="checkmark-circle"  size={20} color="green" /></Text>}
                         {tagname && <Text style={{lineHeight:30, textAlignVertical:"center"}}>Tag: {tagname}<Ionicons name="checkmark-circle"  size={20} color="green" /></Text>}
-                        {key0Changed && <Text>Key 0 changed: {key0Changed}{key0Changed == "no" ? <Ionicons name="checkmark-circle"  size={20} color="green" /> : <Ionicons name="alert-circle"  size={20} color="red" />}</Text>}
-                        {key1Changed && <Text>Key 1 changed: {key1Changed}{key1Changed == "no" && <Ionicons name="checkmark-circle"  size={20} color="green" />}</Text>}
-                        {key2Changed && <Text>Key 2 changed: {key2Changed}{key2Changed == "no" && <Ionicons name="checkmark-circle"  size={20} color="green" />}</Text>}
-                        {key3Changed && <Text>Key 3 changed: {key3Changed}</Text>}
-                        {key4Changed && <Text>Key 4 changed: {key4Changed}</Text>}
-
+                        {key0Changed && <Text>Keys ready to change: {key0Changed == "no" ? "yes" : "no"}{key0Changed == "no" ? <Ionicons name="checkmark-circle"  size={20} color="green" /> : <Ionicons name="alert-circle"  size={20} color="red" />}</Text>}                       
                         {ndefWritten && <Text>NDEF written: {ndefWritten}{showTickOrError(ndefWritten == "success")}</Text>}
                         {writekeys && <Text>Keys Changed: {writekeys}{showTickOrError(writekeys == "success")}</Text>}
+                        {ndefRead && <Text>Read NDEF: {ndefRead}</Text>}
+                        {testp && <Text>Test PICC: {testp}{showTickOrError(testp == "ok")}</Text>}
+                        {testc && <Text>Test CMAC: {testc}{showTickOrError(testc == "ok")}</Text>}
                         {testBolt && <Text>Bolt call test: {testBolt}{showTickOrError(testBolt == "success")}</Text>}
-                        
                     </Card.Content>
                     <Card.Actions style={{justifyContent:'space-around'}}>
                         <Button 
