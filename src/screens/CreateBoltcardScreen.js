@@ -3,12 +3,18 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text } from 'react-native';
+import Dialog from "react-native-dialog";
 import { Card, Title } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DisplayAuthInfo from '../components/DisplayAuthInfo';
+
 export default function CreateBoltcardScreen({route}) {
     const { data, timestamp } = route.params;
     const navigation = useNavigation();
+
+
+    const [promptVisible, setPromptVisible] = useState(false);
+    const [pasteUrlValue, setPasteUrlValue] = useState();
 
     //setup
     const [keys, setKeys] = useState([])
@@ -117,16 +123,38 @@ export default function CreateBoltcardScreen({route}) {
     return (
         <ScrollView>
             {!data || data == null ?
-                <Card style={styles.card}>
-                    <Card.Content>
-                        <Title>Scan QR Code</Title>
-                        <Text>Run the ./createboltcard command on the boltcard server</Text>
-                        
-                    </Card.Content>
-                    <Card.Actions>
-                        <Button onPress={scanQRCode} title="Scan QR Code" />
-                    </Card.Actions>  
-                </Card>
+                <>
+                    <Card style={styles.card}>
+                        <Card.Content>
+                            <Title>Scan QR Code</Title>
+                            <Text>Run the ./createboltcard command on the boltcard server</Text>
+                        </Card.Content>
+                        <Card.Actions style={{justifyContent: 'space-around'}}>
+                            <Button onPress={scanQRCode} title="Scan QR Code" />
+                            <Button onPress={() => setPromptVisible(true)} title="Paste Auth URL" />
+                        </Card.Actions>  
+                    </Card>
+                    <Dialog.Container visible={promptVisible}>
+                        <Dialog.Title style={styles.textBlack}>
+                            Enter Auth URL
+                        </Dialog.Title>
+                        <Dialog.Description>
+                            Paste your Auth URL from the console here to import the keys.
+                        </Dialog.Description>
+                        <Dialog.Input style={styles.textBlack} label="Auth URL" onChangeText={setPasteUrlValue} value={pasteUrlValue} />
+                        <Dialog.Button label="Cancel"
+                            onPress={() => {
+                                setPromptVisible(false);
+                                setPasteUrlValue();
+                            }} />
+                        <Dialog.Button label="Continue"
+                            onPress={() => {
+                                setPromptVisible(false);
+                                setPasteUrlValue();
+                                navigation.navigate('CreateBoltcardScreen',  {data: pasteUrlValue, timestamp: Date.now()});
+                            }} />
+                    </Dialog.Container>
+                </>
                 :
                 <Card style={styles.card}>
                     <Card.Content>
@@ -215,5 +243,8 @@ export default function CreateBoltcardScreen({route}) {
 const styles = StyleSheet.create({
   card: {
     margin:20
+  },
+  textBlack: {
+    color:'#000'
   }
 });

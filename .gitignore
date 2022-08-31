@@ -55,3 +55,4 @@ web-build/
 dist/
 
 .env*
+gitinfo.json
