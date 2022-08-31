@@ -30,18 +30,21 @@ export default function HelpScreen({ navigation }) {
                 <Text style={styles.paragraph}>
                     5. Hold your card to the NFC reader on your phone untill you see the success message.
                 </Text>
+                <Text style={styles.paragraph}>
+                    Note: Keep your keys secret, and when creating cards ensure there are no other potential listening devices in range!
+                </Text>
               </Card.Content>
             </Card>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
-                <Card.Content>
-                    <Title>Links</Title>
-                    <Text style={styles.paragraph}>
-                        <Button title="Bolt Card Telegram Help Channel" onPress={() => Linking.openURL("https://t.me/bolt_card")}/>
-                    </Text>
-                    <Text style={styles.paragraph}>
-                        <Button title="Bolt Card Github" onPress={() => Linking.openURL("https://github.com/boltcard")}/>
-                    </Text>
-                </Card.Content>
+              <Card.Content>
+                <Title>Links</Title>
+                <Text style={styles.paragraph}>
+                    <Button title="Bolt Card Telegram Help Channel" onPress={() => Linking.openURL("https://t.me/bolt_card")}/>
+                </Text>
+                <Text style={styles.paragraph}>
+                    <Button title="Bolt Card Github" onPress={() => Linking.openURL("https://github.com/boltcard")}/>
+                </Text>
+              </Card.Content>
             </Card>
 
         </ScrollView>
