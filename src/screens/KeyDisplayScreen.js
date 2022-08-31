@@ -21,6 +21,11 @@ function KeyDisplayScreen({ route, navigation }) {
   const [readyToChangeKeys, setReadyToChangeKeys] = useState(false);
   const [writeKeysOutput, setWriteKeysOutput] = useState();
 
+  const showModalError = (errorText) => {
+    setModalText(errorText);
+    setModalVisible(true);
+  }
+
   useFocusEffect(
     React.useCallback(() => {
       setReadyToChangeKeys(false);
