@@ -7,7 +7,7 @@ The boltcard can be used with Lightning PoS terminals that have NFC support, or 
 Android only due to the NXP Taplinx library dependency which does not have an iOS version available.
 
 ## Current Version
-v0.1.0
+v0.1.1
 
 ## Setup & Run instructions for Linux with Android
 

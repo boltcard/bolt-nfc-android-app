@@ -9,7 +9,7 @@ export default function HelpScreen({ navigation }) {
         <ScrollView>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
               <Card.Content>
-                <Title selectable={true}>v0.1.0 ({gitinfo.commit})</Title>
+                <Title selectable={true}>v0.1.1 ({gitinfo.commit})</Title>
               </Card.Content>
             </Card>
             <Card style={{marginBottom:20, marginHorizontal:10}}>

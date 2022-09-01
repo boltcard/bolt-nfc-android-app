@@ -946,7 +946,7 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onPause() {
       super.onPause();
-      this.clearData();
+      // this.clearData();
       libInstance.stopForeGroundDispatch();
       if (mReactInstanceManager != null) {
           mReactInstanceManager.onHostPause(this);
