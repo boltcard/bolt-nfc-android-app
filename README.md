@@ -15,6 +15,8 @@ v0.1.1
 
 Download the compiled APK from the [latest release](https://github.com/boltcard/bolt-nfc-android-app/releases) and install on your android phone.
 
+Download from the [Google Play store](https://play.google.com/store/apps/details?id=com.lightningnfcapp&hl=en&gl=US)
+
 ### Build instructions
 1. Install android studio https://developer.android.com/studio
 2. Install Android 12 SDK version 31 reference: https://reactnative.dev/docs/environment-setup
