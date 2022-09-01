@@ -6,16 +6,18 @@ The boltcard can be used with Lightning PoS terminals that have NFC support, or 
 
 Android only due to the NXP Taplinx library dependency which does not have an iOS version available.
 
+Find out more at [boltcard.org](https://boltcard.org)
+
 ## Current Version
 v0.1.1
 
-## Setup & Run instructions for Linux with Android
-
-### Quick
+## Quick Install
 
 Download the compiled APK from the [latest release](https://github.com/boltcard/bolt-nfc-android-app/releases) and install on your android phone.
 
 Download from the [Google Play store](https://play.google.com/store/apps/details?id=com.lightningnfcapp&hl=en&gl=US)
+
+## Setup & Run instructions for Linux with Android
 
 ### Build instructions
 1. Install android studio https://developer.android.com/studio
