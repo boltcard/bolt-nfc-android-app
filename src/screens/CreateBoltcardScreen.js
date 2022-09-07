@@ -1,12 +1,14 @@
 
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text } from 'react-native';
+import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text, ToastAndroid } from 'react-native';
 import Dialog from "react-native-dialog";
 import { Card, Title } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DisplayAuthInfo from '../components/DisplayAuthInfo';
+
 
 export default function CreateBoltcardScreen({route}) {
     const { data, timestamp } = route.params;
@@ -19,9 +21,11 @@ export default function CreateBoltcardScreen({route}) {
     //setup
     const [keys, setKeys] = useState([])
     const [lnurlw_base, setlnurlw_base] = useState()
+    const [card_id, setCard_id] = useState()
     const [cardName, setCardName] = useState()
     const [readyToWrite, setReadyToWrite] = useState(false);
     const [writeMode, setWriteMode] = useState(false);
+    const [cardSaved, setCardSaved] = useState(false);
 
 
     //output
@@ -41,6 +45,43 @@ export default function CreateBoltcardScreen({route}) {
     const [testp, setTestp] = useState()
     const [testc, setTestc] = useState()
     const [testBolt, setTestBolt] = useState()
+
+
+    /**
+     * Fetch the current array of stored cards and append this new card.
+     */
+    const storeBoltCard = async () => {
+        try {
+            const currentCards = await AsyncStorage.getItem('@stored_boltcards')
+            const cardArray = currentCards != null ? JSON.parse(currentCards) : [];
+            
+            const newCard = {
+                'lnurlw_base':lnurlw_base, 
+                'id':card_id,
+                'cardName':cardName,
+                'k0':keys[0],
+                'k1':keys[1],
+                'k2':keys[2],
+                'k3':keys[3],
+                'k4':keys[4]
+            }
+            cardArray.push(newCard);
+
+            await AsyncStorage.setItem('@stored_boltcards', JSON.stringify(cardArray))
+
+            setCardSaved(true);
+            
+            ToastAndroid.showWithGravity(
+                "Card Saved",
+                ToastAndroid.SHORT,
+                ToastAndroid.TOP
+            );
+            
+        } catch (e) {
+          // saving error
+          console.error(e)
+        }
+    }
 
 
     useFocusEffect(
@@ -101,6 +142,7 @@ export default function CreateBoltcardScreen({route}) {
         setReadyToWrite(false);
         setWriteMode(false);
         resetOutput();
+        setCardSaved(false);
         navigation.navigate('CreateBoltcardScreen', {data:null});
     }
 
@@ -135,8 +177,8 @@ export default function CreateBoltcardScreen({route}) {
                 <>
                     <Card style={styles.card}>
                         <Card.Content>
-                            <Title>Scan QR Code</Title>
-                            <Text>Run the ./createboltcard command on the boltcard server</Text>
+                            <Title>Fetch Auth URL</Title>
+                            <Text>First, create a new Bolt Card on the server</Text>
                         </Card.Content>
                         <Card.Actions style={{justifyContent: 'space-around'}}>
                             <Button onPress={scanQRCode} title="Scan QR Code" />
@@ -177,6 +219,9 @@ export default function CreateBoltcardScreen({route}) {
                             setReadyToWrite={setReadyToWrite}
                             cardName={cardName}
                             setCardName={setCardName}
+                            card_id={card_id}
+                            setCard_id={setCard_id}
+
                         />
                     </Card.Content>
                     <Card.Actions style={{justifyContent:'space-around'}}>
@@ -186,10 +231,16 @@ export default function CreateBoltcardScreen({route}) {
                             onPress={resetAll} 
                         />
                         {readyToWrite && !writeMode &&
-                            <Button 
-                                title="Write Card Now"
-                                onPress={writeAgain}
-                            />
+                            <>
+                                <Button 
+                                    title="Write Card Now"
+                                    onPress={writeAgain}
+                                />
+                                {!cardSaved && <Button 
+                                    title="Save Card"
+                                    onPress={storeBoltCard}
+                                />}
+                            </>
                         }
                     </Card.Actions>
                 </Card>

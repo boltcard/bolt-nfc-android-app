@@ -13,6 +13,7 @@ import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
+import StoredCardsPinScreen from './src/screens/storedCards/StoredCardsPinScreen';
 import WriteNFCScreen from './src/screens/WriteNFCScreen';
 
 import { LogBox } from 'react-native';
@@ -164,7 +165,10 @@ export default function App(props) {
                 iconName = focused ? 'information' : 'information-outline';
               } else if (route.name === 'Advanced') {
                 iconName = focused ? 'settings' : 'settings-outline';
+              } else if (route.name === 'Stored Cards') {
+                iconName = focused ? 'list' : 'list-outline';
               }
+
 
               // You can return any component that you like here!
               return <Ionicons name={iconName} size={size} color={color} />;
@@ -177,6 +181,11 @@ export default function App(props) {
             name="Create Bolt Card" 
             children={() => <CreateBoltcardStackScreen />} 
             options={{ headerTitle: (props) => <LogoTitle title="Create Bolt Card" {...props} />}} 
+          />
+          <Tab.Screen 
+            name="Stored Cards" 
+            children={() => <StoredCardsPinScreen />} 
+            options={{ headerTitle: (props) => <LogoTitle title="Stored Cards" {...props} />}} 
           />
           
           <Tab.Screen 

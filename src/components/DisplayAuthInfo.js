@@ -5,7 +5,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function DisplayAuthInfo(props) {
     
-    const {data, keys, setKeys, lnurlw_base, setlnurlw_base, setReadyToWrite, cardName, setCardName} = props;
+    const {data, keys, setKeys, lnurlw_base, setlnurlw_base, setReadyToWrite, cardName, setCardName, card_id, setCard_id} = props;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
 
@@ -15,6 +15,7 @@ export default function DisplayAuthInfo(props) {
             setKeys([]);
             setlnurlw_base(null);
             setCardName(null);
+            setCard_id(null);
             setLoading(false);
         }
         });
@@ -39,11 +40,13 @@ export default function DisplayAuthInfo(props) {
                         setError("The JSON response must contain lnurlw_base, k0, k1, k2, k3, k4 ");
                         return;
                     }
-                    
-                    setlnurlw_base(json.lnurlw_base);
+
                     if(json.card_name) setCardName(json.card_name);
+                    if(json.id) setCard_id(json.id);
+
                     setKeys([json.k0,json.k1,json.k2,json.k3,json.k4]);
-        
+                    setlnurlw_base(json.lnurlw_base);
+                    
                     NativeModules.MyReactModule.changeKeys(
                         json.lnurlw_base,
                         json.k0, 
