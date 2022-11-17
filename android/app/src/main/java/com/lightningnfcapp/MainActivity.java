@@ -163,7 +163,8 @@ public class MainActivity extends ReactActivity {
   private final String CARD_MODE_READ = "read";
   private final String CARD_MODE_WRITE = "write";
   private final String CARD_MODE_WRITEKEYS = "writekeys";
-  private final String CARD_MODE_DEBUGRESETKEYS = "resetkeys";
+  private final String CARD_MODE_RESETKEYS = "resetkeys";
+  private final String CARD_MODE_RESETCARD = "resetcard";
   private final String CARD_MODE_CREATEBOLTCARD = "createBoltcard";
   
   private String cardmode = CARD_MODE_READ;
@@ -177,6 +178,7 @@ public class MainActivity extends ReactActivity {
   private byte[] key4;
 
   private String[] resetKeys;
+  private String uid;
 
   
   @Override
@@ -326,11 +328,14 @@ public class MainActivity extends ReactActivity {
         else if(this.cardmode.equals(CARD_MODE_WRITEKEYS)) {
           writeKeys(boltCardWrapper);
         }
-        else if(this.cardmode.equals(CARD_MODE_DEBUGRESETKEYS)) {
-          debugResetKeys(boltCardWrapper);
+        else if(this.cardmode.equals(CARD_MODE_RESETKEYS)) {
+          doresetKeys(boltCardWrapper);
         }
         else if(this.cardmode.equals(CARD_MODE_CREATEBOLTCARD)) {
           createBoltCard(boltCardWrapper);
+        }
+        else if(this.cardmode.equals(CARD_MODE_RESETCARD)) {
+          
         }
         else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
           readCard(boltCardWrapper);
@@ -751,9 +756,27 @@ public class MainActivity extends ReactActivity {
    * @param intent
    * @throws Exception
    */
-  private void debugResetKeys(BoltCardWrapper boltCardWrapper) throws Exception{
+  private void doresetKeys(BoltCardWrapper boltCardWrapper) throws Exception{
     String result = "";
     
+    // String tagname = boltCardWrapper.getType().getTagName() + boltCardWrapper.getType().getDescription();
+    // String UID = Utilities.dumpBytes(boltCardWrapper.getUID());
+    // if(this.uid == null || !UID.substring(2).toLowerCase().equals(this.uid.toLowerCase())) {
+    //   WritableMap params = Arguments.createMap();
+    //   params.putString("output", "Error, card UID does not match entered UID");
+    //   Log.d(TAG,"card UID entered UID: " + UID + ", " + this.uid);
+    //   sendEvent("ChangeKeysResult", params);
+    //   return;
+    // }
+
+    if(resetKeys[0] == null || resetKeys[1] == null || resetKeys[2] == null || resetKeys[3] == null || resetKeys[4] == null) {
+      WritableMap params = Arguments.createMap();
+      params.putString("output", "Error, one or more keys not set");
+      Log.d(TAG, "Error, one or more keys not set");
+      sendEvent("ChangeKeysResult", params);
+      return;
+    }
+
     KeyData currentChangeKeyAesKeyData = new KeyData();
     Key currentChangeKey = new SecretKeySpec(this.hexStringToByteArray(resetKeys[0]), "AES");
     currentChangeKeyAesKeyData.setKey(currentChangeKey);
@@ -770,7 +793,11 @@ public class MainActivity extends ReactActivity {
       result += "Change Key0: Success\r\n";
     }
     catch(Exception e) {
-      result += "Change Key0: "+e.getMessage()+"\r\n";
+      result += "Change Key0: "+e.getMessage()+". Could be incorrect key. Aborting key reset, please use correct keys. \r\n";
+      WritableMap params = Arguments.createMap();
+      params.putString("output", result);
+      sendEvent("ChangeKeysResult", params);
+      return;
     }
     try{
       boltCardWrapper.authenticateEV2First(0, defaultaesKeyData, null);
@@ -1027,8 +1054,9 @@ public class MainActivity extends ReactActivity {
     else Log.d(TAG, "*** setCardMode called with null string");
   }
 
-  public void setResetKeys(String[] keys, Callback callBack) {
+  public void setResetKeys(String[] keys, String uid, Callback callBack) {
     this.resetKeys = keys;
+    this.uid = uid;
   }
 
   /**

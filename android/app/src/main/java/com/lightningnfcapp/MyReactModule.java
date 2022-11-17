@@ -68,9 +68,17 @@ public class MyReactModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setResetKeys(String key0, String key1, String key2, String key3, String key4, Callback callBack) {
+    public void setResetKeys(
+        String key0, 
+        String key1, 
+        String key2, 
+        String key3, 
+        String key4, 
+        String uid, 
+        Callback callBack
+    ) {
         MainActivity activity = (MainActivity) getCurrentActivity();
-        if(activity != null) activity.setResetKeys(new String[]{key0, key1, key2, key3, key4}, callBack);
+        if(activity != null) activity.setResetKeys(new String[]{key0, key1, key2, key3, key4}, uid, callBack);
     }
 
 }

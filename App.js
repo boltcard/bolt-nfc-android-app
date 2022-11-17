@@ -11,6 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
+import ResetCardScreen from './src/screens/ResetCardScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import WriteNFCScreen from './src/screens/WriteNFCScreen';
@@ -59,6 +60,8 @@ function AdvancedTabScreen() {
                 iconName = focused ? 'save' : 'save-outline';
               } else if (route.name === 'Reset Keys') {
                 iconName = focused ? 'key' : 'key-outline';
+              } else if (route.name === 'Wipe Card') {
+                iconName = focused ? 'trash' : 'trash-outline';
               }
 
               // You can return any component that you like here!
@@ -79,6 +82,10 @@ function AdvancedTabScreen() {
             <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
           </CreateBoltcardStack.Navigator>
         } 
+      />
+      <Tab.Screen 
+        name="Wipe Card" 
+        component={ResetCardScreen} 
       />
       <Tab.Screen 
         name="Read NFC" 
