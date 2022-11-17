@@ -136,7 +136,7 @@ export default function CreateBoltcardScreen({route}) {
                     <Card style={styles.card}>
                         <Card.Content>
                             <Title>Scan QR Code</Title>
-                            <Text>Run the ./createboltcard command on the boltcard server</Text>
+                            <Text>Press the create card on LNBits or run the ./createboltcard command on your boltcard server</Text>
                         </Card.Content>
                         <Card.Actions style={{justifyContent: 'space-around'}}>
                             <Button onPress={scanQRCode} title="Scan QR Code" />

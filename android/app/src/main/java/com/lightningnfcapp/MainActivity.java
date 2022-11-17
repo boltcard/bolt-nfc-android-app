@@ -403,6 +403,7 @@ public class MainActivity extends ReactActivity {
         put("ndefWritten", e.getMessage());
       }});  
       Log.e(TAG, "ndefWritten Error "+e.getMessage());
+      throw e;
     }
 
     //write the keys to the card
@@ -417,6 +418,7 @@ public class MainActivity extends ReactActivity {
         put("writekeys", e.getMessage());
       }});  
       Log.e(TAG, "writekeys Error"+e.getMessage());
+      return;
     }
 
     //finally get the read message from the card and pass to the server, so the
@@ -434,6 +436,7 @@ public class MainActivity extends ReactActivity {
         put("readNDEF", "Error: "+e.getMessage());
       }});  
       Log.e(TAG, "ndefRead Error"+e.getMessage());
+      return;
     }
 
     this.testPandCvalues(boltCardWrapper);
@@ -451,16 +454,19 @@ public class MainActivity extends ReactActivity {
         put("testp", "no p value to test");
         put("testc", "no c value to test");
       }});
+      return;
     }
     if(bolturl.indexOf("p=")==-1) {
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
         put("testp", "no p value to test");
       }});
+      return;
     }
     if(bolturl.indexOf("c=")==-1) {
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
         put("testp", "no p value to test");
       }});
+      return;
     }
       
     //check PICC encryption to test key1
@@ -848,7 +854,8 @@ public class MainActivity extends ReactActivity {
     String result = "Success";
     if (lnurlw_base.indexOf("lnurlw://") == -1) {
       Log.e(TAG, "lnurlw_base is not a valid lnurlw");
-      callBack.invoke("lnurlw_base is not a valid lnurlw");;
+      callBack.invoke("lnurlw_base is not a valid lnurlw");
+      return;
     }
     if(lnurlw_base == null && key0 == null && key1 == null && key2 == null && key3 == null && key4 == null) {
       this.lnurlw_base = null;
@@ -871,6 +878,13 @@ public class MainActivity extends ReactActivity {
       Log.d(TAG, "Error one or more keys are invalid: "+e.getMessage());
       result = "Error one or more keys are invalid";
     }
+    Log.d(TAG, "Data Set: "+this.lnurlw_base + " " + 
+      this.key0 + " " + 
+      this.key1 + " " + 
+      this.key2 + " " + 
+      this.key3 + " " + 
+      this.key4
+    );
     callBack.invoke(result);
   }
 
@@ -946,7 +960,6 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onPause() {
       super.onPause();
-      this.clearData();
       libInstance.stopForeGroundDispatch();
       if (mReactInstanceManager != null) {
           mReactInstanceManager.onHostPause(this);

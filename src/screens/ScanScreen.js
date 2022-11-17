@@ -11,9 +11,11 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 
 export default function ScanScreen({ route, navigation }) {
 
-  const { backScreen } = route.params;
+  const { backScreen, backRoot } = route.params;
+  console.log('Scan Screen backScreen, backRoot', backScreen, backRoot);
 
   const onSuccess = e => {
+    console.log('scan success');
     navigation.navigate(backScreen, {data: e.data, timestamp: Date.now()})
   };
 

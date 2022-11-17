@@ -71,7 +71,14 @@ function AdvancedTabScreen() {
       
       <Tab.Screen 
         name="Reset Keys" 
-        children={() => <ResetKeysScreen />} 
+        children={() => 
+          <CreateBoltcardStack.Navigator screenOptions={{
+            headerShown: false
+          }}>
+            <CreateBoltcardStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} initialParams={{ data: null }}/>
+            <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
+          </CreateBoltcardStack.Navigator>
+        } 
       />
       <Tab.Screen 
         name="Read NFC" 
