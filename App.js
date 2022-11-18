@@ -11,7 +11,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
-import ResetCardScreen from './src/screens/ResetCardScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import WriteNFCScreen from './src/screens/WriteNFCScreen';
@@ -82,10 +81,6 @@ function AdvancedTabScreen() {
             <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
           </CreateBoltcardStack.Navigator>
         } 
-      />
-      <Tab.Screen 
-        name="Wipe Card" 
-        component={ResetCardScreen} 
       />
       <Tab.Screen 
         name="Read NFC" 

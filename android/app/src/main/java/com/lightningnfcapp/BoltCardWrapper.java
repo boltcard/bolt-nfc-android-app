@@ -13,6 +13,7 @@ import com.nxp.nfclib.interfaces.ICard;
 import com.nxp.nfclib.ndef.INdefOperations;
 import com.nxp.nfclib.ndef.INdefMessage;
 import com.nxp.nfclib.ndef.INdefMessage;
+import com.nxp.nfclib.ndef.NdefMessageWrapper;
 
 public class BoltCardWrapper {
 
@@ -59,6 +60,46 @@ public class BoltCardWrapper {
     public void writeNDEF(INdefMessage ndefMsg)
     {
         this.iNdefOperations.writeNDEF(ndefMsg);
+    }
+
+    public void wipeNdefAndFileSettings()
+    {
+        if (this.ntag424DNA != null) {
+
+            NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
+                MFPCard.CommunicationMode.Plain,
+                (byte) 0xE,
+                (byte) 0xE,
+                (byte) 0xE,
+                (byte) 0x0
+            );
+
+            fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
+            fileSettings.setSDMEnabled(false);
+            fileSettings.setUIDMirroringEnabled(false);
+            fileSettings.setSDMReadCounterEnabled(false);
+
+            this.ntag424DNA.changeFileSettings(2, fileSettings);
+        }
+        else {
+            NTAG424DNATTFileSettings fileSettings = new NTAG424DNATTFileSettings(
+                MFPCard.CommunicationMode.Plain,
+                (byte) 0xE,
+                (byte) 0xE,
+                (byte) 0xE,
+                (byte) 0x0
+            );
+
+            fileSettings.setSdmAccessRights(new byte[] {(byte) 0xFF, (byte) 0x12});
+            fileSettings.setSDMEnabled(false);
+            fileSettings.setUIDMirroringEnabled(false);
+            fileSettings.setSDMReadCounterEnabled(false);
+
+            this.ntag424DNATT.changeFileSettings(2, fileSettings);
+        }
+        INdefMessage ndefMsg = NdefMessageWrapper.getEmptyNdefRecord();
+        this.iNdefOperations.writeNDEF(ndefMsg);
+
     }
 
     public byte[] getVersion()

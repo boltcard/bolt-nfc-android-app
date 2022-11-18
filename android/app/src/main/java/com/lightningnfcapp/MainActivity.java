@@ -164,7 +164,6 @@ public class MainActivity extends ReactActivity {
   private final String CARD_MODE_WRITE = "write";
   private final String CARD_MODE_WRITEKEYS = "writekeys";
   private final String CARD_MODE_RESETKEYS = "resetkeys";
-  private final String CARD_MODE_RESETCARD = "resetcard";
   private final String CARD_MODE_CREATEBOLTCARD = "createBoltcard";
   
   private String cardmode = CARD_MODE_READ;
@@ -333,9 +332,6 @@ public class MainActivity extends ReactActivity {
         }
         else if(this.cardmode.equals(CARD_MODE_CREATEBOLTCARD)) {
           createBoltCard(boltCardWrapper);
-        }
-        else if(this.cardmode.equals(CARD_MODE_RESETCARD)) {
-          
         }
         else { //this.cardmode == CARD_MODE_READ, or if in doubt, just read the card
           readCard(boltCardWrapper);
@@ -643,7 +639,6 @@ public class MainActivity extends ReactActivity {
     return new String[]{key0Changed, key1Changed, key2Changed, key3Changed, key4Changed};
   }
 
-
   public String decrypt(byte[] encryptedData) throws Exception {
     Cipher decryptionCipher = Cipher.getInstance("AES/CBC/NoPadding");    
     byte[] ivSpec = new byte[16];
@@ -752,7 +747,7 @@ public class MainActivity extends ReactActivity {
   }
 
   /**
-   * Debug Reset all keys back to zero bytes from supplied keys
+   * Reset all keys back to zero bytes from supplied keys
    * @param intent
    * @throws Exception
    */
@@ -834,6 +829,16 @@ public class MainActivity extends ReactActivity {
     catch(Exception e) {
       result += "Change Key4: "+e.getMessage()+"\r\n";
     }
+
+    try {
+      this.authenticateWithDefaultChangeKey(boltCardWrapper);
+      boltCardWrapper.wipeNdefAndFileSettings();
+      result += "NDEF and SUN/SDM cleared."; 
+    }
+    catch (Exception e) {
+      result += "NDEF SUN/SDM Clear error: "+e.getMessage()+"\r\n";
+    }
+
     WritableMap params = Arguments.createMap();
     params.putString("output", result);
     sendEvent("ChangeKeysResult", params);

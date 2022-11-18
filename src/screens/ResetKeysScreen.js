@@ -193,19 +193,6 @@ export default function ResetKeysScreen({route}) {
         <Card.Content>
           <Title>Card Details</Title>
           <View style={styles.titlecontainer}>
-            <Text style={styles.title}>Card UID</Text>
-          </View>
-          <TextInput 
-            style={styles.uid} 
-            value={uid} 
-            maxLength={14}
-            multiline = {true}
-            numberOfLines = {1}
-            autoCapitalize='none'
-            onChangeText={(text) => setUid(text)}
-            placeholder='UID'
-          />
-          <View style={styles.titlecontainer}>
             <Text style={styles.title}>Key 0</Text>
           </View>
           <TextInput 
