@@ -9,7 +9,7 @@ Android only due to the NXP Taplinx library dependency which does not have an iO
 Find out more at [boltcard.org](https://boltcard.org)
 
 ## Current Version
-v0.1.1
+v0.1.2
 
 ## Quick Install
 
