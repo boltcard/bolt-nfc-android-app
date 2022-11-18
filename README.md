@@ -47,6 +47,24 @@ Download from the [Google Play store](https://play.google.com/store/apps/details
 6. When the keys are loaded, Hold the NFC card to the phone to run the key change on the card. Do not move the card until the key change has completed. 
 Warning! If you lose the new keys then you will be unable to reprogram the card again
 
+## Wiping cards
+
+To wipe a card get the keys into a json in the following format:
+```
+{
+	"version": 1
+	"action": "wipe",
+	"k0": "11111111111111111111111111111111",
+	"k1": "22222222222222222222222222222222",
+	"k2": "33333333333333333333333333333333",
+	"k3": "44444444444444444444444444444444",
+	"k4": "55555555555555555555555555555555",
+}
+```
+Go to the advanced > key reset screen and either paste this json from the clipboard or scan a QR code with this JSON encoded in it.
+Then press "reset card now" and tap and hold your card against the NFC reader. 
+
+
 # Dependencies / Security considerations
 
 We rely on the Taplinx 2.0 Android library supplied by NXP. 
