@@ -153,8 +153,8 @@ public class BoltCardWrapper {
             NTAG424DNAFileSettings fileSettings = new NTAG424DNAFileSettings(
                 MFPCard.CommunicationMode.Plain,
                 (byte) 0xE,
-                (byte) 0xE,
-                (byte) 0xE,
+                (byte) 0x0,
+                (byte) 0x0,
                 (byte) 0x0
             );
 
@@ -179,8 +179,8 @@ public class BoltCardWrapper {
             NTAG424DNATTFileSettings fileSettings = new NTAG424DNATTFileSettings(
                 MFPCard.CommunicationMode.Plain,
                 (byte) 0xE,
-                (byte) 0xE,
-                (byte) 0xE,
+                (byte) 0x0,
+                (byte) 0x0,
                 (byte) 0x0
             );
 

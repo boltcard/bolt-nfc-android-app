@@ -683,7 +683,6 @@ public class MainActivity extends ReactActivity {
   
     int piccOffset = this.lnurlw_base.length() + 10;
     int macOffset = this.lnurlw_base.length() + 45;
-    boltCardWrapper.setAndChangeFileSettings(piccOffset, macOffset);
     
     NdefMessageWrapper msg = new NdefMessageWrapper(
       NdefRecordWrapper.createUri(
@@ -694,6 +693,10 @@ public class MainActivity extends ReactActivity {
       )
     );
     boltCardWrapper.writeNDEF(msg);
+    
+    this.authenticateWithDefaultChangeKey(boltCardWrapper);
+    boltCardWrapper.setAndChangeFileSettings(piccOffset, macOffset);
+
   }
 
   /**
