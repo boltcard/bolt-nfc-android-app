@@ -11,6 +11,11 @@ Find out more at [boltcard.org](https://boltcard.org)
 ## Current Version
 v0.1.3
 
+## Card Support
+Supports 
+ * NXP NTAG424 DNA
+ * NXP NTAG424 DNA TT (Tag Tamper) Thanks to [Bassim](https://github.com/bassim)
+
 ## Quick Install
 
 Download the compiled APK from the [latest release](https://github.com/boltcard/bolt-nfc-android-app/releases) and install on your android phone.
