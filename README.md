@@ -11,8 +11,7 @@ Find out more at [boltcard.org](https://boltcard.org)
 ## Current Version
 v0.1.3
 
-## Card Support
-Supports 
+## NFC Card Support
  * NXP NTAG424 DNA
  * NXP NTAG424 DNA TT (Tag Tamper) Thanks to [Bassim](https://github.com/bassim)
 
