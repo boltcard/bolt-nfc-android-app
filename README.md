@@ -4,7 +4,9 @@ Quickly program a blank NFC card (NTAG424DNA) to act as your own personal Boltca
 
 The boltcard can be used with Lightning PoS terminals that have NFC support, or Breez wallet PoS App.
 
-Android only due to the NXP Taplinx library dependency which does not have an iOS version available.
+The app is currently Android only.
+
+Since December 2022 it may be possible to add iOS support using the new [NXP Mifare TapLinx iOS SDK library](https://www.mifare.net/en/products/tools/taplinx/) as this application is written in React Native.
 
 Find out more at [boltcard.org](https://boltcard.org)
 
