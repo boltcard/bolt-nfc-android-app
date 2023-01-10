@@ -9,7 +9,7 @@ export default function WriteNFCScreen(props) {
     const [writeOutput, setWriteOutput] = useState("pending...")
   
     useEffect(() =>{
-      const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
+      const eventEmitter = new NativeEventEmitter(NativeModules.MyReactModule);
       const eventListener = eventEmitter.addListener('WriteResult', (event) => {
         setWriteOutput(event.output)
       });
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexWrap: 'wrap',
     padding: 10,
-    fontFamily: 'monospace',
+    fontFamily: Platform.OS === 'ios' ? "Courier New" : "monospace",
     textAlignVertical: 'top'
   },
 });

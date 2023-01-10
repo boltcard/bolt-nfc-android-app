@@ -32,7 +32,7 @@ function KeyDisplayScreen({ route }) {
   );
 
   useEffect(() =>{
-    const eventEmitter = new NativeEventEmitter();
+    const eventEmitter = new NativeEventEmitter(NativeModules.MyReactModule);
     const readCardEventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
       setCardUID(event.cardUID)
     });
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   monospace: {
     
-    fontFamily: "monospace"
+    fontFamily: Platform.OS === 'ios' ? "Courier New" : "monospace"
   }
 });
 

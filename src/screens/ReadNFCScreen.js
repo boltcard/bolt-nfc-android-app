@@ -16,7 +16,7 @@ export default function ReadNFCScreen(props) {
     const [key4Changed, setKey4Changed] = useState("Key 4 status pending")
     
     useEffect(() =>{
-      const eventEmitter = new NativeEventEmitter();
+      const eventEmitter = new NativeEventEmitter(NativeModules.MyReactModule);
       const eventListener = eventEmitter.addListener('CardHasBeenRead', (event) => {
         setCardReadInfo(event.cardReadInfo)
         setNdef(event.ndef)

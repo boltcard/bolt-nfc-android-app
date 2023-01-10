@@ -50,7 +50,7 @@ export default function CreateBoltcardScreen({route}) {
     );
     
     useEffect(() =>{
-        const eventEmitter = new NativeEventEmitter();
+        const eventEmitter = new NativeEventEmitter(NativeModules.MyReactModule);
         const boltCardEventListener = eventEmitter.addListener('CreateBoltCard', (event) => {
             if(event.tagTypeError) setTagTypeError(event.tagTypeError);
             if(event.cardUID) setCardUID(event.cardUID);

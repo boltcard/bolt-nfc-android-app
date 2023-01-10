@@ -107,6 +107,6 @@ const styles = StyleSheet.create({
       marginBottom:5
     },
     monospace: {
-      fontFamily: "monospace"
+      fontFamily: Platform.OS === 'ios' ? "Courier New" : "monospace"
     }
   });

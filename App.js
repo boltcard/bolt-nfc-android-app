@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View, NativeModules } from 'react-native';
 
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
@@ -148,7 +148,7 @@ export default function App(props) {
   }
 
   useEffect(() =>{
-    const eventEmitter = new NativeEventEmitter();
+    const eventEmitter = new NativeEventEmitter(NativeModules.MyReactModule);
     const eventListener = eventEmitter.addListener('NFCError', (event) => {
       setModalText(event.message);
       setModalVisible(true);
