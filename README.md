@@ -56,13 +56,13 @@ Warning! If you lose the new keys then you will be unable to reprogram the card 
 To wipe a card get the keys into a json in the following format:
 ```
 {
-	"version": 1
+	"version": 1,
 	"action": "wipe",
 	"k0": "11111111111111111111111111111111",
 	"k1": "22222222222222222222222222222222",
 	"k2": "33333333333333333333333333333333",
 	"k3": "44444444444444444444444444444444",
-	"k4": "55555555555555555555555555555555",
+	"k4": "55555555555555555555555555555555"
 }
 ```
 Go to the advanced > key reset screen and either paste this json from the clipboard or scan a QR code with this JSON encoded in it.
