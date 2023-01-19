@@ -465,7 +465,7 @@ public class MainActivity extends ReactActivity {
     }
     if(bolturl.indexOf("c=")==-1) {
       sendEvent("CreateBoltCard",new HashMap<String, String>() {{
-        put("testp", "no p value to test");
+        put("testp", "no c value to test");
       }});
       return;
     }
@@ -913,13 +913,6 @@ public class MainActivity extends ReactActivity {
       Log.d(TAG, "Error one or more keys are invalid: "+e.getMessage());
       result = "Error one or more keys are invalid";
     }
-    Log.d(TAG, "Data Set: "+this.lnurlw_base + " " + 
-      this.key0 + " " + 
-      this.key1 + " " + 
-      this.key2 + " " + 
-      this.key3 + " " + 
-      this.key4
-    );
     callBack.invoke(result);
   }
 
