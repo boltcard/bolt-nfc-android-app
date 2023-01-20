@@ -70,6 +70,22 @@ To wipe a card get the keys into a json in the following format:
 Go to the advanced > key reset screen and either paste this json from the clipboard or scan a QR code with this JSON encoded in it.
 Then press "reset card now" and tap and hold your card against the NFC reader. 
 
+## UID Privacy
+
+As of 0.1.4 the app now supports card UID Randomisation (irreversable). If you add the "uid_privacy" field and set its value to "Y" the card will be programmed to have a random UID. Any other value or ommission of this field will leave the card UID as-is. Please note this action is irreversable.
+
+```
+{
+	"version": 1,
+	"action": "wipe",
+	"k0": "11111111111111111111111111111111",
+	"k1": "22222222222222222222222222222222",
+	"k2": "33333333333333333333333333333333",
+	"k3": "44444444444444444444444444444444",
+	"k4": "55555555555555555555555555555555",
+	"uid_privacy": "Y"
+}
+
 
 # Dependencies / Security considerations
 
