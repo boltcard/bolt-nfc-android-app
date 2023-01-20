@@ -564,9 +564,17 @@ public class MainActivity extends ReactActivity {
       "UID: "+UID+"\r\n"+
       "TotalMem: "+totalMem+"\r\n"+
       "Vendor: "+vendor+"\r\n";
-
-    INdefMessage ndefRead = boltCardWrapper.readNDEF();
-    String bolturl = ndefRead.toByteArray().length > 5 ? this.decodeHex(ndefRead.toByteArray()).substring(5) : "";
+    String bolturl = "";
+    try {
+      INdefMessage ndefRead = boltCardWrapper.readNDEF();
+      bolturl = ndefRead.toByteArray().length > 5 ? this.decodeHex(ndefRead.toByteArray()).substring(5) : "";
+    }
+    catch(Exception e) {
+      if(e instanceof UsageException && e.getMessage() == "BytesToRead should be greater than 0") {
+        bolturl = "This Bolt Card is not formatted";
+      }
+      else throw e;
+    }
     if(bolturl.indexOf("p=")==-1 || bolturl.indexOf("c=")==-1) {
       WritableMap params = Arguments.createMap();
       params.putString("cardReadInfo", cardDataBuilder);
