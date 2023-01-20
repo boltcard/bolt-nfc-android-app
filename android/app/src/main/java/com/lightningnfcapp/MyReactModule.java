@@ -61,10 +61,11 @@ public class MyReactModule extends ReactContextBaseJavaModule {
         String key2, 
         String key3, 
         String key4, 
+        boolean randomUID,
         Callback callBack
     ) {
         MainActivity activity = (MainActivity) getCurrentActivity();
-        if(activity != null) activity.changeKeys(lnurlw_base, key0, key1, key2, key3, key4, callBack);
+        if(activity != null) activity.changeKeys(lnurlw_base, key0, key1, key2, key3, key4, randomUID, callBack);
     }
 
     @ReactMethod

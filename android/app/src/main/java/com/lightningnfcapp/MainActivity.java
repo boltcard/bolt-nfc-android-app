@@ -176,6 +176,8 @@ public class MainActivity extends ReactActivity {
   private byte[] key3;
   private byte[] key4;
 
+  private boolean randomUID = false;
+
   private String[] resetKeys;
   private String uid;
 
@@ -405,6 +407,22 @@ public class MainActivity extends ReactActivity {
       }});  
       Log.e(TAG, "ndefWritten Error "+e.getMessage());
       throw e;
+    }
+    if (this.randomUID) {
+      try {
+        this.authenticateWithDefaultChangeKey(boltCardWrapper);
+        boltCardWrapper.setPICCConfiguration(this.randomUID);
+        sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+          put("randomUID", "success");
+        }});
+      }
+      catch(Exception e) {
+        sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+          put("randomUID", e.getMessage());
+        }});  
+        Log.e(TAG, "randomUID Error "+e.getMessage());
+        throw e;
+      }
     }
 
     //write the keys to the card
@@ -884,7 +902,7 @@ public class MainActivity extends ReactActivity {
    * @param key4
    * @param callBack
    */
-  public void changeKeys(String lnurlw_base, String key0, String key1, String key2, String key3, String key4, Callback callBack) {
+  public void changeKeys(String lnurlw_base, String key0, String key1, String key2, String key3, String key4, boolean randomUID, Callback callBack) {
     this.cardmode = CARD_MODE_WRITEKEYS;
     String result = "Success";
     if (lnurlw_base.indexOf("lnurlw://") == -1) {
@@ -908,6 +926,7 @@ public class MainActivity extends ReactActivity {
       this.key2 = this.hexStringToByteArray(key2);    
       this.key3 = this.hexStringToByteArray(key3);    
       this.key4 = this.hexStringToByteArray(key4);    
+      this.randomUID = randomUID;
     }
     catch(Exception e) {
       Log.d(TAG, "Error one or more keys are invalid: "+e.getMessage());
