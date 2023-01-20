@@ -34,6 +34,7 @@ export default function CreateBoltcardScreen({route}) {
     const [key2Changed, setKey2Changed] = useState()
     const [key3Changed, setKey3Changed] = useState()
     const [key4Changed, setKey4Changed] = useState()
+    const [privateUID, setPrivateUID] = useState(false)
 
     const [ndefWritten, setNdefWritten] = useState()
     const [writekeys, setWriteKeys] = useState()
@@ -61,6 +62,7 @@ export default function CreateBoltcardScreen({route}) {
             if(event.key2Changed) setKey2Changed(event.key2Changed);
             if(event.key3Changed) setKey3Changed(event.key3Changed);
             if(event.key4Changed) setKey4Changed(event.key4Changed);
+            if(event.uid_privacy) setPrivateUID(event.uid_privacy == 'Y');
 
             if(event.ndefWritten) setNdefWritten(event.ndefWritten);
             if(event.writekeys) setWriteKeys(event.writekeys);
@@ -177,6 +179,9 @@ export default function CreateBoltcardScreen({route}) {
                             setReadyToWrite={setReadyToWrite}
                             cardName={cardName}
                             setCardName={setCardName}
+                            privateUID={privateUID}
+                            setPrivateUID={setPrivateUID}
+
                         />
                     </Card.Content>
                     <Card.Actions style={{justifyContent:'space-around'}}>
