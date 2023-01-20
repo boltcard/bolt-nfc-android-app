@@ -11,7 +11,7 @@ Since December 2022 it may be possible to add iOS support using the new [NXP Mif
 Find out more at [boltcard.org](https://boltcard.org)
 
 ## Current Version
-v0.1.3
+v0.1.4
 
 ## NFC Card Support
  * NXP NTAG424 DNA
@@ -77,7 +77,12 @@ We rely on the Taplinx 2.0 Android library supplied by NXP.
 
 React native libraries are also used to make building the UI easier.
 
-Keep all your keys secret, and be careful when creating your cards that there are no other potential listening devices in range. 
+Keep all your keys secret, and be careful when creating your cards that there are no other potential listening devices in range.
+
+# Version info
+
+## 0.1.4
+Added support for random UID to increase privacy. https://github.com/boltcard/bolt-nfc-android-app/issues/25
 
 ## Useful debug commands
 
