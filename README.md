@@ -85,7 +85,7 @@ As of 0.1.4 the app now supports card UID Randomisation (irreversable). If you a
 	"k4": "55555555555555555555555555555555",
 	"uid_privacy": "Y"
 }
-
+```
 
 # Dependencies / Security considerations
 
