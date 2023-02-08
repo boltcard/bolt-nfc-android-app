@@ -233,7 +233,12 @@ export default function CreateBoltcardScreen({route}) {
                         {ndefWritten && <Text>NDEF written: {ndefWritten}{showTickOrError(ndefWritten == "success")}</Text>}
                         {writekeys && <Text>Keys Changed: {writekeys}{showTickOrError(writekeys == "success")}</Text>}
                         {ndefRead && <Text>Read NDEF: {ndefRead}</Text>}
-                        {testp && <Text>Test PICC: {testp}{showTickOrError(testp == "ok")}</Text>}
+                        {testp && <Text>Test PICC: {
+                            cardUID.length == 8 ? 
+                            <>test skipped {showTickOrError(true)}</>
+                            : 
+                            <>{testp}{showTickOrError(testp == "ok")}</>
+                        }</Text>}
                         {testc && <Text>Test CMAC: {testc}{showTickOrError(testc == "ok")}</Text>}
                         {testBolt && <Text>Bolt call test: {testBolt}{showTickOrError(testBolt == "success")}</Text>}
                     </Card.Content>

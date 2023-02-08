@@ -183,7 +183,7 @@ export default function ResetKeysScreen({route}) {
         <Text style={{fontSize:20, textAlign: 'center', borderColor:'black'}}>
           {writeKeysOutput ? writeKeysOutput : <ActivityIndicator />}
         </Text>
-        <Dialog.Button label="Cancel"
+        <Dialog.Button label="Close"
           onPress={() => {
             disableResetMode();
           }} />

@@ -9,7 +9,7 @@ export default function HelpScreen({ navigation }) {
         <ScrollView>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
               <Card.Content>
-                <Title selectable={true}>v0.1.3 ({gitinfo.commit})</Title>
+                <Title selectable={true}>v0.1.4 ({gitinfo.commit})</Title>
               </Card.Content>
             </Card>
             <Card style={{marginBottom:20, marginHorizontal:10}}>
@@ -32,6 +32,9 @@ export default function HelpScreen({ navigation }) {
                 </Text>
                 <Text style={styles.paragraph}>
                     Note: Keep your keys secret, and when creating cards ensure there are no other potential listening devices in range!
+                </Text>
+                <Text style={styles.paragraph}>
+                    Private UID: This setting makes the UID of the card private and the card will instead return a random number. This means that it is harder for the card to be tracked and therefore privacy is improved. However this setting is a one way function of the card and it once it has been enabled it can't be disabled.
                 </Text>
               </Card.Content>
             </Card>

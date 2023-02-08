@@ -90,6 +90,9 @@ export default function DisplayAuthInfo(props) {
                             <Text style={styles.monospace}>Key 3: {key3display}</Text>
                             <Text style={styles.monospace}>Key 4: {key4display}</Text>
                             <Text style={styles.monospace}>Private UID: {privateUID ? "Yes" : "No"}</Text>
+                            {privateUID &&
+                                <Text style=""><Ionicons name="alert-circle"  size={20} color="orange" /> Private UID cannot be undone. See the help section for more details</Text>
+                            }
                         </View>
                     :
                     <View>
