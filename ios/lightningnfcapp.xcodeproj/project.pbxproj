@@ -98,7 +98,6 @@
 				47457C4529AC3A0D006E3291 /* libicucore.tbd */,
 				47457C4329AC3A05006E3291 /* libiconv.tbd */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				0CCA38E1DDD2F0B89CA539CF /* libPods-lightningnfcapp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
