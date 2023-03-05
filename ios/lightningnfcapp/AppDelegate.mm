@@ -18,6 +18,8 @@
 
 #import <react/config/ReactNativeConfig.h>
 
+#import "RCTNfcModule.h"
+
 @interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate> {
   RCTTurboModuleManager *_turboModuleManager;
   RCTSurfacePresenterBridgeAdapter *_bridgeAdapter;

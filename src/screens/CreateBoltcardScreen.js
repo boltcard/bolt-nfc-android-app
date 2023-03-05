@@ -45,7 +45,8 @@ export default function CreateBoltcardScreen({route}) {
 
     useFocusEffect(
         React.useCallback(() => {
-          NativeModules.MyReactModule.setCardMode("read");
+            // NativeModules.MyReactModule.verifyLicense();
+          // NativeModules.MyReactModule.setCardMode("read");
         }, [])
     );
     
@@ -131,6 +132,9 @@ export default function CreateBoltcardScreen({route}) {
 
     return (
         <ScrollView>
+            {/* <Button onPress={() => {
+                NativeModules.MyReactModule.verifyLicense();
+            }} title="verify license" /> */}
             {!data || data == null ?
                 <>
                     <Card style={styles.card}>
