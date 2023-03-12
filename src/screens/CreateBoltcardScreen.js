@@ -2,11 +2,12 @@
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text } from 'react-native';
+import { Button, NativeEventEmitter, NativeModules, ScrollView, StyleSheet, Text, Platform } from 'react-native';
 import Dialog from "react-native-dialog";
 import { Card, Title } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DisplayAuthInfo from '../components/DisplayAuthInfo';
+import NfcManager from '../helper/NfcManagerIOS';
 
 export default function CreateBoltcardScreen({route}) {
     const { data, timestamp } = route.params;
@@ -120,7 +121,13 @@ export default function CreateBoltcardScreen({route}) {
 
     const writeAgain = () => {
         resetOutput();
-        NativeModules.MyReactModule.setCardMode('createBoltcard');
+        if(Platform.OS === 'ios') {
+            NativeModules.MyReactModule.setCardMode('createBoltcard', () => {
+                NativeModules.MyReactModule.readNfc();
+            });
+        } else {
+            NativeModules.MyReactModule.setCardMode('createBoltcard');
+        }
         setWriteMode(true);
     }
 
@@ -130,11 +137,31 @@ export default function CreateBoltcardScreen({route}) {
             : <Ionicons name="alert-circle"  size={20} color="red" />
     }
 
+    
+
+    async function readNdef() {
+        try {
+          // register for the NFC tag with NDEF in it
+          await NfcManager.requestTechnology(['Ndef']);
+          // the resolved tag object will contain `ndefMessage` property
+          const tag = await NfcManager.getTag();
+          const ndefmessage = await NfcManager.getNdefMessage();
+          console.warn('Tag found', tag);
+          console.warn('NDEF message found', ndefmessage);
+          const decodedNDEF = String.fromCharCode.apply(null, ndefmessage.ndefMessage[0].payload);
+          //need to 
+          console.log('NDEF?',decodedNDEF)
+        } catch (ex) {
+          console.warn('Oops!', ex, ex.);
+        } finally {
+          // stop the nfc scanning
+          NfcManager.cancelTechnologyRequest();
+        }
+      }
+
     return (
         <ScrollView>
-            {/* <Button onPress={() => {
-                NativeModules.MyReactModule.verifyLicense();
-            }} title="verify license" /> */}
+            <Button onPress={readNdef} title="read nfc" />
             {!data || data == null ?
                 <>
                     <Card style={styles.card}>

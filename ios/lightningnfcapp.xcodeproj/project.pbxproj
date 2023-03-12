@@ -18,14 +18,15 @@
 		4789820B29AF021A00EC778E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4B29AC3A2B006E3291 /* Security.framework */; };
 		4789820C29AF024700EC778E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4929AC3A25006E3291 /* libz.tbd */; };
 		4789821529AF06B500EC778E /* libPods-lightningnfcapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4789821429AF06B500EC778E /* libPods-lightningnfcapp.a */; };
+		478AAFF129BABB000040829C /* NFCManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 478AAFF029BABAFF0040829C /* NFCManager.m */; };
 		47F2119F29AF3ED100F58B31 /* libTapLinxLibrary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4E29AC476D006E3291 /* libTapLinxLibrary.a */; };
 		47F211A129AF41FF00F58B31 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F211A029AF41FF00F58B31 /* File.swift */; };
+		47FC207F29B84E89000ACD0B /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 47FC207E29B84E89000ACD0B /* Util.m */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0CCA38E1DDD2F0B89CA539CF /* libPods-lightningnfcapp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-lightningnfcapp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* lightningnfcapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lightningnfcapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = lightningnfcapp/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = lightningnfcapp/AppDelegate.mm; sourceTree = "<group>"; };
@@ -43,8 +44,11 @@
 		47457C5B29AC5805006E3291 /* RCTNfcModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTNfcModule.h; sourceTree = "<group>"; };
 		47457C5C29AC5956006E3291 /* RCTNfcModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTNfcModule.m; sourceTree = "<group>"; };
 		4789821429AF06B500EC778E /* libPods-lightningnfcapp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-lightningnfcapp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		478AAFF029BABAFF0040829C /* NFCManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NFCManager.m; sourceTree = "<group>"; };
+		478AAFF229BABB110040829C /* NFCManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NFCManager.h; sourceTree = "<group>"; };
 		47F2119E29AF3A9100F58B31 /* lightningnfcapp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "lightningnfcapp-Bridging-Header.h"; sourceTree = "<group>"; };
 		47F211A029AF41FF00F58B31 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		47FC207E29B84E89000ACD0B /* Util.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = lightningnfcapp/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		C2BD558E6A53F6A074AED1A7 /* Pods-lightningnfcapp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-lightningnfcapp.debug.xcconfig"; path = "Target Support Files/Pods-lightningnfcapp/Pods-lightningnfcapp.debug.xcconfig"; sourceTree = "<group>"; };
@@ -84,6 +88,9 @@
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
 				47F2119E29AF3A9100F58B31 /* lightningnfcapp-Bridging-Header.h */,
 				47F211A029AF41FF00F58B31 /* File.swift */,
+				47FC207E29B84E89000ACD0B /* Util.m */,
+				478AAFF029BABAFF0040829C /* NFCManager.m */,
+				478AAFF229BABB110040829C /* NFCManager.h */,
 			);
 			name = lightningnfcapp;
 			sourceTree = "<group>";
@@ -315,8 +322,10 @@
 				47F211A129AF41FF00F58B31 /* File.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				478AAFF129BABB000040829C /* NFCManager.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
 				47457C5D29AC5956006E3291 /* RCTNfcModule.m in Sources */,
+				47FC207F29B84E89000ACD0B /* Util.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
