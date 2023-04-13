@@ -10,7 +10,7 @@
   void *buffer = malloc(bufferSize);
   
   size_t numBytesEncrypted = 0;
-  CCCryptorStatus status = CCCrypt(kCCEncrypt, kCCAlgorithmAES, ccNoPadding,
+  CCCryptorStatus status = CCCrypt(kCCEncrypt, kCCAlgorithmAES, kCCOptionECBMode,
                                    [key bytes], kCCKeySizeAES128,
                                    [iv bytes],
                                    [data bytes], dataLength,
@@ -31,7 +31,7 @@
   void *buffer = malloc(bufferSize);
   
   size_t numBytesDecrypted = 0;
-  CCCryptorStatus status = CCCrypt(kCCDecrypt, kCCAlgorithmAES, ccNoPadding,
+  CCCryptorStatus status = CCCrypt(kCCDecrypt, kCCAlgorithmAES, kCCOptionECBMode,
                                    [key bytes], kCCKeySizeAES128,
                                    [iv bytes],
                                    [data bytes], dataLength,

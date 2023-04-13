@@ -826,7 +826,7 @@ continueUserActivity:(NSUserActivity *)userActivity
     }
   }
   
-  RCT_EXPORT_METHOD(writeBoltcard:(NSArray*)bytes callback:(nonnull RCTResponseSenderBlock)callback)
+  RCT_EXPORT_METHOD(writeBoltcard:(NSArray*)ndefBytes callback:(nonnull RCTResponseSenderBlock)callback)
   {
     if (tagSession != nil) {
       if (!tagSession.connectedTag) {
@@ -846,7 +846,7 @@ continueUserActivity:(NSUserActivity *)userActivity
           NSData *isoSelectCommandData = [self dataFromHexString:isoselectHex];
           NFCISO7816APDU *isoSelectAPDU = [[NFCISO7816APDU alloc] initWithData:isoSelectCommandData];
           
-          // Send the command to the tag
+          // Send the command to the tag (ISO SELECT)
           [iso7816Tag sendCommandAPDU:isoSelectAPDU completionHandler:^(NSData * _Nonnull responseData, uint8_t sw1, uint8_t sw2, NSError * _Nullable error) {
             // Handle the response or error here
             if (error) {
@@ -861,6 +861,7 @@ continueUserActivity:(NSUserActivity *)userActivity
               
               // Process the response here
             }
+            //AUTHENTICATEEV2FIRST (Part 1)
             NSString *firstAuthHex = @"9071000005000300000000";
             NSData *firstAuthCommandData = [self dataFromHexString:firstAuthHex];
             NFCISO7816APDU *firstAuthAPDU = [[NFCISO7816APDU alloc] initWithData:firstAuthCommandData];
@@ -883,12 +884,18 @@ continueUserActivity:(NSUserActivity *)userActivity
                 
               }
               
+              //AUTHENTICATEEV2FIRST (Part 2)
+              
+              //default AES 128 keys - 16 bytes of 0
               NSData *keyAes128Default = [[NSMutableData alloc] initWithLength:16];
+              
+              //According to doc, for the encryption during authentication the IV will be 128 bits of 0 == 16 bytes of 0
               NSMutableData *iv = [[NSMutableData alloc] initWithLength:16];
               
+              //decrypt the response data from the first auth to get RndB
               NSData *RndB = [AES128Encryptor decrypt:RndBEnc key:keyAes128Default iv:iv];
               
-              // Generate a random 16-byte value
+              // Generate a random 16-byte value for RndA
               uint8_t randomBytes[16];
               arc4random_buf(randomBytes, 16);
               NSData *RndA = [NSData dataWithBytes:randomBytes length:16];
@@ -901,12 +908,14 @@ continueUserActivity:(NSUserActivity *)userActivity
               NSLog(@"RndA %@", RndA);
               NSLog(@"RndBRotl %@", RndBRotl);
               
-              NSMutableData *RndARndB = [RndA mutableCopy];
-              [RndARndB appendData:RndBRotl];
+              //concat RndA and RndBRotl
+              NSMutableData *RndARndBRotl = [RndA mutableCopy];
+              [RndARndBRotl appendData:RndBRotl];
               
-              NSLog(@"RndARndB %@", RndARndB);
+              NSLog(@"RndARndBRotl %@", RndARndBRotl);
               
-              NSData *RndARndBEnc = [AES128Encryptor encrypt:RndARndB key:keyAes128Default iv:iv];
+              //encrypt RndA + RndBRotl using AES 128 encryption
+              NSData *RndARndBEnc = [AES128Encryptor encrypt:RndARndBRotl key:keyAes128Default iv:iv];
               
               NSMutableData *secondAuthCommandData = [NSMutableData data];
               // Append "90AF000020" as a hex string
@@ -918,8 +927,6 @@ continueUserActivity:(NSUserActivity *)userActivity
               
               NSLog(@"RndARndBEnc: %@", RndARndBEnc);
               
-              //              NSString *secondAuthHex = @"90AF000020";
-              //              NSData *secondAuthCommandData = [self dataFromHexString:secondAuthHex];
               NFCISO7816APDU *secondAuthAPDU = [[NFCISO7816APDU alloc] initWithData:secondAuthCommandData];
               
               NSLog(@"secondAuth command data: %@", secondAuthCommandData);
@@ -949,6 +956,7 @@ continueUserActivity:(NSUserActivity *)userActivity
         }
         
         
+        //write ndef
         id<NFCNDEFTag> ndefTag = nil;
         
         if (tagSession != nil) {
@@ -958,7 +966,7 @@ continueUserActivity:(NSUserActivity *)userActivity
         }
         
         if (ndefTag) {
-          NSData *data = arrayToData(bytes);
+          NSData *data = arrayToData(ndefBytes);
           NFCNDEFMessage *ndefMsg = [NFCNDEFMessage ndefMessageWithData:data];
           if (!ndefMsg) {
             callback(@[@"invalid ndef msg"]);
