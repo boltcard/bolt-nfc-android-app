@@ -14,11 +14,11 @@
 		47457C5429AC5689006E3291 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4329AC3A05006E3291 /* libiconv.tbd */; };
 		47457C5529AC5692006E3291 /* libicucore.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4529AC3A0D006E3291 /* libicucore.tbd */; };
 		47457C5929AC56D2006E3291 /* TapLinxLibrary in Resources */ = {isa = PBXBuildFile; fileRef = 47457C5829AC56D2006E3291 /* TapLinxLibrary */; };
-		47457C5D29AC5956006E3291 /* RCTNfcModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 47457C5C29AC5956006E3291 /* RCTNfcModule.m */; };
 		4789820B29AF021A00EC778E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4B29AC3A2B006E3291 /* Security.framework */; };
 		4789820C29AF024700EC778E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4929AC3A25006E3291 /* libz.tbd */; };
 		4789821529AF06B500EC778E /* libPods-lightningnfcapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4789821429AF06B500EC778E /* libPods-lightningnfcapp.a */; };
 		478AAFF129BABB000040829C /* NFCManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 478AAFF029BABAFF0040829C /* NFCManager.m */; };
+		47ED58D729E6726D00F32BB5 /* AES128Encryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 47ED58D629E6726D00F32BB5 /* AES128Encryptor.m */; };
 		47F2119F29AF3ED100F58B31 /* libTapLinxLibrary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 47457C4E29AC476D006E3291 /* libTapLinxLibrary.a */; };
 		47F211A129AF41FF00F58B31 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F211A029AF41FF00F58B31 /* File.swift */; };
 		47FC207F29B84E89000ACD0B /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 47FC207E29B84E89000ACD0B /* Util.m */; };
@@ -41,11 +41,11 @@
 		47457C4B29AC3A2B006E3291 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		47457C4E29AC476D006E3291 /* libTapLinxLibrary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libTapLinxLibrary.a; path = TapLinxLibrary/libTapLinxLibrary.a; sourceTree = "<group>"; };
 		47457C5829AC56D2006E3291 /* TapLinxLibrary */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TapLinxLibrary; sourceTree = "<group>"; };
-		47457C5B29AC5805006E3291 /* RCTNfcModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTNfcModule.h; sourceTree = "<group>"; };
-		47457C5C29AC5956006E3291 /* RCTNfcModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTNfcModule.m; sourceTree = "<group>"; };
 		4789821429AF06B500EC778E /* libPods-lightningnfcapp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-lightningnfcapp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		478AAFF029BABAFF0040829C /* NFCManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NFCManager.m; sourceTree = "<group>"; };
 		478AAFF229BABB110040829C /* NFCManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NFCManager.h; sourceTree = "<group>"; };
+		47ED58D629E6726D00F32BB5 /* AES128Encryptor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AES128Encryptor.m; sourceTree = "<group>"; };
+		47ED58D929E673AE00F32BB5 /* AES128Encryptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AES128Encryptor.h; sourceTree = "<group>"; };
 		47F2119E29AF3A9100F58B31 /* lightningnfcapp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "lightningnfcapp-Bridging-Header.h"; sourceTree = "<group>"; };
 		47F211A029AF41FF00F58B31 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		47FC207E29B84E89000ACD0B /* Util.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
@@ -76,8 +76,6 @@
 		13B07FAE1A68108700A75B9A /* lightningnfcapp */ = {
 			isa = PBXGroup;
 			children = (
-				47457C5B29AC5805006E3291 /* RCTNfcModule.h */,
-				47457C5C29AC5956006E3291 /* RCTNfcModule.m */,
 				4739B8F5296CC63800797E57 /* lightningnfcapp.entitlements */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -91,6 +89,8 @@
 				47FC207E29B84E89000ACD0B /* Util.m */,
 				478AAFF029BABAFF0040829C /* NFCManager.m */,
 				478AAFF229BABB110040829C /* NFCManager.h */,
+				47ED58D629E6726D00F32BB5 /* AES128Encryptor.m */,
+				47ED58D929E673AE00F32BB5 /* AES128Encryptor.h */,
 			);
 			name = lightningnfcapp;
 			sourceTree = "<group>";
@@ -324,8 +324,8 @@
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				478AAFF129BABB000040829C /* NFCManager.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				47457C5D29AC5956006E3291 /* RCTNfcModule.m in Sources */,
 				47FC207F29B84E89000ACD0B /* Util.m in Sources */,
+				47ED58D729E6726D00F32BB5 /* AES128Encryptor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

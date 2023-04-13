@@ -111,6 +111,10 @@ class NfcManagerBase {
     return handleNativeException(callNative('getNdefMessage'));
   }
 
+  async writeBoltcard(bytes) {
+    return handleNativeException(callNative('writeBoltcard', [bytes]));
+  }
+
   get ndefHandler() {
     if (!this._ndefHandler) {
       this._ndefHandler = new NdefHandler();

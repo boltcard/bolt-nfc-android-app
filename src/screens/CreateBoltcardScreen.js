@@ -8,6 +8,7 @@ import { Card, Title } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DisplayAuthInfo from '../components/DisplayAuthInfo';
 import NfcManager from '../helper/NfcManagerIOS';
+import { encodeMessage, uriRecord, decodeMessage} from '../ndef-lib'
 
 export default function CreateBoltcardScreen({route}) {
     const { data, timestamp } = route.params;
@@ -144,15 +145,16 @@ export default function CreateBoltcardScreen({route}) {
           // register for the NFC tag with NDEF in it
           await NfcManager.requestTechnology(['Ndef']);
           // the resolved tag object will contain `ndefMessage` property
-          const tag = await NfcManager.getTag();
-          const ndefmessage = await NfcManager.getNdefMessage();
-          console.warn('Tag found', tag);
-          console.warn('NDEF message found', ndefmessage);
-          const decodedNDEF = String.fromCharCode.apply(null, ndefmessage.ndefMessage[0].payload);
-          //need to 
-          console.log('NDEF?',decodedNDEF)
+            const ndefResult = await NfcManager.writeBoltcard(encodeMessage([uriRecord('lnuriw://service.boltcardwallet.com')]));
+        
+            const newndefmessage = await NfcManager.getNdefMessage();
+            const newdecodedNDEF = String.fromCharCode.apply(null, newndefmessage.ndefMessage[0].payload);
+            //check ndef
+            console.log('NDEF ',newdecodedNDEF);
+
+
         } catch (ex) {
-          console.warn('Oops!', ex, ex.);
+          console.warn('Oops!', ex);
         } finally {
           // stop the nfc scanning
           NfcManager.cancelTechnologyRequest();
@@ -161,7 +163,7 @@ export default function CreateBoltcardScreen({route}) {
 
     return (
         <ScrollView>
-            <Button onPress={readNdef} title="read nfc" />
+            <Button onPress={readNdef} title="Test NFC for iOS" />
             {!data || data == null ?
                 <>
                     <Card style={styles.card}>

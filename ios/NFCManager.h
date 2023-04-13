@@ -13,6 +13,9 @@
 #import <UIKit/UIUserActivity.h>
 #endif
 #import "MIFAREApduHandler.h"
+#import "MIFARELibraryManager.h"
+#import "TL_DESFireEV2.h"
+#import "TL_DESFireWrapper.h"
 
 @interface NfcManager : RCTEventEmitter <RCTBridgeModule, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate, MIFAREApduHandlerProtocol> {
 
@@ -20,6 +23,10 @@
 
 @property (strong, nonatomic) NFCNDEFReaderSession * _Nullable session;
 @property (strong, nonatomic) NFCTagReaderSession * _Nullable tagSession;
+@property (strong, nonatomic) MIFARELibraryManager * _Nullable libraryManager;
+@property (strong, nonatomic) MIFAREApduHandler * _Nullable apduHandler;
+@property (strong, nonatomic) TL_DESFireEV2 * _Nullable desFireEV2;
+@property (strong, nonatomic) TL_DESFireWrapper * _Nullable desFireWrapper;
 
 + (BOOL)application:(nonnull UIApplication *)application
     continueUserActivity:(nonnull NSUserActivity *)userActivity

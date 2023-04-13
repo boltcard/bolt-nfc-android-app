@@ -154,9 +154,9 @@ export default function App(props) {
       setModalVisible(true);
     });
 
-    if(Platform.OS === 'ios') {
-      NativeModules.MyReactModule.initializeLib();
-    }
+    // if(Platform.OS === 'ios') {
+    //   NativeModules.MyReactModule.initializeLib();
+    // }
 
     return () => {
       eventListener.remove();
