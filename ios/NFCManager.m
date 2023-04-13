@@ -885,6 +885,7 @@ continueUserActivity:(NSUserActivity *)userActivity
               }
               
               //AUTHENTICATEEV2FIRST (Part 2)
+              // @TODO: check if sw1 == "91" && sw2 == "AF"
               
               //default AES 128 keys - 16 bytes of 0
               NSData *keyAes128Default = [[NSMutableData alloc] initWithLength:16];
@@ -917,9 +918,8 @@ continueUserActivity:(NSUserActivity *)userActivity
               //encrypt RndA + RndBRotl using AES 128 encryption
               NSData *RndARndBEnc = [AES128Encryptor encrypt:RndARndBRotl key:keyAes128Default iv:iv];
               
-              NSMutableData *secondAuthCommandData = [NSMutableData data];
-              // Append "90AF000020" as a hex string
-              [secondAuthCommandData appendData:[self dataFromHexString:@"90AF000020"]];
+              NSData *secondAuthCommandStart = [self dataFromHexString:@"90AF000020"];
+              NSMutableData *secondAuthCommandData = [secondAuthCommandStart mutableCopy];
               // Append the encrypted data
               [secondAuthCommandData appendData:RndARndBEnc];
               // Append "00" as a hex string
@@ -947,6 +947,8 @@ continueUserActivity:(NSUserActivity *)userActivity
                   
                   // Process the response here
                 }
+                callback(@[[NSNull null]]);
+                return;
               }];
             }];
           }];
@@ -955,6 +957,8 @@ continueUserActivity:(NSUserActivity *)userActivity
           callback(@[@"tag type not supported"]);
         }
         
+        //Update the code so the ndef write doesn't happen for now. It seems like if the ndef write happens in the middle of authenticating, we get "c1" response (illegal command code)
+        return;
         
         //write ndef
         id<NFCNDEFTag> ndefTag = nil;

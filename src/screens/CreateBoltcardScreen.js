@@ -147,10 +147,10 @@ export default function CreateBoltcardScreen({route}) {
           // the resolved tag object will contain `ndefMessage` property
             const ndefResult = await NfcManager.writeBoltcard(encodeMessage([uriRecord('lnuriw://service.boltcardwallet.com')]));
         
-            const newndefmessage = await NfcManager.getNdefMessage();
-            const newdecodedNDEF = String.fromCharCode.apply(null, newndefmessage.ndefMessage[0].payload);
-            //check ndef
-            console.log('NDEF ',newdecodedNDEF);
+            // const newndefmessage = await NfcManager.getNdefMessage();
+            // const newdecodedNDEF = String.fromCharCode.apply(null, newndefmessage.ndefMessage[0].payload);
+            // //check ndef
+            // console.log('NDEF ',newdecodedNDEF);
 
 
         } catch (ex) {
