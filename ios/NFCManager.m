@@ -5,6 +5,7 @@
 #import "React/RCTLog.h"
 #import "TapLinxLibrary.h"
 #import "AES128Encryptor.h"
+#import "MiFareCryptoHelper.h"
 
 @implementation NfcManager {
   NSDictionary *nfcTechTypes;
@@ -23,7 +24,7 @@ RCT_EXPORT_MODULE(MyReactModule)
 
 static NSString *const kBgNfcTagNotification = @"RNBgNfcTagNotification";
 NSArray * bgNdefRecords = nil;
-
+ 
 + (BOOL)application:(UIApplication *)application
 continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:
@@ -888,10 +889,28 @@ continueUserActivity:(NSUserActivity *)userActivity
               // @TODO: check if sw1 == "91" && sw2 == "AF"
               
               //default AES 128 keys - 16 bytes of 0
-              NSData *keyAes128Default = [[NSMutableData alloc] initWithLength:16];
+              NSData *keyAes128Default = [self dataFromHexString:@"00000000000000000000000000000000"];
               
               //According to doc, for the encryption during authentication the IV will be 128 bits of 0 == 16 bytes of 0
               NSMutableData *iv = [[NSMutableData alloc] initWithLength:16];
+              
+              
+              // Create an instance of the MiFareCryptoHelper class
+              //this is another way of encrypting/decrypting using the Mifare taplinx library
+              //it is giving out the same output as the one I wrote though (AES128Encryptor)
+              MiFareCryptoHelper *cryptoHelper = [[MiFareCryptoHelper alloc] init];
+
+              CCOperation operation = kCCDecrypt;
+              CCOptions options = kCCOptionECBMode | kCCModeCBC;
+              // Call the doAESCipher function
+              NSData *cipherText = [cryptoHelper doAESCipher:RndBEnc
+                                                         key:keyAes128Default
+                                                     context:operation
+                                                      option:&options
+                                                    initialV:iv];
+              
+              NSLog(@"cipherText %@", cipherText);
+              
               
               //decrypt the response data from the first auth to get RndB
               NSData *RndB = [AES128Encryptor decrypt:RndBEnc key:keyAes128Default iv:iv];
@@ -904,10 +923,12 @@ continueUserActivity:(NSUserActivity *)userActivity
               // Get the response of the rotateLeftByOneByte function
               NSData *RndBRotl = [self rotateLeftByOneByte:RndB];
               
+              NSLog(@"keyAes128Default %@", keyAes128Default);
+              NSLog(@"iv %@", iv);
               NSLog(@"RndBEnc %@", RndBEnc);
               NSLog(@"RndB %@", RndB);
-              NSLog(@"RndA %@", RndA);
               NSLog(@"RndBRotl %@", RndBRotl);
+              NSLog(@"RndA %@", RndA);
               
               //concat RndA and RndBRotl
               NSMutableData *RndARndBRotl = [RndA mutableCopy];
@@ -917,6 +938,16 @@ continueUserActivity:(NSUserActivity *)userActivity
               
               //encrypt RndA + RndBRotl using AES 128 encryption
               NSData *RndARndBEnc = [AES128Encryptor encrypt:RndARndBRotl key:keyAes128Default iv:iv];
+              
+
+              CCOperation encryptOperation = kCCEncrypt;
+              // Call the doAESCipher function
+              NSData *helperenc = [cryptoHelper doAESCipher:RndARndBRotl
+                                                         key:keyAes128Default
+                                                     context:encryptOperation
+                                                      option:&options
+                                                    initialV:iv];
+              
               
               NSData *secondAuthCommandStart = [self dataFromHexString:@"90AF000020"];
               NSMutableData *secondAuthCommandData = [secondAuthCommandStart mutableCopy];
@@ -931,6 +962,7 @@ continueUserActivity:(NSUserActivity *)userActivity
               
               NSLog(@"secondAuth command data: %@", secondAuthCommandData);
               NSLog(@"secondAuth APDU: %@", secondAuthAPDU);
+              
               
               // Send the command to the tag
               [iso7816Tag sendCommandAPDU:secondAuthAPDU completionHandler:^(NSData * _Nonnull responseData, uint8_t sw1, uint8_t sw2, NSError * _Nullable error) {
