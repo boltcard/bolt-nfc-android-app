@@ -71,21 +71,7 @@ function AdvancedTabScreen() {
           })}
         >
       
-      <Tab.Screen 
-        name="Reset Keys" 
-        children={() => 
-          <CreateBoltcardStack.Navigator screenOptions={{
-            headerShown: false
-          }}>
-            <CreateBoltcardStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} initialParams={{ data: null }}/>
-            <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
-          </CreateBoltcardStack.Navigator>
-        } 
-      />
-      <Tab.Screen 
-        name="Read NFC" 
-        component={ReadNFCScreen} 
-      />
+      
       <Tab.Screen 
         name="Write NFC" 
         component={WriteNFCScreen} 
@@ -173,6 +159,10 @@ export default function App(props) {
                 iconName = focused ? 'information' : 'information-outline';
               } else if (route.name === 'Advanced') {
                 iconName = focused ? 'settings' : 'settings-outline';
+              } else if (route.name === 'Read NFC') {
+                iconName = focused ? 'book' : 'book-outline';
+              } else if (route.name === 'Reset Keys') {
+                iconName = focused ? 'key' : 'key-outline';
               }
 
               // You can return any component that you like here!
@@ -189,9 +179,19 @@ export default function App(props) {
           />
           
           <Tab.Screen 
-            name="Advanced" 
-            component={AdvancedTabScreen} 
-            options={{ headerTitle: (props) => <LogoTitle title="Advanced" {...props} />}} 
+            name="Reset Keys" 
+            children={() => 
+              <CreateBoltcardStack.Navigator screenOptions={{
+                headerShown: false
+              }}>
+                <CreateBoltcardStack.Screen name="ResetKeysScreen" component={ResetKeysScreen} initialParams={{ data: null }}/>
+                <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
+              </CreateBoltcardStack.Navigator>
+            } 
+          />
+          <Tab.Screen 
+            name="Read NFC" 
+            component={ReadNFCScreen} 
           />
           <Tab.Screen 
             name="Help" 

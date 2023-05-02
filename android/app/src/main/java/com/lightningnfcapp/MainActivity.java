@@ -384,14 +384,14 @@ public class MainActivity extends ReactActivity {
       put("cardUID", UID.substring(2));
     }});
     
-    String [] keyChecks = checkKeys(boltCardWrapper);
-    sendEvent("CreateBoltCard",new HashMap<String, String>() {{
-      put("key0Changed", keyChecks[0]);
-      put("key1Changed", keyChecks[1]);
-      put("key2Changed", keyChecks[2]);
-      put("key3Changed", keyChecks[3]);
-      put("key4Changed", keyChecks[4]);
-    }});
+    // String [] keyChecks = checkKeys(boltCardWrapper);
+    // sendEvent("CreateBoltCard",new HashMap<String, String>() {{
+    //   put("key0Changed", keyChecks[0]);
+    //   put("key1Changed", keyChecks[1]);
+    //   put("key2Changed", keyChecks[2]);
+    //   put("key3Changed", keyChecks[3]);
+    //   put("key4Changed", keyChecks[4]);
+    // }});
 
     //write the NDEF and the file settings
     try {
@@ -584,17 +584,19 @@ public class MainActivity extends ReactActivity {
     }
     else {
 
-      String [] keyChecks = checkKeys(boltCardWrapper);
+      // String [] keyChecks = checkKeys(boltCardWrapper);
+
+      Log.d(TAG, "Keychecks: "+new Byte(boltCardWrapper.getKeyVersion(0)));
 
       WritableMap params = Arguments.createMap();
       params.putString("tagname", tagname);
       params.putString("cardReadInfo", cardDataBuilder);
       params.putString("ndef", bolturl);
-      params.putString("key0Changed", keyChecks[0]);
-      params.putString("key1Changed", keyChecks[1]);
-      params.putString("key2Changed", keyChecks[2]);
-      params.putString("key3Changed", keyChecks[3]);
-      params.putString("key4Changed", keyChecks[4]);
+      params.putString("key0Changed", ""+(new Byte(boltCardWrapper.getKeyVersion(0)).intValue()));
+      params.putString("key1Changed", ""+(new Byte(boltCardWrapper.getKeyVersion(1)).intValue()));
+      params.putString("key2Changed", ""+(new Byte(boltCardWrapper.getKeyVersion(2)).intValue()));
+      params.putString("key3Changed", ""+(new Byte(boltCardWrapper.getKeyVersion(3)).intValue()));
+      params.putString("key4Changed", ""+(new Byte(boltCardWrapper.getKeyVersion(4)).intValue()));
       params.putString("cardUID", UID.substring(2));
       sendEvent("CardHasBeenRead", params);
     }
@@ -1003,11 +1005,11 @@ public class MainActivity extends ReactActivity {
     return -1;
   }
 
-  protected String decodeHex(byte[] input) throws Exception {
-    return this.decodeHex(new BigInteger(1, input).toString(16));
+  public static String decodeHex(byte[] input) throws Exception {
+    return MainActivity.decodeHex(new BigInteger(1, input).toString(16));
   }
 
-  protected String decodeHex(String input) throws Exception {
+  public static String decodeHex(String input) throws Exception {
     byte[] bytes = Hex.decodeHex(input.toCharArray());
     return new String(bytes, "UTF-8");
   }

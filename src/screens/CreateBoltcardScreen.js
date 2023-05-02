@@ -229,7 +229,6 @@ export default function CreateBoltcardScreen({route}) {
                         {tagTypeError && <Text>Tag Type Error: {tagTypeError}<Ionicons name="alert-circle"  size={20} color="red" /></Text>}
                         {cardUID && <Text>Card UID: {cardUID}<Ionicons name="checkmark-circle"  size={20} color="green" /></Text>}
                         {tagname && <Text style={{lineHeight:30, textAlignVertical:"center"}}>Tag: {tagname}<Ionicons name="checkmark-circle"  size={20} color="green" /></Text>}
-                        {key0Changed && <Text>Keys ready to change: {key0Changed == "no" ? "yes" : "no"}{key0Changed == "no" ? <Ionicons name="checkmark-circle"  size={20} color="green" /> : <Ionicons name="alert-circle"  size={20} color="red" />}</Text>}                       
                         {ndefWritten && <Text>NDEF written: {ndefWritten}{showTickOrError(ndefWritten == "success")}</Text>}
                         {writekeys && <Text>Keys Changed: {writekeys}{showTickOrError(writekeys == "success")}</Text>}
                         {ndefRead && <Text>Read NDEF: {ndefRead}</Text>}
