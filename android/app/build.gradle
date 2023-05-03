@@ -154,8 +154,8 @@ android {
         applicationId "com.lightningnfcapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "0.1.4"
+        versionCode 20
+        versionName "0.1.6"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
         missingDimensionStrategy 'react-native-camera', 'general'
         resValue "string", "build_config_package", "com.lightningnfcapp"
