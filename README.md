@@ -99,8 +99,13 @@ Keep all your keys secret, and be careful when creating your cards that there ar
 
 # Version info
 
+## 0.1.6
+Remove key check code to prevent card programming errors
+
 ## 0.1.4
 Added support for random UID to increase privacy. https://github.com/boltcard/bolt-nfc-android-app/issues/25
+
+# [Testing](testing.md)
 
 ## Useful debug commands
 
