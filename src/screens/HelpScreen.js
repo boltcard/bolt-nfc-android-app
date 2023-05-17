@@ -1,61 +1,115 @@
 
-
-import { Button, Linking, ScrollView, StyleSheet, Text } from 'react-native';
+import React from 'react';
+import { TouchableOpacity, Button, Linking, ScrollView, StyleSheet, Text, Image, View } from 'react-native';
 import { Card, Title } from 'react-native-paper';
 import gitinfo from '../../gitinfo.json';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 export default function HelpScreen({ navigation }) {
 
     return (
-        <ScrollView>
-            <Card style={{marginBottom:20, marginHorizontal:10}}>
-              <Card.Content>
-                <Title selectable={true}>v0.1.4 ({gitinfo.commit})</Title>
-              </Card.Content>
-            </Card>
-            <Card style={{marginBottom:20, marginHorizontal:10}}>
-              <Card.Content>
-                <Title>Usage Instructions</Title>
-                <Text style={styles.paragraph}>
-                    1. Install Bolt Card Server (follow instructions in the Git Repo) and aquire some blank NTAG424DNA cards. 
+    <>
+      <ScrollView>
+        <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
+          <Card.Content>
+            <Title selectable={true}>v0.1.7 ({gitinfo.commit})</Title>
+          </Card.Content>
+        </Card>
+        <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
+          <Card.Content>
+            <Title>Built By</Title>
+            <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
+            <TouchableOpacity onPress={() => Linking.openURL("https://onesandzeros.nz")}>
+              <Image
+                style={{width: 120, height: 50}}
+                source={require('../image/OAZ-Logo.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Linking.openURL("https://www.whitewolftech.com")}>
+              <Image
+                style={{width: 170, height: 50}}
+                source={require('../image/wwt-on-white-sample.png')}
+              />
+            </TouchableOpacity>
+            </View>
+          </Card.Content>
+        </Card>
+        <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
+          <Card.Content>
+              <Title>Instructions</Title>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://lasereyes.cards/how-to-use/lnbits-bolt-card-setup-instructions/")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="flash"  size={20} color="white" />  LNBits Setup
                 </Text>
-                <Text style={styles.paragraph}>
-                    2. On your Bolt Card server, run the createboltcard command. You might have to compile this executable first.
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://github.com/boltcard/boltcard/blob/main/docs/INSTALL.md")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="logo-github"  size={20} color="white" />  Bolt Card Service Setup
                 </Text>
-                <Text style={styles.paragraph}>
-                    3. Scan the QR code in the console with the phone to load the Card keys and LNURLW
+              </TouchableOpacity>
+          </Card.Content>
+        </Card>
+        <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
+          <Card.Content>
+            <Title>Links</Title>
+            <Text style={styles.paragraph}>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://t.me/bolt_card")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="paper-plane-outline"  size={20} color="white" /> Bolt Card Telegram Help
                 </Text>
-                <Text style={styles.paragraph}>
-                    4. Check everything looks OK and then press "Write Card"
+              </TouchableOpacity>
+            </Text>
+            <Text style={styles.paragraph}>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://github.com/boltcard")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="logo-github"  size={20} color="white" />  Bolt Card Github
                 </Text>
-                <Text style={styles.paragraph}>
-                    5. Hold your card to the NFC reader on your phone untill you see the success message.
+              </TouchableOpacity>
+            </Text>
+            <Text style={styles.paragraph}>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://lnbits.com")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="flash"  size={20} color="white" /> LNBits.com
                 </Text>
-                <Text style={styles.paragraph}>
-                    Note: Keep your keys secret, and when creating cards ensure there are no other potential listening devices in range!
+              </TouchableOpacity>
+            </Text>
+            <Text style={styles.paragraph}>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://t.me/lnbits")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="paper-plane-outline"  size={20} color="white" />  LNBits Telegram Help
                 </Text>
-                <Text style={styles.paragraph}>
-                    Private UID: This setting makes the UID of the card private and the card will instead return a random number. This means that it is harder for the card to be tracked and therefore privacy is improved. However this setting is a one way function of the card and it once it has been enabled it can't be disabled.
+              </TouchableOpacity>
+            </Text>
+            <Text style={styles.paragraph}>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://boltcardwallet.com")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="link-outline"  size={20} color="white" /> BoltCardWallet.com
                 </Text>
-              </Card.Content>
-            </Card>
-            <Card style={{marginBottom:20, marginHorizontal:10}}>
-              <Card.Content>
-                <Title>Links</Title>
-                <Text style={styles.paragraph}>
-                    <Button title="Bolt Card Telegram Help Channel" onPress={() => Linking.openURL("https://t.me/bolt_card")}/>
-                </Text>
-                <Text style={styles.paragraph}>
-                    <Button title="Bolt Card Github" onPress={() => Linking.openURL("https://github.com/boltcard")}/>
-                </Text>
-              </Card.Content>
-            </Card>
-
-        </ScrollView>
+              </TouchableOpacity>
+            </Text>
+          </Card.Content>
+        </Card>
+      </ScrollView>
+    </>
     );
   
 }
 
 const styles = StyleSheet.create({
+  button: {
+    backgroundColor: 'rgb(0,122,255)',
+    padding: 5,
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  buttonText: {
+    textTransform: 'uppercase',
+    color: 'white',
+    fontWeight: 'bold',
+    flexDirection: 'row',
+    fontSize: 15,
+  },
   centerText: {
     flex: 1,
     fontSize: 18,
@@ -66,10 +120,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000'
   },
-  buttonText: {
-    fontSize: 21,
-    color: 'rgb(0,122,255)'
-  },
+  
   buttonTouchable: {
     padding: 16
   },

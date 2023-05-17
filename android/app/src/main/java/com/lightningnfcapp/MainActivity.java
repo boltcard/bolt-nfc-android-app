@@ -130,6 +130,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
+import com.facebook.react.defaults.DefaultReactActivityDelegate;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -142,7 +144,7 @@ import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.Mac;
-import expo.modules.ReactActivityDelegateWrapper;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -192,29 +194,24 @@ public class MainActivity extends ReactActivity {
 
     mReactRootView = new ReactRootView(this);
     List<ReactPackage> packages = new PackageList(getApplication()).getPackages();
-    mReactInstanceManager = ReactInstanceManager.builder()
-                .setApplication(getApplication())
-                .setCurrentActivity(this)
-                .setBundleAssetName("index.android.bundle")
-                .setJSMainModulePath("index")
-                .addPackages(packages)
-                .setUseDeveloperSupport(BuildConfig.DEBUG)
-                .setInitialLifecycleState(LifecycleState.RESUMED)
-                .build();
+    // mReactInstanceManager = ReactInstanceManager.builder()
+    //             .setJavaScriptExecutorFactory(HermesExecutorFactory())
+    //             .setApplication(getApplication())
+    //             .setCurrentActivity(this)
+    //             .setBundleAssetName("index.android.bundle")
+    //             .setJSMainModulePath("index")
+    //             .addPackages(packages)
+    //             .setUseDeveloperSupport(BuildConfig.DEBUG)
+    //             .setInitialLifecycleState(LifecycleState.RESUMED)
+    //             .build();
+
+    mReactInstanceManager = this.getReactInstanceManager();
+
+
     // The string here (e.g. "MyReactNativeApp") has to match
     // the string in AppRegistry.registerComponent() in index.js
     Bundle initialProperties = new Bundle();
-    mReactRootView.startReactApplication(mReactInstanceManager, "main", initialProperties);
-
-    boolean readPermission = (ContextCompat.checkSelfPermission(MainActivity.this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-
-    if (!readPermission) {
-        ActivityCompat.requestPermissions(MainActivity.this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                STORAGE_PERMISSION_WRITE
-        );
-    }
+    mReactRootView.startReactApplication(mReactInstanceManager, "lightningnfcapp", initialProperties);
 
     /* Initialize the library and register to this activity */
     initializeLibrary();
@@ -1095,20 +1092,26 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "main";
+    return "lightningnfcapp";
   }
 
+  /**
+   * Returns the instance of the {@link ReactActivityDelegate}. Here we use a util class {@link
+   * DefaultReactActivityDelegate} which allows you to easily enable Fabric and Concurrent React
+   * (aka React 18) with two boolean flags.
+   */
   @Override
   protected ReactActivityDelegate createReactActivityDelegate() {
-    return new ReactActivityDelegate(this, getMainComponentName()) {
-      @Override
-      protected Bundle getLaunchOptions() {
-        Bundle initialProperties = new Bundle();
-        initialProperties.putCharSequence("carddata", new String("Please scan NFC Card"));
-        return initialProperties;
-      }
-    };
+    return new DefaultReactActivityDelegate(
+      this,
+      getMainComponentName(),
+      // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+      DefaultNewArchitectureEntryPoint.getFabricEnabled(), // fabricEnabled
+      // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
+      DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
+    );
   }
+
 
 
   /**
