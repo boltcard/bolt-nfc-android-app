@@ -114,3 +114,4 @@ Added support for random UID to increase privacy. https://github.com/boltcard/bo
 * java --module-path ~/Android/javafx-sdk-18.0.2/lib --add-modules javafx.controls,javafx.fxml -jar TagXplorer-v1.2.jar
 * ./gradlew assembleRelease
 * \copy (select * from cards order by card_id) to export.csv CSV HEADER;
+* echo \"{\\\"commit\\\":\\\"`git rev-parse --short HEAD`\\\"}\" > gitinfo.json
