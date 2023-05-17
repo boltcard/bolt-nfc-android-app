@@ -18,7 +18,7 @@ export default function ScanScreen({ route, navigation }) {
 
   const { backScreen, backRoot } = route.params;
 
-  console.log('Scan Screen backScreen, backRoot', backScreen, backRoot);
+  // console.log('Scan Screen backScreen, backRoot', backScreen, backRoot);
   const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
     checkInverted: true,
   });
