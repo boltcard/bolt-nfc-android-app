@@ -10,6 +10,8 @@ Since December 2022 it may be possible to add iOS support using the new [NXP Mif
 
 Find out more at [boltcard.org](https://boltcard.org)
 
+# [Card programming errors](card-programming-errors.md)
+
 ## Current Version
 v0.1.4
 
