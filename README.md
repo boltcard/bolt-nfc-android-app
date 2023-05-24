@@ -11,7 +11,7 @@ Since December 2022 it may be possible to add iOS support using the new [NXP Mif
 Find out more at [boltcard.org](https://boltcard.org)
 
 ## Current Version
-v0.1.4
+v0.1.9
 
 ## NFC Card Support
  * NXP NTAG424 DNA
@@ -98,6 +98,9 @@ React native libraries are also used to make building the UI easier.
 Keep all your keys secret, and be careful when creating your cards that there are no other potential listening devices in range.
 
 # Version info
+
+## 0.1.9
+Various fixes to attempt to prevent card programming errors
 
 ## 0.1.6
 Remove key check code to prevent card programming errors

@@ -12,7 +12,7 @@ export default function HelpScreen({ navigation }) {
       <ScrollView>
         <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
           <Card.Content>
-            <Title selectable={true}>v0.1.8 ({gitinfo.commit})</Title>
+            <Title selectable={true}>v0.1.9 ({gitinfo.commit})</Title>
           </Card.Content>
         </Card>
         <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
@@ -36,6 +36,14 @@ export default function HelpScreen({ navigation }) {
         </Card>
         <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
           <Card.Content>
+          <Title>Card Errors</Title>
+            <Text style={styles.paragraph}>
+              <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://github.com/boltcard/bolt-nfc-android-app/blob/master/card-programming-errors.md")}>
+                <Text style={styles.buttonText}>
+                  <Ionicons name="logo-github"  size={20} color="white" /> Card Programming Errors
+                </Text>
+              </TouchableOpacity>
+            </Text>
               <Title>Instructions</Title>
               <TouchableOpacity style={styles.button} onPress={() => Linking.openURL("https://lasereyes.cards/how-to-use/lnbits-bolt-card-setup-instructions/")}>
                 <Text style={styles.buttonText}>
