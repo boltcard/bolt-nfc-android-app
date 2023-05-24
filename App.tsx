@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View, NativeModules } from 'react-native';
 
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
@@ -13,7 +13,6 @@ import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
-import WriteNFCScreen from './src/screens/WriteNFCScreen';
 
 import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -42,42 +41,6 @@ function CreateBoltcardStackScreen() {
       <CreateBoltcardStack.Screen name="CreateBoltcardScreen" component={CreateBoltcardScreen} initialParams={{ data: null }}/>
       <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
     </CreateBoltcardStack.Navigator>
-  );
-}
-
-function AdvancedTabScreen() {
-  return (
-    <Tab.Navigator
-          screenOptions={({ route }) => ({
-            headerShown: false,
-            tabBarIcon: ({ focused, color, size }) => {
-              let iconName;
-
-              if (route.name === 'Read NFC') {
-                iconName = focused ? 'book' : 'book-outline';
-              } else if (route.name === 'Write NFC') {
-                iconName = focused ? 'save' : 'save-outline';
-              } else if (route.name === 'Reset Keys') {
-                iconName = focused ? 'key' : 'key-outline';
-              } else if (route.name === 'Wipe Card') {
-                iconName = focused ? 'trash' : 'trash-outline';
-              }
-
-              // You can return any component that you like here!
-              return <Ionicons name={iconName} size={size} color={color} />;
-            },
-            tabBarActiveTintColor: '#f58340',
-            tabBarInactiveTintColor: 'gray',
-          })}
-        >
-      
-      
-      <Tab.Screen 
-        name="Write NFC" 
-        component={WriteNFCScreen} 
-      />
-    </Tab.Navigator>
-    
   );
 }
 
@@ -133,7 +96,7 @@ export default function App(props) {
     setModalVisible(true);
   }
 
-  useEffect(() =>{
+  useEffect(() => {
     const eventEmitter = new NativeEventEmitter();
     const eventListener = eventEmitter.addListener('NFCError', (event) => {
       setModalText(event.message);
@@ -143,7 +106,7 @@ export default function App(props) {
     return () => {
       eventListener.remove();
     };
-  })
+  }, []);
 
   return (
     <PaperProvider theme={theme}>

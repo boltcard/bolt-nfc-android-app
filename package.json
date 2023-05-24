@@ -1,6 +1,6 @@
 {
   "name": "lightningnfcapp",
-  "version": "0.0.1",
+  "version": "0.1.9",
   "private": true,
   "scripts": {
     "android": "react-native run-android",

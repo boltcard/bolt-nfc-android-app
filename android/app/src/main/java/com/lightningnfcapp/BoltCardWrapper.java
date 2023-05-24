@@ -128,6 +128,16 @@ public class BoltCardWrapper {
         }
     }
 
+    public void authenticateEV2NonFirst(int cardKeyNumber, KeyData key)
+    {
+        if (this.ntag424DNA != null) {
+            this.ntag424DNA.authenticateEV2NonFirst(cardKeyNumber, key);
+        }
+        else {
+            this.ntag424DNATT.authenticateEV2NonFirst(cardKeyNumber, key);
+        }
+    }
+
     public byte getKeyVersion(int keyNumber)
     {
         if (this.ntag424DNA != null) {

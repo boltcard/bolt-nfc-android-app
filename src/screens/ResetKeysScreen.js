@@ -94,7 +94,7 @@ export default function ResetKeysScreen({route}) {
   };
 
   useEffect(() =>{
-    const eventEmitter = new NativeEventEmitter(NativeModules.ToastExample);
+    const eventEmitter = new NativeEventEmitter();
     const eventListener = eventEmitter.addListener('ChangeKeysResult', (event) => {
       if(event.output == "success") {
         setWriteKeysOutput("Keys reset successfully");
