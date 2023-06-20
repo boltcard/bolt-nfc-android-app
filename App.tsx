@@ -13,6 +13,7 @@ import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
+import TestScreen from './src/screens/TestScreen';
 
 import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -160,6 +161,10 @@ export default function App(props) {
             name="Help" 
             component={HelpScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Help" {...props} />}} 
+          />
+           <Tab.Screen 
+            name="Test" 
+            component={TestScreen} 
           />
           
         </Tab.Navigator>
