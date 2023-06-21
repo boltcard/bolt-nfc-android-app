@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View, NativeModules } from 'react-native';
+import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
@@ -137,6 +137,10 @@ export default function App(props) {
           })}
         >
           <Tab.Screen 
+            name="Test" 
+            component={TestScreen} 
+          />
+          <Tab.Screen 
             name="Create Bolt Card" 
             children={() => <CreateBoltcardStackScreen />} 
             options={{ headerTitle: (props) => <LogoTitle title="Create Bolt Card" {...props} />}} 
@@ -162,10 +166,7 @@ export default function App(props) {
             component={HelpScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Help" {...props} />}} 
           />
-           <Tab.Screen 
-            name="Test" 
-            component={TestScreen} 
-          />
+           
           
         </Tab.Navigator>
       </NavigationContainer>

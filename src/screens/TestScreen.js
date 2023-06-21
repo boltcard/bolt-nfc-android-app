@@ -1,12 +1,8 @@
 
 import React from 'react';
-import { TouchableOpacity, Button, Linking, ScrollView, StyleSheet, Text, Image, View } from 'react-native';
+import { Button, ScrollView, View } from 'react-native';
+import NfcManager, { NfcTech } from 'react-native-nfc-manager';
 import { Card, Title } from 'react-native-paper';
-import gitinfo from '../../gitinfo.json';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
-
-var CryptoJS = require("crypto-js");
 
 function hexToBytes(hex) {
     let bytes = [];
@@ -31,8 +27,22 @@ export default function TestScreen({ navigation }) {
         try {
           // register for the NFC tag with NDEF in it
           await NfcManager.requestTechnology(NfcTech.IsoDep);
-          // the resolved tag object will contain `ndefMessage` property
+
+          //iso select file
+          const isoselect = hexToBytes('00A4040007D276000085010100');
+          console.log('isoselect', isoselect)
+          const isoSelectResult = await NfcManager.transceive(isoselect);
+          console.warn('isoSelectResult: ', bytesToHex(isoSelectResult));
+
+          //auth ev2 first part 1
           const bytes = hexToBytes('9071000005000300000000');
+          
+          //get card UID
+          // const bytes = hexToBytes('9051000000');
+          
+          //get key version
+          // const bytes = hexToBytes('90640000010100');
+
           console.log('bytes', bytes)
           const Result = await NfcManager.transceive(bytes);
           console.warn('Result: ', bytesToHex(Result));
