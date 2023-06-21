@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   ActivityIndicator, Button, NativeEventEmitter, NativeModules,
-  ScrollView, StyleSheet, Text, TextInput, View
+  ScrollView, StyleSheet, Text, TextInput, View, Platform
 } from 'react-native';
 import Dialog from "react-native-dialog";
 import { Card, Title } from 'react-native-paper';
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexWrap: 'wrap',
     padding: 5,
-    fontFamily: 'monospace',
+    fontFamily: Platform.OS === 'ios' ? "Courier New" : "monospace",
     textAlignVertical: 'top',
     color:'#000'
   },

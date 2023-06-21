@@ -48,6 +48,11 @@ target 'lightningnfcapp' do
     # Pods for testing
   end
 
+  permissions_path = '../node_modules/react-native-permissions/ios'
+
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+  
   post_install do |installer|
     react_native_post_install(
       installer,

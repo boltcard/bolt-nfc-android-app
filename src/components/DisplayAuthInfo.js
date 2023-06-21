@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, NativeModules, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, NativeModules, StyleSheet, Text, View, Platform } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function DisplayAuthInfo(props) {
@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
       marginBottom:5
     },
     monospace: {
-      fontFamily: "monospace"
+      fontFamily: Platform.OS === 'ios' ? "Courier New" : "monospace"
     }
   });
