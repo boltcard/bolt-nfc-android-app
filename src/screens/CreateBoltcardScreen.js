@@ -138,18 +138,6 @@ export default function CreateBoltcardScreen({route}) {
             : <Ionicons name="alert-circle"  size={20} color="red" />
     }
 
-    const iosGetFileSettings = async () => {
-        try {
-            await NfcManager.requestTechnologu(NfcTech.Ndef);
-            const tag = await NfcManager.getTag();
-            console.log('Tag found', tag);
-        } catch (ex) {
-            console.warn('Oops', ex);
-        } finally {
-            NfcManager.cancelTechnologyRequest();
-        }
-    }
-
     return (
         <ScrollView>
             {!data || data == null ?
@@ -160,13 +148,6 @@ export default function CreateBoltcardScreen({route}) {
                             <Text>Press the create card on LNBits or run the ./createboltcard command on your boltcard server</Text>
                         </Card.Content>
                         <Card.Actions style={{justifyContent: 'space-around'}}>
-                            {Platform.OS == 'ios' &&
-                                <Button 
-                                    title="IOS "
-                                    color="red"
-                                    onPress={iosGetFileSettings} 
-                                />
-                            }
                             <Button onPress={scanQRCode} title="Scan QR Code" />
                             <Button onPress={() => setPromptVisible(true)} title="Paste Auth URL" />
                         </Card.Actions>  
