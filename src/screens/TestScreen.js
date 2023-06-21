@@ -4,6 +4,7 @@ import { Card, Title } from 'react-native-paper';
 import gitinfo from '../../gitinfo.json';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+import { randomBytes } from 'crypto';
 
 var CryptoJS = require("crypto-js");
 var AES = require("crypto-js/aes");
@@ -26,6 +27,12 @@ function bytesToHex(bytes) {
     return hex.join("");
 }
 
+function leftRotate(bytesArr, rotatebit = 1) {
+    let first = bytesArr.shift();
+    bytesArr.push(first);
+    return bytesArr;
+}
+
 export default function TestScreen({ navigation }) {
     async function readNdef() {
         try {
@@ -40,8 +47,14 @@ export default function TestScreen({ navigation }) {
             console.log('resultData', resultData);
             const key = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
             const iv = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
-            const RndB = AES.decrypt(resultData, key, {padding: CryptoJS.pad.NoPadding, mode: CryptoJS.mode.CBC, iv: iv});
-            console.log('rndb',CryptoJS.enc.Hex.stringify(RndB));
+            const RndBDec = AES.decrypt(resultData, key, {padding: CryptoJS.pad.NoPadding, mode: CryptoJS.mode.CBC, iv: iv});
+            console.log('rndb',CryptoJS.enc.Hex.stringify(RndBDec));
+            const RndB = CryptoJS.enc.Hex.stringify(RndBDec);
+            const RndA = randomBytes(16);
+            console.log('rnda', RndA);
+            const RndBRotlBytes = leftRotate(hexToBytes(RndB));
+            const RndBRotl = bytesToHex(RndBRotlBytes);
+            console.log('RndBRotl', RndBRotlBytes, RndBRotl);
         } catch (ex) {
           console.warn('Oops!', ex);
         } finally {
