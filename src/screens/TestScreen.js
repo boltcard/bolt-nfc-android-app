@@ -45,17 +45,34 @@ export default function TestScreen({ navigation }) {
             console.warn('Result: ', Platform.OS == 'ios' ? bytesToHex([Result.sw1, Result.sw2]) : bytesToHex(Result));
             const resultData = bytesToHex(Result.response);
             console.log('resultData', resultData);
+            console.log('resultData', hexToBytes(resultData));
             const key = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
             const iv = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
-            const RndBDec = AES.decrypt(resultData, key, {padding: CryptoJS.pad.NoPadding, mode: CryptoJS.mode.CBC, iv: iv});
-            console.log('rndb',CryptoJS.enc.Hex.stringify(RndBDec));
+            const aesEncryptOption = {padding: CryptoJS.pad.NoPadding, mode: CryptoJS.mode.CBC, iv: iv, keySize: 128 / 8};
+            const RndBDec = AES.decrypt({ciphertext: CryptoJS.enc.Hex.parse(resultData)}, key, aesEncryptOption);
             const RndB = CryptoJS.enc.Hex.stringify(RndBDec);
-            const RndA = randomBytes(16);
-            console.log('rnda', RndA);
+            console.log('key',key, 'iv', iv);
+            console.log('rndb',RndB);
+            const RndABytes = randomBytes(16);
+            const RndA = bytesToHex(RndABytes);
+            console.log('rnda', bytesToHex(RndABytes));
             const RndBRotlBytes = leftRotate(hexToBytes(RndB));
             const RndBRotl = bytesToHex(RndBRotlBytes);
             console.log('RndBRotl', RndBRotlBytes, RndBRotl);
-        } catch (ex) {
+
+            const RndARndBRotl = RndA + RndBRotl;
+            console.log('RndARndBRotl', RndARndBRotl);
+            const RndARndBEncData = AES.encrypt(CryptoJS.enc.Hex.parse(RndARndBRotl), key, aesEncryptOption);
+            const RndARndBEnc = RndARndBEncData.ciphertext.toString(CryptoJS.enc.Hex);
+            console.log('RndARndBEnc',RndARndBEnc);
+            console.log('RndARndBEnc',hexToBytes(RndARndBEnc));
+        
+            const secondAuthBytes = hexToBytes('90AF000020'+RndARndBEnc+'00');
+            console.log('90AF000020'+RndARndBEnc+'00');
+            console.log('secondAuthBytes', secondAuthBytes);
+            const secondAuthRes = Platform.OS == 'ios' ? await NfcManager.sendCommandAPDUIOS(secondAuthBytes) : await NfcManager.transceive(secondAuthBytes);
+            console.warn('Result: ', Platform.OS == 'ios' ? bytesToHex([secondAuthRes.sw1, secondAuthRes.sw2]) : bytesToHex(secondAuthRes));
+          } catch (ex) {
           console.warn('Oops!', ex);
         } finally {
           // stop the nfc scanning
