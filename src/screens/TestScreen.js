@@ -46,6 +46,7 @@ export default function TestScreen({ navigation }) {
             const resultData = bytesToHex(Result.response);
             console.log('resultData', resultData);
             console.log('resultData', hexToBytes(resultData));
+            //91AF is the successful code
             const key = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
             const iv = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
             const aesEncryptOption = {padding: CryptoJS.pad.NoPadding, mode: CryptoJS.mode.CBC, iv: iv, keySize: 128 / 8};
@@ -72,6 +73,7 @@ export default function TestScreen({ navigation }) {
             console.log('secondAuthBytes', secondAuthBytes);
             const secondAuthRes = Platform.OS == 'ios' ? await NfcManager.sendCommandAPDUIOS(secondAuthBytes) : await NfcManager.transceive(secondAuthBytes);
             console.warn('Result: ', Platform.OS == 'ios' ? bytesToHex([secondAuthRes.sw1, secondAuthRes.sw2]) : bytesToHex(secondAuthRes));
+            //9100 is the successful code
           } catch (ex) {
           console.warn('Oops!', ex);
         } finally {
