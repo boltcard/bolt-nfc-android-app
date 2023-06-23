@@ -39,6 +39,12 @@ export default function TestScreen({ navigation }) {
             // register for the NFC tag with NDEF in it
             await NfcManager.requestTechnology(NfcTech.IsoDep);
             // the resolved tag object will contain `ndefMessage` property
+
+            //iso select file before auth
+            const isoSelectFileBytes = hexToBytes("00A4040007D276000085010100");
+            const isoSelectRes = Platform.OS == 'ios' ? await NfcManager.sendCommandAPDUIOS(isoSelectFileBytes) : await NfcManager.transceive(isoSelectFileBytes);
+            console.warn('isoSelectRes: ', Platform.OS == 'ios' ? bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]) : bytesToHex(isoSelectRes));
+
             const bytes = hexToBytes('9071000005000300000000');
             console.log('bytes', bytes)
             const Result = Platform.OS == 'ios' ? await NfcManager.sendCommandAPDUIOS(bytes) : await NfcManager.transceive(bytes);
