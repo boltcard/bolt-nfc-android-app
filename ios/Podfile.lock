@@ -734,7 +734,7 @@ SPEC CHECKSUMS:
   MLKitVision: 8baa5f46ee3352614169b85250574fde38c36f49
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
-  Permission-Camera: 9e2b037993bc70be4f4db0c18335a8a414124c03
+  Permission-Camera: e6d142d7d8b714afe0a83e5e6ae17eb949f1e3e9
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 8af6a32dfc2b65ec82193c2dee6e1011ff22ac2a
@@ -751,10 +751,10 @@ SPEC CHECKSUMS:
   React-jsinspector: c712f9e3bb9ba4122d6b82b4f906448b8a281580
   React-logger: 342f358b8decfbf8f272367f4eacf4b6154061be
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
-  react-native-nfc-manager: bb5457995374e3dd44b42a9fbf1003b546389f1c
-  react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
-  react-native-safe-area-context: 2f4cee1dc8828f67fcc33cc865a9093dfedab446
-  react-native-udp: ccbd878f0f3b968217fc7e3d5eb5839fcaab8b6c
+  react-native-nfc-manager: 00700a5cd081bf78e2f33fbf84b8610aef4a832c
+  react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
+  react-native-safe-area-context: b8979f5eda6ed5903d4dbc885be3846ea3daa753
+  react-native-udp: ff9d13e523f2b58e6bc5d4d32321ac60671b5dc9
   React-perflogger: d21f182895de9d1b077f8a3cd00011095c8c9100
   React-RCTActionSheet: 0151f83ef92d2a7139bba7dfdbc8066632a6d47b
   React-RCTAnimation: 5ec9c0705bb2297549c120fe6473aa3e4a01e215
@@ -768,16 +768,16 @@ SPEC CHECKSUMS:
   React-RCTVibration: 43ffd976a25f6057a7cf95ea3648ba4e00287f89
   React-runtimeexecutor: 7c51ae9d4b3e9608a2366e39ccaa606aa551b9ed
   ReactCommon: 739352444061f8625428e6ff0620c30362c3d9af
-  RNCClipboard: 33ec5830d149587a7d9de7bee1f80889f101dda6
+  RNCClipboard: 3f0451a8100393908bea5c5c5b16f96d45f30bfc
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
-  RNPermissions: 320825772cceb2fba9ae9dfa3e010c7fea15f3ca
+  RNPermissions: 215c54462104b3925b412b0fb3c9c497b21c358b
   RNReanimated: f186e85d9f28c9383d05ca39e11dd194f59093ec
   RNScreens: d3675ab2878704de70c9dae57fa5d024802404cc
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
-  TcpSockets: 8d839b9b14f6f344d98e4642ded13ab3112b462d
-  vision-camera-code-scanner: 5127525d7792d0dfb0f85e514854dc248300ef0d
-  VisionCamera: 8686dd76dd47a1ebf920326673130da830c810ae
+  TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
+  vision-camera-code-scanner: dda884a7f3ec8243a2a6d6489b91860648371bca
+  VisionCamera: c6356b309f7b8e185b7be2e703ec67bb35acf345
   Yoga: 065f0b74dba4832d6e328238de46eb72c5de9556
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
