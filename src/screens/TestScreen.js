@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, ScrollView, StyleSheet, Text, Image, View, Platform } from 'react-native';
 import { Card, Title } from 'react-native-paper';
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 import { randomBytes } from 'crypto';
 import crc from 'crc';
 
@@ -270,7 +270,7 @@ export default function TestScreen({ navigation }) {
       }
     }
 
-    const resetFileSettings = async (masterKey) => {
+    const wipeNdefResetFileSettings = async (masterKey) => {
       //RESET FILE SETTINGS
       try {
         // register for the NFC tag with NDEF in it
@@ -283,24 +283,20 @@ export default function TestScreen({ navigation }) {
         var cmdData = "40";
         //Access rights (FileAR.ReadWrite: 0xE, FileAR.Change: 0x0, FileAR.Read: 0xE, FileAR.Write; 0xE)
         cmdData += "E0EE";
-        //UID mirror: 1
-        // SDMReadCtr: 1
+
+        //UID mirror: 0
+        // SDMReadCtr: 0
         // SDMReadCtrLimit: 0
         // SDMENCFileData: 0
         // ASCII Encoding mode: 1
-        cmdData += "C1"
+        cmdData += "01"
         //sdm access rights
         //RFU: 0F
         //CtrRet: 0F
-        //MetaRead: 01
-        //FileRead: 02
-        cmdData += "FF12";
-        //ENCPICCDataOffset
-        cmdData += (piccOffset.toString(16)).padEnd(6, "0");
-        //SDMMACOffset
-        cmdData += (macOffset.toString(16)).padEnd(6, "0");
-        //SDMMACInputOffset
-        cmdData += (macOffset.toString(16)).padEnd(6, "0");
+        //MetaRead: 0F
+        //FileRead: 0F
+        cmdData += "FFFF";
+        //no picc offset and mac offset
         
         const cmdDataPadd = padForEnc(cmdData, 16);
 
@@ -346,6 +342,13 @@ export default function TestScreen({ navigation }) {
         console.warn('changeFileSettingsRes Result: ', Platform.OS == 'ios' ? bytesToHex([changeFileSettingsRes.sw1, changeFileSettingsRes.sw2]) : bytesToHex(changeFileSettingsRes));
         const resCode = bytesToHex([changeFileSettingsRes.sw1, changeFileSettingsRes.sw2]);
         if(resCode == '9100') {
+          const message = [
+            Ndef.uriRecord(""),
+          ];
+          const bytes = Ndef.encodeMessage(message);
+          console.log('ndef bytes', bytes)
+          await NfcManager.ndefHandler.writeNdefMessage(bytes);
+
           return Promise.resolve("Successful");
         } else {
           return Promise.reject(resCode);
@@ -443,6 +446,135 @@ export default function TestScreen({ navigation }) {
         NfcManager.cancelTechnologyRequest();
       }
     }
+
+    const writeNdefSetFileSettings = async (masterKey, ndefMessage) => {
+      if(!ndefMessage.includes("p=")) {
+        return Promise.reject("No p value set");
+      }
+      if(!ndefMessage.includes("c=")) {
+        return Promise.reject("No c value set");
+      }
+      try {
+        // register for the NFC tag with NDEF in it
+        await NfcManager.requestTechnology(NfcTech.IsoDep);
+        const url = ndefMessage;
+
+        const message = [
+          Ndef.uriRecord(url),
+        ];
+        const bytes = Ndef.encodeMessage(message);
+        await NfcManager.ndefHandler.writeNdefMessage(bytes);
+
+        const ndef = await NfcManager.ndefHandler.getNdefMessage();
+        console.log(Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+
+        const piccOffset = ndefMessage.indexOf("p=") + 9;
+        const macOffset = ndefMessage.indexOf("c=") + 9;
+        //set file settings
+        const {sesAuthEncKey, sesAuthMacKey, ti} = await AuthEv2First('00', masterKey);
+        const cmdCtr = "0000";
+        //File Option SDM and mirroring enabled, CommMode: plain
+        var cmdData = "40";
+        //Access rights (FileAR.ReadWrite: 0x0, FileAR.Change: 0x0, FileAR.Read: 0xE, FileAR.Write; 0x0)
+        cmdData += "00E0";
+        //UID mirror: 1
+        // SDMReadCtr: 1
+        // SDMReadCtrLimit: 0
+        // SDMENCFileData: 0
+        // ASCII Encoding mode: 1
+        cmdData += "C1"
+        //sdm access rights
+        //RFU: 0F
+        //CtrRet: 0F
+        //MetaRead: 01
+        //FileRead: 02
+        cmdData += "FF12";
+        //ENCPICCDataOffset
+        cmdData += (piccOffset.toString(16)).padEnd(6, "0");
+        //SDMMACOffset
+        cmdData += (macOffset.toString(16)).padEnd(6, "0");
+        //SDMMACInputOffset
+        cmdData += (macOffset.toString(16)).padEnd(6, "0");
+        
+        const cmdDataPadd = padForEnc(cmdData, 16);
+
+        console.log('cmdDataPadd', cmdDataPadd);
+
+        const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
+        const aesEncryptOption = {
+          mode: CryptoJS.mode.CBC,
+          iv: CryptoJS.enc.Hex.parse(iv), 
+          keySize: 128 / 8, 
+          padding: CryptoJS.pad.NoPadding
+        };
+
+        const encKeyData = (
+          AES.encrypt(
+            CryptoJS.enc.Hex.parse(cmdDataPadd), 
+            CryptoJS.enc.Hex.parse(sesAuthEncKey), 
+            aesEncryptOption
+          )
+        ).ciphertext.toString(CryptoJS.enc.Hex);
+
+        const fileNo = "02";
+        const commandMac = CryptoJS.CMAC(
+          CryptoJS.enc.Hex.parse(sesAuthMacKey), 
+          CryptoJS.enc.Hex.parse("5F"+cmdCtr+ti+fileNo+encKeyData)
+        );
+        const commandMacHex = commandMac.toString();
+        console.log('changeFileSettings encKeyData', encKeyData, hexToBytes(encKeyData));
+        console.log('changeFileSettings commandmac', commandMacHex);
+        
+        const truncatedMacBytes = hexToBytes(commandMacHex).filter(function(element, index, array) {
+          return ((index + 1) % 2 === 0);
+        });
+        const truncatedMac = bytesToHex(truncatedMacBytes);
+        console.log('truncatedMac', truncatedMac, hexToBytes(truncatedMac));
+        const data = encKeyData + truncatedMac;
+        console.log('data', data, data.length);
+        const lc = ((data.length / 2) + 1).toString(16);
+        const changeFileSettingsHex = "905F0000"+lc+fileNo+encKeyData+truncatedMac+"00";
+        console.log('changeFileSettingsHex', changeFileSettingsHex); 
+
+        const changeFileSettingsRes = Platform.OS == 'ios' ? await NfcManager.sendCommandAPDUIOS(hexToBytes(changeFileSettingsHex)) : await NfcManager.transceive(hexToBytes(changeFileSettingsHex));
+        console.warn('changeFileSettingsRes Result: ', Platform.OS == 'ios' ? bytesToHex([changeFileSettingsRes.sw1, changeFileSettingsRes.sw2]) : bytesToHex(changeFileSettingsRes));
+        const resCode = bytesToHex([changeFileSettingsRes.sw1, changeFileSettingsRes.sw2]);
+        if(resCode == '9100') {
+          return Promise.resolve("Successful");
+        } else {
+          return Promise.reject(resCode);
+        }
+
+      } catch (ex) {
+        console.warn('Oops!', ex, ex.message);
+      } finally {
+        // stop the nfc scanning
+        NfcManager.cancelTechnologyRequest();
+      }
+    }
+
+    const writeNdef = async () => {
+      try {
+        // register for the NFC tag with NDEF in it
+        await NfcManager.requestTechnology(NfcTech.IsoDep);
+        const url = "lnurlw://your.domain.com/ln?p=00000000000000000000000000000000&c=0000000000000000";
+
+        const message = [
+          Ndef.uriRecord(url),
+        ];
+        const bytes = Ndef.encodeMessage(message);
+        await NfcManager.ndefHandler.writeNdefMessage(bytes);
+
+        const ndef = await NfcManager.ndefHandler.getNdefMessage();
+        console.log(ndef, Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+      } catch (ex) {
+        console.warn('Oops!', ex);
+      } finally {
+        // stop the nfc scanning
+        NfcManager.cancelTechnologyRequest();
+      }
+    }
+
     return (
         <ScrollView>
         <Card style={{ marginBottom: 20, marginHorizontal: 10 }}>
@@ -456,9 +588,14 @@ export default function TestScreen({ navigation }) {
             <View style={{flexDirection: 'column', justifyContent: 'space-evenly'}}>
             <Button title="Authenticate EV2 First And Get File Settings" onPress={readNdef}>
             </Button>
-            <Button title="Set File Settings" onPress={() => {
-              setFileSettings("00000000000000000000000000000000", 32, 67);
+            <Button title="Write NDEF & Set File Settings" onPress={() => {
+              // setFileSettings("00000000000000000000000000000000", 32, 67);
+              writeNdefSetFileSettings("00000000000000000000000000000000", "lnurlw://your.domain.com/ln?p=00000000000000000000000000000000&c=0000000000000000");
             }}></Button>
+            <Button title="Reset File Settings" onPress={() => {
+              wipeNdefResetFileSettings("00000000000000000000000000000000");
+            }}></Button>
+            <Button title="WRITE NDEF" onPress={writeNdef}></Button>
             <Button title="Change key" onPress={() => {
               // changeKey("00", "00000000000000000000000000000000", "00000000000000000000000000000000", "11111111111111111111111111111111", "01")
               // changeKey("00", "11111111111111111111111111111111", "11111111111111111111111111111111", "00000000000000000000000000000000", "00")
