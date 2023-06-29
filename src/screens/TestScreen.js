@@ -67,6 +67,10 @@ function padForEnc(data, byteLen) {
   return paddedData;
 }
 
+function decToHex(dec, bytes) {
+  return ((dec.toString(16).padStart(2, '0')).padEnd((bytes * 2), '0'))
+}
+
 export default function TestScreen({navigation}) {
   async function readNdef() {
     try {
@@ -120,27 +124,79 @@ export default function TestScreen({navigation}) {
     }
   };
 
-  const changeKey = async (keyNo, masterKey, key, newKey, keyVersion) => {
+  const changeKey = async () => {
     try {
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       // the resolved tag object will contain `ndefMessage` property
 
       //have to auth with key 0
+      const key0 = "00000000000000000000000000000000";
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
         '00',
-        masterKey,
+        key0,
       );
-      const cmdCtr = '0000';
+      var cmdCtr = 0;
+      console.log('key1', decToHex(cmdCtr, 2));
+      
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtr,
-        keyNo,
-        key,
-        newKey,
-        keyVersion,
+        decToHex(cmdCtr, 2),
+        "01",
+        key0,
+        "22222222222222222222222222222222",
+        "01",
+      );
+      // await Ntag424.AuthEv2NonFirst("00", key0);
+      cmdCtr += 1;
+      console.log('key2', decToHex(cmdCtr, 2))
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "02",
+        key0,
+        "33333333333333333333333333333333",
+        "01",
+      );
+      cmdCtr += 1;
+      console.log('key3', decToHex(cmdCtr, 2))
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "03",
+        key0,
+        "44444444444444444444444444444444",
+        "01",
+      );
+      console.log('key4')
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "04",
+        key0,
+        "55555555555555555555555555555555",
+        "01",
+      );
+      console.log('key0')
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "00",
+        key0,
+        "11111111111111111111111111111111",
+        "01",
       );
     } catch (ex) {
       console.warn('Oops!', ex);
@@ -149,6 +205,86 @@ export default function TestScreen({navigation}) {
       NfcManager.cancelTechnologyRequest();
     }
   };
+
+  const resetKey = async () => {
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
+      // the resolved tag object will contain `ndefMessage` property
+
+      //have to auth with key 0
+      const key0 = "11111111111111111111111111111111";
+      const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
+        '00',
+        key0,
+      );
+      console.log('key1')
+      var cmdCtr = 0;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "01",
+        "22222222222222222222222222222222",
+        key0,
+        "00",
+      );
+      console.log('key2')
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "02",
+        "33333333333333333333333333333333",
+        key0,
+        "00",
+      );
+      console.log('key3')
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "03",
+        "44444444444444444444444444444444",
+        key0,
+        "00",
+      );
+      console.log('key4')
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "04",
+        "55555555555555555555555555555555",
+        key0,
+        "00",
+      );
+      console.log('key0')
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        "00",
+        "11111111111111111111111111111111",
+        key0,
+        "00",
+      );
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
+    }
+  }
 
   const writeNdefSetFileSettings = async (masterKey, ndefMessage) => {
     if (!ndefMessage.includes('p=')) {
@@ -247,12 +383,10 @@ export default function TestScreen({navigation}) {
             <Button title="WRITE NDEF" onPress={writeNdef}></Button>
             <Button
               title="Change key"
-              onPress={() => {
-                // changeKey("00", "00000000000000000000000000000000", "00000000000000000000000000000000", "11111111111111111111111111111111", "01")
-                // changeKey("00", "11111111111111111111111111111111", "11111111111111111111111111111111", "00000000000000000000000000000000", "00")
-                // changeKey("01", "00000000000000000000000000000000", "00000000000000000000000000000000", "11111111111111111111111111111111", "01")
-                // changeKey("01", "00000000000000000000000000000000", "11111111111111111111111111111111", "00000000000000000000000000000000", "00")
-              }}></Button>
+              onPress={changeKey}></Button>
+            <Button
+              title="Reset key"
+              onPress={resetKey}></Button>
           </View>
         </Card.Content>
       </Card>
