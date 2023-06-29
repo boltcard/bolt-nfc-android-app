@@ -12,8 +12,16 @@ import {
 import Dialog from 'react-native-dialog';
 import {Card, Title} from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 import DisplayAuthInfo from '../components/DisplayAuthInfo';
+import Ntag424 from '../class/Ntag424';
+
+function decToHex(dec, bytes) {
+  return dec
+    .toString(16)
+    .padStart(2, '0')
+    .padEnd(bytes * 2, '0');
+}
 
 export default function CreateBoltcardScreen({route}) {
   const {data, timestamp} = route.params;
@@ -47,15 +55,6 @@ export default function CreateBoltcardScreen({route}) {
   const [testp, setTestp] = useState();
   const [testc, setTestc] = useState();
   const [testBolt, setTestBolt] = useState();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS == 'ios') {
-      } else {
-        NativeModules.MyReactModule.setCardMode('read');
-      }
-    }, []),
-  );
 
   useEffect(() => {
     if (Platform.OS == 'android') {
@@ -130,10 +129,108 @@ export default function CreateBoltcardScreen({route}) {
     setWriteKeys(null);
   };
 
-  const writeAgain = () => {
+  const writeAgain = async () => {
     resetOutput();
-    NativeModules.MyReactModule.setCardMode('createBoltcard');
-    setWriteMode(true);
+    console.log(keys);
+    // NativeModules.MyReactModule.setCardMode('createBoltcard');
+    // setWriteMode(true);
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
+
+      //set ndef
+      const ndefMessage = lnurlw_base.includes('?')
+        ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'
+        : lnurlw_base +
+          '?p=00000000000000000000000000000000&c=0000000000000000';
+      const message = [Ndef.uriRecord(ndefMessage)];
+      const bytes = Ndef.encodeMessage(message);
+      await NfcManager.ndefHandler.writeNdefMessage(bytes);
+
+      //check if ndef has been set correctly
+      const ndef = await NfcManager.ndefHandler.getNdefMessage();
+      console.log(Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+      const key0 = '00000000000000000000000000000000';
+      //auth first
+      const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
+        '00',
+        key0,
+      );
+
+      const piccOffset = ndefMessage.indexOf('p=') + 9;
+      const macOffset = ndefMessage.indexOf('c=') + 9;
+      //change file settings
+      var cmdCtr = 0;
+      await Ntag424.changeFileSettings(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        piccOffset,
+        macOffset,
+      );
+      //change keys
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        '01',
+        key0,
+        keys[1],
+        '01',
+      );
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        '02',
+        key0,
+        keys[2],
+        '01',
+      );
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        '03',
+        key0,
+        keys[3],
+        '01',
+      );
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        '04',
+        key0,
+        keys[4],
+        '01',
+      );
+      cmdCtr += 1;
+      await Ntag424.changeKey(
+        sesAuthEncKey,
+        sesAuthMacKey,
+        ti,
+        decToHex(cmdCtr, 2),
+        '00',
+        key0,
+        keys[0],
+        '01',
+      );
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
+    }
   };
 
   const showTickOrError = good => {
@@ -214,7 +311,7 @@ export default function CreateBoltcardScreen({route}) {
           </Card.Content>
           <Card.Actions style={{justifyContent: 'space-around'}}>
             <Button title="Reset" color="red" onPress={resetAll} />
-
+            <Button title="Write Card Now" onPress={writeAgain} />
             {readyToWrite && !writeMode && (
               <Button title="Write Card Now" onPress={writeAgain} />
             )}

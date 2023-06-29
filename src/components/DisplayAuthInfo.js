@@ -44,19 +44,19 @@ export default function DisplayAuthInfo(props) {
                     if(json.card_name) setCardName(json.card_name);
                     setKeys([json.k0,json.k1,json.k2,json.k3,json.k4]);
                     setPrivateUID(json.uid_privacy != undefined && json.uid_privacy == "Y")
-                    NativeModules.MyReactModule.changeKeys(
-                        json.lnurlw_base,
-                        json.k0, 
-                        json.k1, 
-                        json.k2, 
-                        json.k3, 
-                        json.k4, 
-                        json.uid_privacy != undefined && json.uid_privacy == "Y", 
-                        (response) => {
-                            console.log('Change keys response', response)
-                            if (response == "Success") setReadyToWrite(true);
-                        }
-                    );
+                    // NativeModules.MyReactModule.changeKeys(
+                    //     json.lnurlw_base,
+                    //     json.k0, 
+                    //     json.k1, 
+                    //     json.k2, 
+                    //     json.k3, 
+                    //     json.k4, 
+                    //     json.uid_privacy != undefined && json.uid_privacy == "Y", 
+                    //     (response) => {
+                    //         console.log('Change keys response', response)
+                    //         if (response == "Success") setReadyToWrite(true);
+                    //     }
+                    // );
                     
                     
                 })
