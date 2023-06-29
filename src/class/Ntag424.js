@@ -345,7 +345,7 @@ Ntag424.changeFileSettings = async (
   console.log('changeFileSettingsHex', changeFileSettingsHex);
 
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
-    isoSelectFileBytes,
+    hexToBytes(changeFileSettingsHex),
   );
   console.warn(
     'changeFileSettingsRes Result: ',
@@ -437,7 +437,7 @@ Ntag424.resetFileSettings = async (
   console.log('changeFileSettingsHex', changeFileSettingsHex);
 
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
-    isoSelectFileBytes,
+    hexToBytes(changeFileSettingsHex),
   );
   console.warn(
     'changeFileSettingsRes Result: ',
@@ -535,7 +535,7 @@ Ntag424.changeKey = async (
     '90C40000' + lc + keyNo + encKeyData + truncatedMac + '00';
   console.log('changeKeyHex', changeKeyHex);
 
-  const changeKeyRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
+  const changeKeyRes = await Ntag424.sendAPDUCommand(hexToBytes(changeKeyHex));
   console.warn(
     'changeKeyRes Result: ',
     Platform.OS == 'ios'
