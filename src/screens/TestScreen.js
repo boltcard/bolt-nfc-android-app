@@ -213,13 +213,13 @@ export default function TestScreen({navigation}) {
       // the resolved tag object will contain `ndefMessage` property
 
       //have to auth with key 0
-      const key0 = "11111111111111111111111111111111";
+      const defaultkey = "00000000000000000000000000000000";
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
         '00',
-        key0,
+        "11111111111111111111111111111111",
       );
-      console.log('key1')
       var cmdCtr = 0;
+      console.log('key1', decToHex(cmdCtr, 2))
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -227,11 +227,11 @@ export default function TestScreen({navigation}) {
         decToHex(cmdCtr, 2),
         "01",
         "22222222222222222222222222222222",
-        key0,
+        defaultkey,
         "00",
       );
-      console.log('key2')
       cmdCtr += 1;
+      console.log('key2', decToHex(cmdCtr, 2))
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -239,11 +239,11 @@ export default function TestScreen({navigation}) {
         decToHex(cmdCtr, 2),
         "02",
         "33333333333333333333333333333333",
-        key0,
+        defaultkey,
         "00",
       );
-      console.log('key3')
       cmdCtr += 1;
+      console.log('key3', decToHex(cmdCtr, 2))
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -251,11 +251,11 @@ export default function TestScreen({navigation}) {
         decToHex(cmdCtr, 2),
         "03",
         "44444444444444444444444444444444",
-        key0,
+        defaultkey,
         "00",
       );
-      console.log('key4')
       cmdCtr += 1;
+      console.log('key4', decToHex(cmdCtr, 2))
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -263,11 +263,11 @@ export default function TestScreen({navigation}) {
         decToHex(cmdCtr, 2),
         "04",
         "55555555555555555555555555555555",
-        key0,
+        defaultkey,
         "00",
       );
-      console.log('key0')
       cmdCtr += 1;
+      console.log('key0', decToHex(cmdCtr, 2))
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -275,7 +275,7 @@ export default function TestScreen({navigation}) {
         decToHex(cmdCtr, 2),
         "00",
         "11111111111111111111111111111111",
-        key0,
+        defaultkey,
         "00",
       );
     } catch (ex) {
