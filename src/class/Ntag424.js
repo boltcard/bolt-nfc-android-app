@@ -76,10 +76,7 @@ Ntag424.sendAPDUCommand = async function (commandBytes) {
 Ntag424.AuthEv2First = async function (keyNo, pKey) {
   //iso select file before auth
   const isoSelectFileBytes = hexToBytes('00A4040007D276000085010100');
-  const isoSelectRes =
-    Platform.OS == 'ios'
-      ? await NfcManager.sendCommandAPDUIOS(isoSelectFileBytes)
-      : await NfcManager.transceive(isoSelectFileBytes);
+  const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
   console.warn(
     'isoSelectRes: ',
     Platform.OS == 'ios'
@@ -347,10 +344,9 @@ Ntag424.changeFileSettings = async (
     '905F0000' + lc + fileNo + encKeyData + truncatedMac + '00';
   console.log('changeFileSettingsHex', changeFileSettingsHex);
 
-  const changeFileSettingsRes =
-    Platform.OS == 'ios'
-      ? await NfcManager.sendCommandAPDUIOS(hexToBytes(changeFileSettingsHex))
-      : await NfcManager.transceive(hexToBytes(changeFileSettingsHex));
+  const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
+    isoSelectFileBytes,
+  );
   console.warn(
     'changeFileSettingsRes Result: ',
     Platform.OS == 'ios'
@@ -440,10 +436,9 @@ Ntag424.resetFileSettings = async (
     '905F0000' + lc + fileNo + encKeyData + truncatedMac + '00';
   console.log('changeFileSettingsHex', changeFileSettingsHex);
 
-  const changeFileSettingsRes =
-    Platform.OS == 'ios'
-      ? await NfcManager.sendCommandAPDUIOS(hexToBytes(changeFileSettingsHex))
-      : await NfcManager.transceive(hexToBytes(changeFileSettingsHex));
+  const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
+    isoSelectFileBytes,
+  );
   console.warn(
     'changeFileSettingsRes Result: ',
     Platform.OS == 'ios'
@@ -540,10 +535,7 @@ Ntag424.changeKey = async (
     '90C40000' + lc + keyNo + encKeyData + truncatedMac + '00';
   console.log('changeKeyHex', changeKeyHex);
 
-  const changeKeyRes =
-    Platform.OS == 'ios'
-      ? await NfcManager.sendCommandAPDUIOS(hexToBytes(changeKeyHex))
-      : await NfcManager.transceive(hexToBytes(changeKeyHex));
+  const changeKeyRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
   console.warn(
     'changeKeyRes Result: ',
     Platform.OS == 'ios'

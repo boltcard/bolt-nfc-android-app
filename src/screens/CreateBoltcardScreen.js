@@ -133,10 +133,12 @@ export default function CreateBoltcardScreen({route}) {
     resetOutput();
     console.log(keys);
     // NativeModules.MyReactModule.setCardMode('createBoltcard');
-    // setWriteMode(true);
+    setWriteMode(true);
     try {
       // register for the NFC tag with NDEF in it
-      await NfcManager.requestTechnology(NfcTech.IsoDep);
+      await NfcManager.requestTechnology(NfcTech.IsoDep, {
+        alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
+      });
 
       //set ndef
       const ndefMessage = lnurlw_base.includes('?')
@@ -146,6 +148,7 @@ export default function CreateBoltcardScreen({route}) {
       const message = [Ndef.uriRecord(ndefMessage)];
       const bytes = Ndef.encodeMessage(message);
       await NfcManager.ndefHandler.writeNdefMessage(bytes);
+      setNdefWritten(true);
 
       //check if ndef has been set correctly
       const ndef = await NfcManager.ndefHandler.getNdefMessage();
@@ -181,6 +184,7 @@ export default function CreateBoltcardScreen({route}) {
         keys[1],
         '01',
       );
+      setKey1Changed(true);
       cmdCtr += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
@@ -192,6 +196,7 @@ export default function CreateBoltcardScreen({route}) {
         keys[2],
         '01',
       );
+      setKey2Changed(true);
       cmdCtr += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
@@ -203,6 +208,7 @@ export default function CreateBoltcardScreen({route}) {
         keys[3],
         '01',
       );
+      setKey3Changed(true);
       cmdCtr += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
@@ -214,6 +220,7 @@ export default function CreateBoltcardScreen({route}) {
         keys[4],
         '01',
       );
+      setKey4Changed(true);
       cmdCtr += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
@@ -225,11 +232,15 @@ export default function CreateBoltcardScreen({route}) {
         keys[0],
         '01',
       );
+      setKey0Changed(true);
+      setWriteKeys(true);
     } catch (ex) {
       console.warn('Oops!', ex);
+      setTagTypeError(ex);
     } finally {
       // stop the nfc scanning
       NfcManager.cancelTechnologyRequest();
+      setWriteMode(false);
     }
   };
 
