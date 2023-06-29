@@ -139,7 +139,6 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
       bytesToHex([secondAuthRes.sw1, secondAuthRes.sw2]),
     );
     //9100 is the successful code
-    //@TODO: it might be different for android to get the result code
     const secondAuthResultCode = bytesToHex([
       secondAuthRes.sw1,
       secondAuthRes.sw2,
@@ -187,6 +186,79 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
       console.log('sesAuthMacKey', sesAuthMacKey);
 
       return Promise.resolve({sesAuthEncKey, sesAuthMacKey, ti});
+    } else {
+      //auth failed
+      return Promise.reject('Auth Failed: ' + secondAuthResultCode);
+    }
+  } else {
+    //auth failed
+    return Promise.reject('Auth Failed: ' + resultCode);
+  }
+};
+
+Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
+  const bytes = hexToBytes('9077000001' + keyNo + '00');
+  const Result = await Ntag424.sendAPDUCommand(bytes);
+  console.warn(
+    'auth ev2 non first part 1 Result: ',
+    bytesToHex([Result.sw1, Result.sw2]),
+  );
+  const resultData = bytesToHex(Result.response);
+  console.log('resultData', resultData);
+  console.log('resultData', hexToBytes(resultData));
+  //91AF is the successful code
+  const resultCode = bytesToHex([Result.sw1, Result.sw2]);
+  if (resultCode == '91af') {
+    const key = CryptoJS.enc.Hex.parse(pKey);
+    const iv = CryptoJS.enc.Hex.parse('00000000000000000000000000000000');
+    const aesEncryptOption = {
+      padding: CryptoJS.pad.NoPadding,
+      mode: CryptoJS.mode.CBC,
+      iv: iv,
+      keySize: 128 / 8,
+    };
+    const RndBDec = AES.decrypt(
+      {ciphertext: CryptoJS.enc.Hex.parse(resultData)},
+      key,
+      aesEncryptOption,
+    );
+    const RndB = CryptoJS.enc.Hex.stringify(RndBDec);
+    console.log('key', key, 'iv', iv);
+    console.log('rndb', RndB);
+    const RndABytes = randomBytes(16);
+    const RndA = bytesToHex(RndABytes);
+    console.log('rnda', bytesToHex(RndABytes));
+    const RndBRotlBytes = leftRotate(hexToBytes(RndB));
+    const RndBRotl = bytesToHex(RndBRotlBytes);
+    console.log('RndBRotl', RndBRotlBytes, RndBRotl);
+
+    const RndARndBRotl = RndA + RndBRotl;
+    console.log('RndARndBRotl', RndARndBRotl);
+    const RndARndBEncData = AES.encrypt(
+      CryptoJS.enc.Hex.parse(RndARndBRotl),
+      key,
+      aesEncryptOption,
+    );
+    const RndARndBEnc = RndARndBEncData.ciphertext.toString(CryptoJS.enc.Hex);
+    console.log('RndARndBEnc', RndARndBEnc);
+    console.log('RndARndBEnc', hexToBytes(RndARndBEnc));
+
+    const secondAuthBytes = hexToBytes('90AF000020' + RndARndBEnc + '00');
+    console.log('90AF000020' + RndARndBEnc + '00');
+    console.log('secondAuthBytes', secondAuthBytes);
+    const secondAuthRes = await Ntag424.sendAPDUCommand(secondAuthBytes);
+    console.warn(
+      'auth ev2 non first part 2 Result: ',
+      bytesToHex([secondAuthRes.sw1, secondAuthRes.sw2]),
+    );
+    //9100 is the successful code
+    const secondAuthResultCode = bytesToHex([
+      secondAuthRes.sw1,
+      secondAuthRes.sw2,
+    ]);
+    if (secondAuthResultCode == '9100') {
+      //auth successful
+      return Promise.resolve('Successful');
     } else {
       //auth failed
       return Promise.reject('Auth Failed: ' + secondAuthResultCode);
@@ -300,7 +372,7 @@ Ntag424.resetFileSettings = async (
   sesAuthEncKey,
   sesAuthMacKey,
   ti,
-  cmdCtr
+  cmdCtr,
 ) => {
   //File Option SDM and mirroring enabled, CommMode: plain
   var cmdData = '40';
@@ -404,7 +476,6 @@ Ntag424.changeKey = async (
   newKey,
   keyVersion,
 ) => {
-
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   console.log('iv', iv);
   const aesEncryptOption = {
@@ -415,6 +486,7 @@ Ntag424.changeKey = async (
   };
 
   var keyData = '';
+  const newKeyBytes = hexToBytes(newKey);
   if (keyNo == '00') {
     //if key 0 is to be changed
     //keyData = NewKey || KeyVer 17 byte
