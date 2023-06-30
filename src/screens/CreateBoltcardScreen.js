@@ -165,8 +165,15 @@ export default function CreateBoltcardScreen({route}) {
         piccOffset,
         macOffset,
       );
+      //get uid
+      cmdCtrDec += 1;
+      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec);
+      console.log('UID', uid);
+      setCardUID(uid);
+      
       //change keys
       cmdCtrDec += 1;
+      console.log('changekey 1')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -179,6 +186,7 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey1Changed(true);
       cmdCtrDec += 1;
+      console.log('changekey 2')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -191,6 +199,7 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey2Changed(true);
       cmdCtrDec += 1;
+      console.log('changekey 3')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -203,6 +212,7 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey3Changed(true);
       cmdCtrDec += 1;
+      console.log('changekey 4')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -215,6 +225,7 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey4Changed(true);
       cmdCtrDec += 1;
+      console.log('changekey 0')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
@@ -227,10 +238,6 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey0Changed(true);
       setWriteKeys(true);
-    //   cmdCtrDec += 1;
-    //   const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec);
-    //   console.log('UID', uid);
-    //   setCardUID(uid);
     } catch (ex) {
       console.warn('Oops!', ex);
       setTagTypeError(ex);
