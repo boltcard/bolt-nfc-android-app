@@ -69,7 +69,12 @@ function padForEnc(data, byteLen) {
   }
   return paddedData;
 }
-
+/**
+ * Decimal to Hex Least sig bytes first
+ * @param {*} dec 
+ * @param {*} bytes 
+ * @returns 
+ */
 function decToHexLsbFirst(dec, bytes) {
   //lsb first
   return dec
@@ -79,7 +84,13 @@ function decToHexLsbFirst(dec, bytes) {
 }
 
 var Ntag424 = NfcManager;
-
+/**
+ * Sends the ADPU command using appropriate function for ios / android
+ * creates the same return object for each platform
+ * 
+ * @param {byte[]} commandBytes 
+ * @returns {response, sw1, sw2}
+ */
 Ntag424.sendAPDUCommand = async function (commandBytes) {
   const response =
     Platform.OS == 'ios'
@@ -94,7 +105,15 @@ Ntag424.sendAPDUCommand = async function (commandBytes) {
   }
   return newResponse;
 };
-
+/**
+ * AuthEv2First
+ * 
+ * @param {*} keyNo 
+ * @param {*} pKey 
+ * @returns 
+ * 
+ * CommMode N/A
+ */
 Ntag424.AuthEv2First = async function (keyNo, pKey) {
   //iso select file before auth
   const isoSelectFileBytes = hexToBytes('00A4040007D276000085010100');
@@ -213,6 +232,13 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
   }
 };
 
+/**
+ * AuthEv2NonFirst
+ * CommMode N/A
+ * @param {*} keyNo 
+ * @param {*} pKey 
+ * @returns 
+ */
 Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
   const bytes = hexToBytes('9077000001' + keyNo + '00');
   const Result = await Ntag424.sendAPDUCommand(bytes);
@@ -286,6 +312,18 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
   }
 };
 
+/**
+ * Change File Settings
+ * CommMode Full
+ * 
+ * @param {*} sesAuthEncKey 
+ * @param {*} sesAuthMacKey 
+ * @param {*} ti 
+ * @param {*} cmdCtrDec 
+ * @param {*} piccOffset 
+ * @param {*} macOffset 
+ * @returns 
+ */
 Ntag424.changeFileSettings = async (
   sesAuthEncKey,
   sesAuthMacKey,
@@ -379,6 +417,15 @@ Ntag424.changeFileSettings = async (
   }
 };
 
+/**
+ * Reset File Settings
+ * CommMode full
+ * @param {*} sesAuthEncKey 
+ * @param {*} sesAuthMacKey 
+ * @param {*} ti 
+ * @param {*} cmdCtrDec 
+ * @returns 
+ */
 Ntag424.resetFileSettings = async (
   sesAuthEncKey,
   sesAuthMacKey,
@@ -471,6 +518,20 @@ Ntag424.resetFileSettings = async (
   }
 };
 
+/**
+ * Change Key
+ * CommMode full
+ * 
+ * @param {*} sesAuthEncKey 
+ * @param {*} sesAuthMacKey 
+ * @param {*} ti 
+ * @param {*} cmdCtrDec 
+ * @param {*} keyNo 
+ * @param {*} key 
+ * @param {*} newKey 
+ * @param {*} keyVersion 
+ * @returns 
+ */
 Ntag424.changeKey = async (
   sesAuthEncKey,
   sesAuthMacKey,
@@ -558,6 +619,16 @@ Ntag424.changeKey = async (
   }
 };
 
+/**
+ * Get Card UID
+ * CommMode Full
+ * 
+ * @param {*} sesAuthEncKey 
+ * @param {*} sesAuthMacKey 
+ * @param {*} ti 
+ * @param {*} cmdCtrDec 
+ * @returns 
+ */
 Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
   var cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
   const commandMac = CryptoJS.CMAC(
