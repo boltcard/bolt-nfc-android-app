@@ -68,7 +68,10 @@ function padForEnc(data, byteLen) {
 }
 
 function decToHex(dec, bytes) {
-  return ((dec.toString(16).padStart(2, '0')).padEnd((bytes * 2), '0'))
+  return dec
+    .toString(16)
+    .padStart(2, '0')
+    .padEnd(bytes * 2, '0');
 }
 
 export default function TestScreen({navigation}) {
@@ -114,7 +117,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      const cmdCtr = '0000';
+      const cmdCtr = 0;
       await Ntag424.resetFileSettings(sesAuthEncKey, sesAuthMacKey, ti, cmdCtr);
     } catch (ex) {
       console.warn('Oops!', ex);
@@ -131,72 +134,72 @@ export default function TestScreen({navigation}) {
       // the resolved tag object will contain `ndefMessage` property
 
       //have to auth with key 0
-      const key0 = "00000000000000000000000000000000";
+      const key0 = '00000000000000000000000000000000';
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
         '00',
         key0,
       );
-      var cmdCtr = 0;
-      console.log('key1', decToHex(cmdCtr, 2));
-      
+      var cmdCtrDec = 0;
+      console.log('key1');
+
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "01",
+        cmdCtrDec,
+        '01',
         key0,
-        "22222222222222222222222222222222",
-        "01",
+        '22222222222222222222222222222222',
+        '01',
       );
       // await Ntag424.AuthEv2NonFirst("00", key0);
-      cmdCtr += 1;
-      console.log('key2', decToHex(cmdCtr, 2))
+      cmdCtrDec += 1;
+      console.log('key2');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "02",
+        cmdCtrDec,
+        '02',
         key0,
-        "33333333333333333333333333333333",
-        "01",
+        '33333333333333333333333333333333',
+        '01',
       );
-      cmdCtr += 1;
-      console.log('key3', decToHex(cmdCtr, 2))
+      cmdCtrDec += 1;
+      console.log('key3');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "03",
+        cmdCtrDec,
+        '03',
         key0,
-        "44444444444444444444444444444444",
-        "01",
+        '44444444444444444444444444444444',
+        '01',
       );
-      console.log('key4')
-      cmdCtr += 1;
+      console.log('key4');
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "04",
+        cmdCtrDec,
+        '04',
         key0,
-        "55555555555555555555555555555555",
-        "01",
+        '55555555555555555555555555555555',
+        '01',
       );
-      console.log('key0')
-      cmdCtr += 1;
+      console.log('key0');
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "00",
+        cmdCtrDec,
+        '00',
         key0,
-        "11111111111111111111111111111111",
-        "01",
+        '11111111111111111111111111111111',
+        '01',
       );
     } catch (ex) {
       console.warn('Oops!', ex);
@@ -213,70 +216,70 @@ export default function TestScreen({navigation}) {
       // the resolved tag object will contain `ndefMessage` property
 
       //have to auth with key 0
-      const defaultkey = "00000000000000000000000000000000";
+      const defaultkey = '00000000000000000000000000000000';
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
         '00',
-        "11111111111111111111111111111111",
+        '11111111111111111111111111111111',
       );
-      var cmdCtr = 0;
-      console.log('key1', decToHex(cmdCtr, 2))
+      var cmdCtrDec = 0;
+      console.log('key1')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         "01",
         "22222222222222222222222222222222",
         defaultkey,
         "00",
       );
-      cmdCtr += 1;
-      console.log('key2', decToHex(cmdCtr, 2))
+      cmdCtrDec += 1;
+      console.log('key2')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         "02",
         "33333333333333333333333333333333",
         defaultkey,
         "00",
       );
-      cmdCtr += 1;
-      console.log('key3', decToHex(cmdCtr, 2))
+      cmdCtrDec += 1;
+      console.log('key3');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "03",
-        "44444444444444444444444444444444",
+        cmdCtrDec,
+        '03',
+        '44444444444444444444444444444444',
         defaultkey,
-        "00",
+        '00',
       );
-      cmdCtr += 1;
-      console.log('key4', decToHex(cmdCtr, 2))
+      cmdCtrDec += 1;
+      console.log('key4');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "04",
-        "55555555555555555555555555555555",
+        cmdCtrDec,
+        '04',
+        '55555555555555555555555555555555',
         defaultkey,
-        "00",
+        '00',
       );
-      cmdCtr += 1;
-      console.log('key0', decToHex(cmdCtr, 2))
+      cmdCtrDec += 1;
+      console.log('key0');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
-        "00",
-        "11111111111111111111111111111111",
+        cmdCtrDec,
+        '00',
+        '11111111111111111111111111111111',
         defaultkey,
-        "00",
+        '00',
       );
     } catch (ex) {
       console.warn('Oops!', ex);
@@ -284,7 +287,7 @@ export default function TestScreen({navigation}) {
       // stop the nfc scanning
       NfcManager.cancelTechnologyRequest();
     }
-  }
+  };
 
   const writeNdefSetFileSettings = async (masterKey, ndefMessage) => {
     if (!ndefMessage.includes('p=')) {
@@ -313,12 +316,12 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      const cmdCtr = '0000';
+      const cmdCtrDec = 0;
       await Ntag424.changeFileSettings(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtr,
+        cmdCtrDec,
         piccOffset,
         macOffset,
       );
@@ -351,6 +354,24 @@ export default function TestScreen({navigation}) {
     }
   };
 
+  const getCardUid = async () => {
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
+      const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
+        '00',
+        '00000000000000000000000000000000',
+      );
+      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, 0);
+      console.log(uid);
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
+    }
+  };
+
   return (
     <ScrollView>
       <Card style={{marginBottom: 20, marginHorizontal: 10}}>
@@ -364,7 +385,7 @@ export default function TestScreen({navigation}) {
           <View
             style={{flexDirection: 'column', justifyContent: 'space-evenly'}}>
             <Button
-              title="Authenticate EV2 First And Get File Settings"
+              title="Authenticate EV2 First"
               onPress={readNdef}></Button>
             <Button
               title="Write NDEF & Set File Settings"
@@ -381,12 +402,9 @@ export default function TestScreen({navigation}) {
                 wipeNdefResetFileSettings('00000000000000000000000000000000');
               }}></Button>
             <Button title="WRITE NDEF" onPress={writeNdef}></Button>
-            <Button
-              title="Change key"
-              onPress={changeKey}></Button>
-            <Button
-              title="Reset key"
-              onPress={resetKey}></Button>
+            <Button title="Change key" onPress={changeKey}></Button>
+            <Button title="Reset key" onPress={resetKey}></Button>
+            <Button title="Get card uid" onPress={getCardUid}></Button>
           </View>
         </Card.Content>
       </Card>

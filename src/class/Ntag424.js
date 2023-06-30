@@ -45,6 +45,20 @@ function ivEncryption(ti, cmdCtr, sesAuthEncKey) {
   return ivData.ciphertext.toString(CryptoJS.enc.Hex);
 }
 
+function ivEncryptionResponse(ti, cmdCtr, sesAuthEncKey) {
+  const ivData = AES.encrypt(
+    CryptoJS.enc.Hex.parse('5AA5' + ti + cmdCtr + '0000000000000000'),
+    CryptoJS.enc.Hex.parse(sesAuthEncKey),
+    {
+      mode: CryptoJS.mode.ECB,
+      // iv: CryptoJS.enc.Hex.parse("00000000000000000000000000000000"),
+      keySize: 128 / 8,
+      padding: CryptoJS.pad.NoPadding,
+    },
+  );
+  return ivData.ciphertext.toString(CryptoJS.enc.Hex);
+}
+
 function padForEnc(data, byteLen) {
   console.log('padforenc', data, data.length, byteLen);
   var paddedData = data;
@@ -54,6 +68,14 @@ function padForEnc(data, byteLen) {
     paddedData = paddedData.padEnd(byteLen * 2, '00');
   }
   return paddedData;
+}
+
+function decToHexLsbFirst(dec, bytes) {
+  //lsb first
+  return dec
+    .toString(16)
+    .padStart(2, '0')
+    .padEnd(bytes * 2, '0');
 }
 
 var Ntag424 = NfcManager;
@@ -79,9 +101,7 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
   const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
   console.warn(
     'isoSelectRes: ',
-    Platform.OS == 'ios'
-      ? bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2])
-      : bytesToHex(isoSelectRes),
+    bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]),
   );
 
   const bytes = hexToBytes('9071000005' + keyNo + '0300000000');
@@ -270,7 +290,7 @@ Ntag424.changeFileSettings = async (
   sesAuthEncKey,
   sesAuthMacKey,
   ti,
-  cmdCtr,
+  cmdCtrDec,
   piccOffset,
   macOffset,
 ) => {
@@ -300,7 +320,7 @@ Ntag424.changeFileSettings = async (
   const cmdDataPadd = padForEnc(cmdData, 16);
 
   console.log('cmdDataPadd', cmdDataPadd);
-
+  const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -347,16 +367,11 @@ Ntag424.changeFileSettings = async (
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
     hexToBytes(changeFileSettingsHex),
   );
-  console.warn(
-    'changeFileSettingsRes Result: ',
-    Platform.OS == 'ios'
-      ? bytesToHex([changeFileSettingsRes.sw1, changeFileSettingsRes.sw2])
-      : bytesToHex(changeFileSettingsRes),
-  );
   const resCode = bytesToHex([
     changeFileSettingsRes.sw1,
     changeFileSettingsRes.sw2,
   ]);
+  console.warn('changeFileSettingsRes Result: ', resCode);
   if (resCode == '9100') {
     return Promise.resolve('Successful');
   } else {
@@ -368,7 +383,7 @@ Ntag424.resetFileSettings = async (
   sesAuthEncKey,
   sesAuthMacKey,
   ti,
-  cmdCtr,
+  cmdCtrDec,
 ) => {
   //File Option SDM and mirroring enabled, CommMode: plain
   var cmdData = '40';
@@ -392,7 +407,7 @@ Ntag424.resetFileSettings = async (
   const cmdDataPadd = padForEnc(cmdData, 16);
 
   console.log('cmdDataPadd', cmdDataPadd);
-
+  const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -439,16 +454,11 @@ Ntag424.resetFileSettings = async (
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
     hexToBytes(changeFileSettingsHex),
   );
-  console.warn(
-    'changeFileSettingsRes Result: ',
-    Platform.OS == 'ios'
-      ? bytesToHex([changeFileSettingsRes.sw1, changeFileSettingsRes.sw2])
-      : bytesToHex(changeFileSettingsRes),
-  );
   const resCode = bytesToHex([
     changeFileSettingsRes.sw1,
     changeFileSettingsRes.sw2,
   ]);
+  console.warn('changeFileSettingsRes Result: ', resCode);
   if (resCode == '9100') {
     const message = [Ndef.uriRecord('')];
     const bytes = Ndef.encodeMessage(message);
@@ -465,12 +475,14 @@ Ntag424.changeKey = async (
   sesAuthEncKey,
   sesAuthMacKey,
   ti,
-  cmdCtr,
+  cmdCtrDec,
   keyNo,
   key,
   newKey,
   keyVersion,
 ) => {
+  const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  console.log('cmdCtr', cmdCtr);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   console.log('iv', iv);
   const aesEncryptOption = {
@@ -536,16 +548,75 @@ Ntag424.changeKey = async (
   console.log('changeKeyHex', changeKeyHex);
 
   const changeKeyRes = await Ntag424.sendAPDUCommand(hexToBytes(changeKeyHex));
-  console.warn(
-    'changeKeyRes Result: ',
-    Platform.OS == 'ios'
-      ? bytesToHex([changeKeyRes.sw1, changeKeyRes.sw2])
-      : bytesToHex(changeKeyRes),
-  );
 
   const resCode = bytesToHex([changeKeyRes.sw1, changeKeyRes.sw2]);
+  console.warn('changeKeyRes Result: ', resCode);
   if (resCode == '9100') {
     return Promise.resolve('Successful');
+  } else {
+    return Promise.reject(resCode);
+  }
+};
+
+Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
+  var cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  const commandMac = CryptoJS.CMAC(
+    CryptoJS.enc.Hex.parse(sesAuthMacKey),
+    CryptoJS.enc.Hex.parse('51' + cmdCtr + ti),
+  );
+  const commandMacHex = commandMac.toString();
+  console.log('getCardUid commandmac', commandMacHex);
+
+  const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
+    element,
+    index,
+    array,
+  ) {
+    return (index + 1) % 2 === 0;
+  });
+  const truncatedMac = bytesToHex(truncatedMacBytes);
+  console.log('truncatedMac', truncatedMac, hexToBytes(truncatedMac));
+
+  const getCardUidBytes = hexToBytes('9051000008' + truncatedMac + '00');
+  const getCardUidRes = await Ntag424.sendAPDUCommand(getCardUidBytes);
+
+  const responseAPDU = bytesToHex(getCardUidRes.response);
+  const resCode = bytesToHex([getCardUidRes.sw1, getCardUidRes.sw2]);
+  console.warn('getCardUidRes: ', resCode, responseAPDU);
+
+  const resMacT = responseAPDU.slice(-16);
+  console.log('mact', resMacT);
+  cmdCtrDec += 1;
+  cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  console.log('cmdCtr', cmdCtr);
+
+  const iv = ivEncryptionResponse(ti, cmdCtr, sesAuthEncKey);
+  console.log('iv', iv);
+
+  // console.log('test iv ', ivEncryption("2B4D963C014DC36F24F69A50A394F875"))
+  const resDataEnc = responseAPDU.slice(0, -16);
+  console.log('resDataEnc', resDataEnc)
+
+  const resDataDec = AES.decrypt(
+    {ciphertext: CryptoJS.enc.Hex.parse(resDataEnc)},
+    CryptoJS.enc.Hex.parse(sesAuthEncKey),
+    {
+      padding: CryptoJS.pad.NoPadding,
+      mode: CryptoJS.mode.CBC,
+      iv: CryptoJS.enc.Hex.parse(iv),
+      keySize: 128 / 8,
+    },
+  );
+  console.log('resDataDec', resDataDec)
+
+  const resData = CryptoJS.enc.Hex.stringify(resDataDec);
+
+  console.log('resData', resData);
+  const uid = resData.slice(0, 14);
+  console.log('uid', uid);
+
+  if (resCode == '9100') {
+    return Promise.resolve(uid);
   } else {
     return Promise.reject(resCode);
   }
