@@ -71,8 +71,8 @@ function padForEnc(data, byteLen) {
 }
 /**
  * Decimal to Hex Least sig bytes first
- * @param {*} dec 
- * @param {*} bytes 
+ * @param {int} dec decimal value
+ * @param {int} bytes how many bytes you want the hex to be
  * @returns 
  */
 function decToHexLsbFirst(dec, bytes) {
@@ -108,8 +108,8 @@ Ntag424.sendAPDUCommand = async function (commandBytes) {
 /**
  * AuthEv2First
  * 
- * @param {*} keyNo 
- * @param {*} pKey 
+ * @param {string} keyNo key number in hex (1 byte)
+ * @param {string} pKey key value in hex (16 bytes)
  * @returns 
  * 
  * CommMode N/A
@@ -235,8 +235,8 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
 /**
  * AuthEv2NonFirst
  * CommMode N/A
- * @param {*} keyNo 
- * @param {*} pKey 
+ * @param {string} keyNo key number in hex (1 byte)
+ * @param {string} pKey key value in hex (16 bytes)
  * @returns 
  */
 Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
@@ -316,12 +316,12 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
  * Change File Settings
  * CommMode Full
  * 
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
- * @param {*} piccOffset 
- * @param {*} macOffset 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string (4 bytes)
+ * @param {int} cmdCtrDec command counter in int
+ * @param {int} piccOffset picc offset
+ * @param {int} macOffset mac offset
  * @returns 
  */
 Ntag424.changeFileSettings = async (
@@ -420,10 +420,10 @@ Ntag424.changeFileSettings = async (
 /**
  * Reset File Settings
  * CommMode full
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string ( 4bytes)
+ * @param {int} cmdCtrDec command counter in int
  * @returns 
  */
 Ntag424.resetFileSettings = async (
@@ -522,14 +522,14 @@ Ntag424.resetFileSettings = async (
  * Change Key
  * CommMode full
  * 
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
- * @param {*} keyNo 
- * @param {*} key 
- * @param {*} newKey 
- * @param {*} keyVersion 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string ( 4bytes)
+ * @param {int} cmdCtrDec command counter in int
+ * @param {string} keyNo key number in hex (1 byte)
+ * @param {string} key old key value in hex (16 bytes)
+ * @param {string} newKey new key value in hex (16 bytes)
+ * @param {string} keyVersion new key version in hex (1 byte)
  * @returns 
  */
 Ntag424.changeKey = async (
@@ -623,10 +623,10 @@ Ntag424.changeKey = async (
  * Get Card UID
  * CommMode Full
  * 
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string ( 4bytes)
+ * @param {int} cmdCtrDec command counter in int
  * @returns 
  */
 Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
