@@ -16,13 +16,6 @@ import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 import DisplayAuthInfo from '../components/DisplayAuthInfo';
 import Ntag424 from '../class/Ntag424';
 
-function decToHex(dec, bytes) {
-  return dec
-    .toString(16)
-    .padStart(2, '0')
-    .padEnd(bytes * 2, '0');
-}
-
 export default function CreateBoltcardScreen({route}) {
   const {data, timestamp} = route.params;
   const navigation = useNavigation();
@@ -163,70 +156,70 @@ export default function CreateBoltcardScreen({route}) {
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
       //change file settings
-      var cmdCtr = 0;
+      var cmdCtrDec = 0;
       await Ntag424.changeFileSettings(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         piccOffset,
         macOffset,
       );
       //change keys
-      cmdCtr += 1;
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         '01',
         key0,
         keys[1],
         '01',
       );
       setKey1Changed(true);
-      cmdCtr += 1;
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         '02',
         key0,
         keys[2],
         '01',
       );
       setKey2Changed(true);
-      cmdCtr += 1;
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         '03',
         key0,
         keys[3],
         '01',
       );
       setKey3Changed(true);
-      cmdCtr += 1;
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         '04',
         key0,
         keys[4],
         '01',
       );
       setKey4Changed(true);
-      cmdCtr += 1;
+      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        decToHex(cmdCtr, 2),
+        cmdCtrDec,
         '00',
         key0,
         keys[0],
@@ -234,6 +227,10 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey0Changed(true);
       setWriteKeys(true);
+    //   cmdCtrDec += 1;
+    //   const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec);
+    //   console.log('UID', uid);
+    //   setCardUID(uid);
     } catch (ex) {
       console.warn('Oops!', ex);
       setTagTypeError(ex);
