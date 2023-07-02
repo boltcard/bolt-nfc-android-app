@@ -71,8 +71,8 @@ function padForEnc(data, byteLen) {
 }
 /**
  * Decimal to Hex Least sig bytes first
- * @param {*} dec 
- * @param {*} bytes 
+ * @param {int} dec decimal value
+ * @param {int} bytes how many bytes you want the hex to be
  * @returns 
  */
 function decToHexLsbFirst(dec, bytes) {
@@ -135,9 +135,9 @@ Ntag424.isoSelectFileApplication = async function () {
 
 /**
  * AuthEv2First
- * 
- * @param {*} keyNo 
- * @param {*} pKey 
+ * COMMMODE N/A
+ * @param {string} keyNo key number in hex (1 byte)
+ * @param {string} pKey key value in hex (16 bytes)
  * @returns 
  * 
  * CommMode N/A
@@ -150,8 +150,6 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
   const Result = await Ntag424.sendAPDUCommand(bytes);
   console.warn('Result: ', bytesToHex([Result.sw1, Result.sw2]));
   const resultData = bytesToHex(Result.response);
-  console.log('resultData', resultData);
-  console.log('resultData', hexToBytes(resultData));
   //91AF is the successful code
   const resultCode = bytesToHex([Result.sw1, Result.sw2]);
   if (resultCode == '91af') {
@@ -169,29 +167,20 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
       aesEncryptOption,
     );
     const RndB = CryptoJS.enc.Hex.stringify(RndBDec);
-    console.log('key', key, 'iv', iv);
-    console.log('rndb', RndB);
     const RndABytes = randomBytes(16);
     const RndA = bytesToHex(RndABytes);
-    console.log('rnda', bytesToHex(RndABytes));
     const RndBRotlBytes = leftRotate(hexToBytes(RndB));
     const RndBRotl = bytesToHex(RndBRotlBytes);
-    console.log('RndBRotl', RndBRotlBytes, RndBRotl);
 
     const RndARndBRotl = RndA + RndBRotl;
-    console.log('RndARndBRotl', RndARndBRotl);
     const RndARndBEncData = AES.encrypt(
       CryptoJS.enc.Hex.parse(RndARndBRotl),
       key,
       aesEncryptOption,
     );
     const RndARndBEnc = RndARndBEncData.ciphertext.toString(CryptoJS.enc.Hex);
-    console.log('RndARndBEnc', RndARndBEnc);
-    console.log('RndARndBEnc', hexToBytes(RndARndBEnc));
 
     const secondAuthBytes = hexToBytes('90AF000020' + RndARndBEnc + '00');
-    console.log('90AF000020' + RndARndBEnc + '00');
-    console.log('secondAuthBytes', secondAuthBytes);
     const secondAuthRes = await Ntag424.sendAPDUCommand(secondAuthBytes);
     console.warn(
       'Result: ',
@@ -213,11 +202,9 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
       const secondAuthResultDataDecStr = CryptoJS.enc.Hex.stringify(
         secondAuthResultDataDec,
       );
-      console.log('secondAuthResultDataDec', secondAuthResultDataDecStr);
 
       const tiBytes = hexToBytes(secondAuthResultDataDecStr).slice(0, 4);
       const ti = bytesToHex(tiBytes);
-      console.log('ti', ti);
 
       var WordArray = CryptoJS.lib.WordArray;
       const xor = CryptoJS.ext.xor(
@@ -236,13 +223,10 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
       //SV2 = 5Ah||A5h||00h||01h||00h||80h||RndA[15..14]|| ( RndA[13..8] # RndB[15..10])||RndB[9..0]||RndA[7..0]
       //# == XOR-operator
 
-      console.log(RndA.slice(0, 4), RndA.slice(4, 16));
       let sv2 = '5AA500010080';
       sv2 += svPost;
-      console.log('sv2', sv2);
       const sesAuthMac = CryptoJS.CMAC(key, CryptoJS.enc.Hex.parse(sv2));
       const sesAuthMacKey = sesAuthMac.toString();
-      console.log('sesAuthMacKey', sesAuthMacKey);
 
       return Promise.resolve({sesAuthEncKey, sesAuthMacKey, ti});
     } else {
@@ -258,8 +242,8 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
 /**
  * AuthEv2NonFirst
  * CommMode N/A
- * @param {*} keyNo 
- * @param {*} pKey 
+ * @param {string} keyNo key number in hex (1 byte)
+ * @param {string} pKey key value in hex (16 bytes)
  * @returns 
  */
 Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
@@ -270,8 +254,6 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
     bytesToHex([Result.sw1, Result.sw2]),
   );
   const resultData = bytesToHex(Result.response);
-  console.log('resultData', resultData);
-  console.log('resultData', hexToBytes(resultData));
   //91AF is the successful code
   const resultCode = bytesToHex([Result.sw1, Result.sw2]);
   if (resultCode == '91af') {
@@ -289,29 +271,20 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
       aesEncryptOption,
     );
     const RndB = CryptoJS.enc.Hex.stringify(RndBDec);
-    console.log('key', key, 'iv', iv);
-    console.log('rndb', RndB);
     const RndABytes = randomBytes(16);
     const RndA = bytesToHex(RndABytes);
-    console.log('rnda', bytesToHex(RndABytes));
     const RndBRotlBytes = leftRotate(hexToBytes(RndB));
     const RndBRotl = bytesToHex(RndBRotlBytes);
-    console.log('RndBRotl', RndBRotlBytes, RndBRotl);
 
     const RndARndBRotl = RndA + RndBRotl;
-    console.log('RndARndBRotl', RndARndBRotl);
     const RndARndBEncData = AES.encrypt(
       CryptoJS.enc.Hex.parse(RndARndBRotl),
       key,
       aesEncryptOption,
     );
     const RndARndBEnc = RndARndBEncData.ciphertext.toString(CryptoJS.enc.Hex);
-    console.log('RndARndBEnc', RndARndBEnc);
-    console.log('RndARndBEnc', hexToBytes(RndARndBEnc));
 
     const secondAuthBytes = hexToBytes('90AF000020' + RndARndBEnc + '00');
-    console.log('90AF000020' + RndARndBEnc + '00');
-    console.log('secondAuthBytes', secondAuthBytes);
     const secondAuthRes = await Ntag424.sendAPDUCommand(secondAuthBytes);
     console.warn(
       'auth ev2 non first part 2 Result: ',
@@ -339,12 +312,12 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
  * Change File Settings
  * CommMode Full
  * 
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
- * @param {*} piccOffset 
- * @param {*} macOffset 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string (4 bytes)
+ * @param {int} cmdCtrDec command counter in int
+ * @param {int} piccOffset picc offset
+ * @param {int} macOffset mac offset
  * @returns 
  */
 Ntag424.changeFileSettings = async (
@@ -380,7 +353,6 @@ Ntag424.changeFileSettings = async (
 
   const cmdDataPadd = padForEnc(cmdData, 16);
 
-  console.log('cmdDataPadd', cmdDataPadd);
   const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
@@ -402,12 +374,6 @@ Ntag424.changeFileSettings = async (
     CryptoJS.enc.Hex.parse('5F' + cmdCtr + ti + fileNo + encKeyData),
   );
   const commandMacHex = commandMac.toString();
-  console.log(
-    'changeFileSettings encKeyData',
-    encKeyData,
-    hexToBytes(encKeyData),
-  );
-  console.log('changeFileSettings commandmac', commandMacHex);
 
   const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
     element,
@@ -417,13 +383,10 @@ Ntag424.changeFileSettings = async (
     return (index + 1) % 2 === 0;
   });
   const truncatedMac = bytesToHex(truncatedMacBytes);
-  console.log('truncatedMac', truncatedMac, hexToBytes(truncatedMac));
   const data = encKeyData + truncatedMac;
-  console.log('data', data, data.length);
   const lc = (data.length / 2 + 1).toString(16);
   const changeFileSettingsHex =
     '905F0000' + lc + fileNo + encKeyData + truncatedMac + '00';
-  console.log('changeFileSettingsHex', changeFileSettingsHex);
 
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
     hexToBytes(changeFileSettingsHex),
@@ -443,10 +406,10 @@ Ntag424.changeFileSettings = async (
 /**
  * Reset File Settings
  * CommMode full
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string ( 4bytes)
+ * @param {int} cmdCtrDec command counter in int
  * @returns 
  */
 Ntag424.resetFileSettings = async (
@@ -475,8 +438,6 @@ Ntag424.resetFileSettings = async (
   //no picc offset and mac offset
 
   const cmdDataPadd = padForEnc(cmdData, 16);
-
-  console.log('cmdDataPadd', cmdDataPadd);
   const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
@@ -498,12 +459,6 @@ Ntag424.resetFileSettings = async (
     CryptoJS.enc.Hex.parse('5F' + cmdCtr + ti + fileNo + encKeyData),
   );
   const commandMacHex = commandMac.toString();
-  console.log(
-    'changeFileSettings encKeyData',
-    encKeyData,
-    hexToBytes(encKeyData),
-  );
-  console.log('changeFileSettings commandmac', commandMacHex);
 
   const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
     element,
@@ -513,13 +468,10 @@ Ntag424.resetFileSettings = async (
     return (index + 1) % 2 === 0;
   });
   const truncatedMac = bytesToHex(truncatedMacBytes);
-  console.log('truncatedMac', truncatedMac, hexToBytes(truncatedMac));
   const data = encKeyData + truncatedMac;
-  console.log('data', data, data.length);
   const lc = (data.length / 2 + 1).toString(16);
   const changeFileSettingsHex =
     '905F0000' + lc + fileNo + encKeyData + truncatedMac + '00';
-  console.log('changeFileSettingsHex', changeFileSettingsHex);
 
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
     hexToBytes(changeFileSettingsHex),
@@ -532,7 +484,6 @@ Ntag424.resetFileSettings = async (
   if (resCode == '9100') {
     const message = [Ndef.uriRecord('')];
     const bytes = Ndef.encodeMessage(message);
-    console.log('ndef bytes', bytes);
     await NfcManager.ndefHandler.writeNdefMessage(bytes);
 
     return Promise.resolve('Successful');
@@ -545,14 +496,14 @@ Ntag424.resetFileSettings = async (
  * Change Key
  * CommMode full
  * 
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
- * @param {*} keyNo 
- * @param {*} key 
- * @param {*} newKey 
- * @param {*} keyVersion 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string ( 4bytes)
+ * @param {int} cmdCtrDec command counter in int
+ * @param {string} keyNo key number in hex (1 byte)
+ * @param {string} key old key value in hex (16 bytes)
+ * @param {string} newKey new key value in hex (16 bytes)
+ * @param {string} keyVersion new key version in hex (1 byte)
  * @returns 
  */
 Ntag424.changeKey = async (
@@ -566,9 +517,7 @@ Ntag424.changeKey = async (
   keyVersion,
 ) => {
   const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
-  console.log('cmdCtr', cmdCtr);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
-  console.log('iv', iv);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
     iv: CryptoJS.enc.Hex.parse(iv),
@@ -599,7 +548,6 @@ Ntag424.changeKey = async (
     const crc32 = bytesToHex(hexToBytes(crc32Reversed).reverse());
     keyData = padForEnc(oldNewXor + keyVersion + crc32, 32); //32 bytes
   }
-  console.log('changeKey keyData', keyData, hexToBytes(keyData));
 
   const encKeyData = AES.encrypt(
     CryptoJS.enc.Hex.parse(keyData),
@@ -612,8 +560,6 @@ Ntag424.changeKey = async (
     CryptoJS.enc.Hex.parse('C4' + cmdCtr + ti + keyNo + encKeyData),
   );
   const commandMacHex = commandMac.toString();
-  console.log('changeKey encKeyData', encKeyData, hexToBytes(encKeyData));
-  console.log('changeKey commandmac', commandMacHex);
 
   const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
     element,
@@ -623,13 +569,10 @@ Ntag424.changeKey = async (
     return (index + 1) % 2 === 0;
   });
   const truncatedMac = bytesToHex(truncatedMacBytes);
-  console.log('truncatedMac', truncatedMac, hexToBytes(truncatedMac));
   const data = encKeyData + truncatedMac;
-  console.log('data', data, data.length);
   const lc = (data.length / 2 + 1).toString(16);
   const changeKeyHex =
     '90C40000' + lc + keyNo + encKeyData + truncatedMac + '00';
-  console.log('changeKeyHex', changeKeyHex);
 
   const changeKeyRes = await Ntag424.sendAPDUCommand(hexToBytes(changeKeyHex));
 
@@ -646,10 +589,10 @@ Ntag424.changeKey = async (
  * Get Card UID
  * CommMode Full
  * 
- * @param {*} sesAuthEncKey 
- * @param {*} sesAuthMacKey 
- * @param {*} ti 
- * @param {*} cmdCtrDec 
+ * @param {string} sesAuthEncKey hex string (16 bytes)
+ * @param {string} sesAuthMacKey hex string (16 bytes)
+ * @param {string} ti hex string ( 4bytes)
+ * @param {int} cmdCtrDec command counter in int
  * @returns 
  */
 Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
@@ -659,7 +602,6 @@ Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
     CryptoJS.enc.Hex.parse('51' + cmdCtr + ti),
   );
   const commandMacHex = commandMac.toString();
-  console.log('getCardUid commandmac', commandMacHex);
 
   const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
     element,
@@ -669,27 +611,21 @@ Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
     return (index + 1) % 2 === 0;
   });
   const truncatedMac = bytesToHex(truncatedMacBytes);
-  console.log('truncatedMac', truncatedMac, hexToBytes(truncatedMac));
 
   const getCardUidBytes = hexToBytes('9051000008' + truncatedMac + '00');
   const getCardUidRes = await Ntag424.sendAPDUCommand(getCardUidBytes);
 
   const responseAPDU = bytesToHex(getCardUidRes.response);
   const resCode = bytesToHex([getCardUidRes.sw1, getCardUidRes.sw2]);
-  console.warn('getCardUidRes: ', resCode, responseAPDU);
 
   const resMacT = responseAPDU.slice(-16);
-  console.log('mact', resMacT);
   cmdCtrDec += 1;
   cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
-  console.log('cmdCtr', cmdCtr);
 
   const iv = ivEncryptionResponse(ti, cmdCtr, sesAuthEncKey);
-  console.log('iv', iv);
 
   // console.log('test iv ', ivEncryption("2B4D963C014DC36F24F69A50A394F875"))
   const resDataEnc = responseAPDU.slice(0, -16);
-  console.log('resDataEnc', resDataEnc)
 
   const resDataDec = AES.decrypt(
     {ciphertext: CryptoJS.enc.Hex.parse(resDataEnc)},
@@ -701,13 +637,8 @@ Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
       keySize: 128 / 8,
     },
   );
-  console.log('resDataDec', resDataDec)
-
   const resData = CryptoJS.enc.Hex.stringify(resDataDec);
-
-  console.log('resData', resData);
   const uid = resData.slice(0, 14);
-  console.log('uid', uid);
 
   if (resCode == '9100') {
     return Promise.resolve(uid);
