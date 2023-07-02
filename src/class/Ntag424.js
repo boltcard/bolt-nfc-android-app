@@ -105,6 +105,34 @@ Ntag424.sendAPDUCommand = async function (commandBytes) {
   }
   return newResponse;
 };
+
+/**
+ * Selects the application file
+ * @returns 
+ */
+Ntag424.isoSelectFileApplication = async function () {
+  //For selecting the application immediately, the ISO/IEC 7816-4 DF name D2760000850101h can be used.
+  const isoSelectFileBytes = hexToBytes('00A4040007D276000085010100');
+  const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
+  console.warn(
+    'isoSelectRes: ',
+    bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]),
+  );
+  const resultHex = bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]);
+  if(resultHex == '9000') {
+    return Promise.resolve(resultHex);
+  } else {
+    const errorCodes = new Object();
+    errorCodes['6700'] = 'Wrong or inconsistent APDU length.';
+    errorCodes['6985'] = 'Wrapped chained command or multiple pass command ongoing.';
+    errorCodes['6a82'] = 'Application or file not found, currently selected application remains selected.';
+    errorCodes['6a86'] = 'Wrong parameter P1 and/or P2';
+    errorCodes['6a87'] = 'Wrong parameter Lc inconsistent with P1-P2';
+    errorCodes['6e00'] = 'Wrong CLA';
+    return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
+  }
+}
+
 /**
  * AuthEv2First
  * 
@@ -116,12 +144,7 @@ Ntag424.sendAPDUCommand = async function (commandBytes) {
  */
 Ntag424.AuthEv2First = async function (keyNo, pKey) {
   //iso select file before auth
-  const isoSelectFileBytes = hexToBytes('00A4040007D276000085010100');
-  const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
-  console.warn(
-    'isoSelectRes: ',
-    bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]),
-  );
+  await Ntag424.isoSelectFileApplication();
 
   const bytes = hexToBytes('9071000005' + keyNo + '0300000000');
   const Result = await Ntag424.sendAPDUCommand(bytes);
