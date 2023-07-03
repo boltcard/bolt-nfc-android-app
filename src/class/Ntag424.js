@@ -316,6 +316,52 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
 };
 
 /**
+ * MACs the data and returns as a hex string
+ * 
+ * @param {byte[]} commandData data to MAC
+ * @returns 
+ */
+Ntag424.calcMac = function (commandData) {
+
+  const commandMac = CryptoJS.CMAC(
+    CryptoJS.enc.Hex.parse(Ntag424.sesAuthMacKey),
+    CryptoJS.enc.Hex.parse(commandData),
+  );
+  const commandMacHex = commandMac.toString();
+
+  const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
+    element,
+    index,
+    array,
+  ) {
+    return (index + 1) % 2 === 0;
+  });
+  return bytesToHex(truncatedMacBytes);
+}
+
+/**
+ * Encrypts the data for CommMode.FULL
+ * @param {string} cmdDataPadd Hex string of command data padded.
+ * @param {byte[]} cmdCtr 
+ * @returns 
+ */
+Ntag424.encData = function (cmdDataPadd, cmdCtr) {
+  const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
+  const aesEncryptOption = {
+    mode: CryptoJS.mode.CBC,
+    iv: CryptoJS.enc.Hex.parse(iv),
+    keySize: 128 / 8,
+    padding: CryptoJS.pad.NoPadding,
+  };
+
+  return AES.encrypt(
+    CryptoJS.enc.Hex.parse(cmdDataPadd),
+    CryptoJS.enc.Hex.parse(Ntag424.sesAuthEncKey),
+    aesEncryptOption,
+  ).ciphertext.toString(CryptoJS.enc.Hex);
+}
+
+/**
  * Change File Settings
  * CommMode Full
  *
@@ -328,13 +374,10 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
  * @returns
  */
 Ntag424.changeFileSettings = async (
-  sesAuthEncKey,
-  sesAuthMacKey,
-  ti,
-  cmdCtrDec,
   piccOffset,
   macOffset,
 ) => {
+  const cmdHeader = '905F0000';
   //File Option SDM and mirroring enabled, CommMode: plain
   var cmdData = '40';
   //Access rights (FileAR.ReadWrite: 0x0, FileAR.Change: 0x0, FileAR.Read: 0xE, FileAR.Write; 0x0)
@@ -357,43 +400,22 @@ Ntag424.changeFileSettings = async (
   cmdData += macOffset.toString(16).padEnd(6, '0');
   //SDMMACInputOffset
   cmdData += macOffset.toString(16).padEnd(6, '0');
+  const fileNo = '02';
+  console.log('cmdData', cmdData);
 
   const cmdDataPadd = padForEnc(cmdData, 16);
 
-  const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
-  const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
-  const aesEncryptOption = {
-    mode: CryptoJS.mode.CBC,
-    iv: CryptoJS.enc.Hex.parse(iv),
-    keySize: 128 / 8,
-    padding: CryptoJS.pad.NoPadding,
-  };
+  const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
+  
+  const encKeyData = Ntag424.encData(cmdDataPadd, cmdCtr);
 
-  const encKeyData = AES.encrypt(
-    CryptoJS.enc.Hex.parse(cmdDataPadd),
-    CryptoJS.enc.Hex.parse(sesAuthEncKey),
-    aesEncryptOption,
-  ).ciphertext.toString(CryptoJS.enc.Hex);
+  const commandData = '5F' + cmdCtr + Ntag424.ti + fileNo + encKeyData;
+  
+  const truncatedMac = Ntag424.calcMac(commandData)
 
-  const fileNo = '02';
-  const commandMac = CryptoJS.CMAC(
-    CryptoJS.enc.Hex.parse(sesAuthMacKey),
-    CryptoJS.enc.Hex.parse('5F' + cmdCtr + ti + fileNo + encKeyData),
-  );
-  const commandMacHex = commandMac.toString();
-
-  const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
-    element,
-    index,
-    array,
-  ) {
-    return (index + 1) % 2 === 0;
-  });
-  const truncatedMac = bytesToHex(truncatedMacBytes);
   const data = encKeyData + truncatedMac;
   const lc = (data.length / 2 + 1).toString(16);
-  const changeFileSettingsHex =
-    '905F0000' + lc + fileNo + encKeyData + truncatedMac + '00';
+  const changeFileSettingsHex = cmdHeader + lc + fileNo + encKeyData + truncatedMac + '00';
 
   const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
     hexToBytes(changeFileSettingsHex),
@@ -406,7 +428,17 @@ Ntag424.changeFileSettings = async (
   if (resCode == '9100') {
     return Promise.resolve('Successful');
   } else {
-    return Promise.reject(resCode);
+    const errorCodes = new Object();
+    errorCodes['91ca'] = 'COMMAND_ABORTED chained command or multiple pass command ongoing.';
+    errorCodes['911e'] = 'INTEGRITY_ERROR Integrity error in cryptogram. Invalid Secure Messaging MAC (only).';
+    errorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
+    errorCodes['919e'] = 'PARAMETER_ERROR Parameter value not allowed';
+    errorCodes['919d'] = 'PERMISSION_DENIED PICC level (MF) is selected. access right Change of targeted file has access conditions set to Fh. Enabling Secure Dynamic Messaging (FileOption Bit 6 set to 1b) is only allowed for FileNo 02h.';
+    errorCodes['91f0'] = 'FILE_NOT_FOUND F0h File with targeted FileNo does not exist for the targeted application. ';
+    errorCodes['91ae'] = 'AUTHENTICATION_ERROR AEh File access right Change of targeted file not granted as there is no active authentication with the required key while the access conditions is different from Fh.';
+    errorCodes['91ee'] = 'MEMORY_ERROR EEh Failure when reading or writing to non-volatile memory.';
+    
+    return Promise.reject('changeFileSettingsRes Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
 
@@ -445,7 +477,7 @@ Ntag424.resetFileSettings = async (
   //no picc offset and mac offset
 
   const cmdDataPadd = padForEnc(cmdData, 16);
-  const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -523,7 +555,7 @@ Ntag424.changeKey = async (
   newKey,
   keyVersion,
 ) => {
-  const cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -603,7 +635,7 @@ Ntag424.changeKey = async (
  * @returns
  */
 Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
-  var cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  var cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
   const commandMac = CryptoJS.CMAC(
     CryptoJS.enc.Hex.parse(sesAuthMacKey),
     CryptoJS.enc.Hex.parse('51' + cmdCtr + ti),
