@@ -60,8 +60,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      const cmdCtr = 0;
-      await Ntag424.resetFileSettings(sesAuthEncKey, sesAuthMacKey, ti, cmdCtr);
+      await Ntag424.resetFileSettings(sesAuthEncKey, sesAuthMacKey, ti);
     } catch (ex) {
       console.warn('Oops!', ex);
     } finally {
@@ -82,63 +81,52 @@ export default function TestScreen({navigation}) {
         '00',
         key0,
       );
-      var cmdCtrDec = 0;
       console.log('key1');
 
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '01',
         key0,
         '22222222222222222222222222222222',
         '01',
       );
-      // await Ntag424.AuthEv2NonFirst("00", key0);
-      cmdCtrDec += 1;
       console.log('key2');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '02',
         key0,
         '33333333333333333333333333333333',
         '01',
       );
-      cmdCtrDec += 1;
       console.log('key3');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '03',
         key0,
         '44444444444444444444444444444444',
         '01',
       );
       console.log('key4');
-      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '04',
         key0,
         '55555555555555555555555555555555',
         '01',
       );
       console.log('key0');
-      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '00',
         key0,
         '11111111111111111111111111111111',
@@ -164,61 +152,51 @@ export default function TestScreen({navigation}) {
         '00',
         '11111111111111111111111111111111',
       );
-      var cmdCtrDec = 0;
       console.log('key1')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         "01",
         "22222222222222222222222222222222",
         defaultkey,
         "00",
       );
-      cmdCtrDec += 1;
       console.log('key2')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         "02",
         "33333333333333333333333333333333",
         defaultkey,
         "00",
       );
-      cmdCtrDec += 1;
       console.log('key3');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '03',
         '44444444444444444444444444444444',
         defaultkey,
         '00',
       );
-      cmdCtrDec += 1;
       console.log('key4');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '04',
         '55555555555555555555555555555555',
         defaultkey,
         '00',
       );
-      cmdCtrDec += 1;
       console.log('key0');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '00',
         '11111111111111111111111111111111',
         defaultkey,
@@ -259,12 +237,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      const cmdCtrDec = 0;
       await Ntag424.changeFileSettings(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         piccOffset,
         macOffset,
       );
@@ -308,7 +281,7 @@ export default function TestScreen({navigation}) {
         '00',
         '00000000000000000000000000000000',
       );
-      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, 0);
+      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti);
       console.log(uid);
     } catch (ex) {
       console.warn('Oops!', ex);

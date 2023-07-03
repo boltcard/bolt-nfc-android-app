@@ -2,6 +2,7 @@ import {Platform} from 'react-native';
 import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 import {randomBytes} from 'crypto';
 import crc from 'crc';
+import errorCodes from '../constants/ErrorCodes';
 
 var CryptoJS = require('../utils/Cmac');
 var AES = require('crypto-js/aes');
@@ -124,13 +125,6 @@ Ntag424.isoSelectFileApplication = async function () {
   if(resultHex == '9000') {
     return Promise.resolve(resultHex);
   } else {
-    const errorCodes = new Object();
-    errorCodes['6700'] = 'Wrong or inconsistent APDU length.';
-    errorCodes['6985'] = 'Wrapped chained command or multiple pass command ongoing.';
-    errorCodes['6a82'] = 'Application or file not found, currently selected application remains selected.';
-    errorCodes['6a86'] = 'Wrong parameter P1 and/or P2';
-    errorCodes['6a87'] = 'Wrong parameter Lc inconsistent with P1-P2';
-    errorCodes['6e00'] = 'Wrong CLA';
     return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
   }
 }
@@ -231,15 +225,15 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
         sv2 += svPost;
         const sesAuthMac = CryptoJS.CMAC(key, CryptoJS.enc.Hex.parse(sv2));
         const sesAuthMacKey = sesAuthMac.toString();
-  
+        Ntag424.cmdCtrDec = 0;
         return Promise.resolve({sesAuthEncKey, sesAuthMacKey, ti});
       } else {
         //auth failed
-        return Promise.reject('Auth Failed: ' + secondAuthResultCode);
+        return Promise.reject('Auth Failed, code ' +secondAuthResultCode + ' ' + errorCodes[secondAuthResultCode] );
       }
     } else {
       //auth failed
-      return Promise.reject('Auth Failed: ' + resultCode);
+      return Promise.reject('Auth Failed, code ' +resultCode + ' ' + errorCodes[resultCode] );
     }
   } catch (ex) {
     return Promise.reject(ex);
@@ -307,11 +301,11 @@ Ntag424.AuthEv2NonFirst = async (keyNo, pKey) => {
       return Promise.resolve('Successful');
     } else {
       //auth failed
-      return Promise.reject('Auth Failed: ' + secondAuthResultCode);
+      return Promise.reject('Auth Failed, code ' +secondAuthResultCode + ' ' + errorCodes[secondAuthResultCode] );
     }
   } else {
     //auth failed
-    return Promise.reject('Auth Failed: ' + resultCode);
+    return Promise.reject('Auth Failed, code ' +resultCode + ' ' + errorCodes[resultCode] );
   }
 };
 
@@ -365,10 +359,6 @@ Ntag424.encData = function (cmdDataPadd, cmdCtr) {
  * Change File Settings
  * CommMode Full
  *
- * @param {string} sesAuthEncKey hex string (16 bytes)
- * @param {string} sesAuthMacKey hex string (16 bytes)
- * @param {string} ti hex string (4 bytes)
- * @param {int} cmdCtrDec command counter in int
  * @param {int} piccOffset picc offset
  * @param {int} macOffset mac offset
  * @returns
@@ -439,6 +429,8 @@ Ntag424.changeFileSettings = async (
     errorCodes['91ee'] = 'MEMORY_ERROR EEh Failure when reading or writing to non-volatile memory.';
     
     return Promise.reject('changeFileSettingsRes Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+
+    return Promise.reject('Change file settings Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
 
@@ -527,7 +519,7 @@ Ntag424.resetFileSettings = async (
 
     return Promise.resolve('Successful');
   } else {
-    return Promise.reject(resCode);
+    return Promise.reject('Reset file settings Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
 
@@ -538,7 +530,6 @@ Ntag424.resetFileSettings = async (
  * @param {string} sesAuthEncKey hex string (16 bytes)
  * @param {string} sesAuthMacKey hex string (16 bytes)
  * @param {string} ti hex string ( 4bytes)
- * @param {int} cmdCtrDec command counter in int
  * @param {string} keyNo key number in hex (1 byte)
  * @param {string} key old key value in hex (16 bytes)
  * @param {string} newKey new key value in hex (16 bytes)
@@ -549,13 +540,13 @@ Ntag424.changeKey = async (
   sesAuthEncKey,
   sesAuthMacKey,
   ti,
-  cmdCtrDec,
   keyNo,
   key,
   newKey,
   keyVersion,
 ) => {
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
+  console.log('cmdCtr', cmdCtr);
   const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -620,7 +611,7 @@ Ntag424.changeKey = async (
   if (resCode == '9100') {
     return Promise.resolve('Successful');
   } else {
-    return Promise.reject(resCode);
+    return Promise.reject('Change Key Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
 
@@ -631,10 +622,9 @@ Ntag424.changeKey = async (
  * @param {string} sesAuthEncKey hex string (16 bytes)
  * @param {string} sesAuthMacKey hex string (16 bytes)
  * @param {string} ti hex string ( 4bytes)
- * @param {int} cmdCtrDec command counter in int
  * @returns
  */
-Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
+Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti) => {
   var cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
   const commandMac = CryptoJS.CMAC(
     CryptoJS.enc.Hex.parse(sesAuthMacKey),
@@ -682,7 +672,7 @@ Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec) => {
   if (resCode == '9100') {
     return Promise.resolve(resData);
   } else {
-    return Promise.reject(resCode);
+    return Promise.reject('Get Card UID Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
 
@@ -705,12 +695,6 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
     if(resultHex == '9000') {
     } else {
       const errorCodes = new Object();
-      errorCodes['6700'] = 'Wrong or inconsistent APDU length.';
-      errorCodes['6985'] = 'Wrapped chained command or multiple pass command ongoing.';
-      errorCodes['6a82'] = 'Application or file not found, currently selected application remains selected.';
-      errorCodes['6a86'] = 'Wrong parameter P1 and/or P2';
-      errorCodes['6a87'] = 'Wrong parameter Lc inconsistent with P1-P2';
-      errorCodes['6e00'] = 'Wrong CLA';
       return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
     }
   
@@ -730,7 +714,7 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
     if(resCode == "9000") {
       return Promise.resolve(resCode);
     } else {
-      return Promise.reject(resCode);
+      return Promise.reject('ISO Update Binary Failed, code ' +resCode + ' ' + errorCodes[resCode] );
     }
   } catch(e) {
     return Promise.reject(e);
@@ -760,7 +744,7 @@ Ntag424.readData = async (offset) => {
   if(resCode == "9100") {
     return Promise.resolve(resData);
   } else {
-    return Promise.reject(resCode);
+    return Promise.reject('Read Data Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 }
 
