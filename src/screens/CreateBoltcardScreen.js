@@ -138,20 +138,24 @@ export default function CreateBoltcardScreen({route}) {
         ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'
         : lnurlw_base +
           '?p=00000000000000000000000000000000&c=0000000000000000';
+
       const message = [Ndef.uriRecord(ndefMessage)];
       const bytes = Ndef.encodeMessage(message);
-      await NfcManager.ndefHandler.writeNdefMessage(bytes);
+
+      await Ntag424.setNdefMessage(bytes);
       setNdefWritten(true);
 
-      //check if ndef has been set correctly
-      const ndef = await NfcManager.ndefHandler.getNdefMessage();
-      console.log(Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+      //set offset for ndef header
+      const ndef = await Ntag424.readData("060000");
+      console.log(Ndef.uri.decodePayload(ndef));
+      
       const key0 = '00000000000000000000000000000000';
       //auth first
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
         '00',
         key0,
       );
+
 
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
