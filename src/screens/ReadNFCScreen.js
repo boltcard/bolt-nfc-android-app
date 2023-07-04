@@ -66,6 +66,7 @@ export default function ReadNFCScreen(props) {
       const tag = await NfcManager.requestTechnology(NfcTech.IsoDep);
       setReadyToRead(true);
 
+      await Ntag424.isoSelectFileApplication();
       const cardVersion = await Ntag424.getVersion();
       setCardReadInfo(`Tagname: \nUID:${cardVersion.UID} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
 
