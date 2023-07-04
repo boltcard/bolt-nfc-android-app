@@ -22,4 +22,14 @@ const errorCodes = {
 
 //NOTE: when new APDU command gets added make sure the error codes are added here
 
+
+export const isoSelectErrorCodes = {
+  '6700' : 'Wrong or inconsistent APDU length.',
+  '6985' : 'Wrapped chained command or multiple pass command ongoing.',
+  '6a82' : 'Application or file not found, currently selected application remains selected.',
+  '6a86' : 'Wrong parameter P1 and/or P2',
+  '6a87' : 'Wrong parameter Lc inconsistent with P1-P2',
+  '6e00' : 'Wrong CLA',
+};
+
 export default errorCodes;

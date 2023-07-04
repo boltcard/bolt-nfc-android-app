@@ -2,12 +2,16 @@ import {Platform} from 'react-native';
 import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 import {randomBytes} from 'crypto';
 import crc from 'crc';
-import errorCodes from '../constants/ErrorCodes';
+import errorCodes, {isoSelectErrorCodes} from '../constants/ErrorCodes';
 
 var CryptoJS = require('../utils/Cmac');
 var AES = require('crypto-js/aes');
 
 var Ntag424 = NfcManager;
+Ntag424.ti = null;
+Ntag424.sesAuthEncKey = null;
+Ntag424.sesAuthMacKey = null;
+Ntag424.cmdCtrDec = null;
 Ntag424.util = {};
 
 const hexToBytes = Ntag424.util.hexToBytes = (hex) => {
@@ -117,7 +121,7 @@ Ntag424.isoSelectFileApplication = async function () {
   //For selecting the application immediately, the ISO/IEC 7816-4 DF name D2760000850101h can be used.
   const isoSelectFileBytes = hexToBytes('00A4040007D276000085010100');
   const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
-  console.warn(
+  console.log(
     'isoSelectRes: ',
     bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]),
   );
@@ -125,7 +129,9 @@ Ntag424.isoSelectFileApplication = async function () {
   if(resultHex == '9000') {
     return Promise.resolve(resultHex);
   } else {
-    return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
+    const errorCodes = new Object();
+    
+    return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + isoSelectErrorCodes[resultHex] );
   }
 }
 
@@ -623,16 +629,13 @@ Ntag424.changeKey = async (
  * Get Card UID
  * CommMode Full
  *
- * @param {string} sesAuthEncKey hex string (16 bytes)
- * @param {string} sesAuthMacKey hex string (16 bytes)
- * @param {string} ti hex string ( 4bytes)
  * @returns
  */
-Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti) => {
+Ntag424.getCardUid = async () => {
   var cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
   const commandMac = CryptoJS.CMAC(
-    CryptoJS.enc.Hex.parse(sesAuthMacKey),
-    CryptoJS.enc.Hex.parse('51' + cmdCtr + ti),
+    CryptoJS.enc.Hex.parse(Ntag424.sesAuthMacKey),
+    CryptoJS.enc.Hex.parse('51' + cmdCtr + Ntag424.ti),
   );
   const commandMacHex = commandMac.toString();
 
@@ -652,10 +655,9 @@ Ntag424.getCardUid = async (sesAuthEncKey, sesAuthMacKey, ti) => {
   const resCode = bytesToHex([getCardUidRes.sw1, getCardUidRes.sw2]);
 
   const resMacT = responseAPDU.slice(-16);
-  cmdCtrDec += 1;
-  cmdCtr = decToHexLsbFirst(cmdCtrDec, 2);
+  cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec, 2);
 
-  const iv = ivEncryptionResponse(ti, cmdCtr, sesAuthEncKey);
+  const iv = ivEncryptionResponse(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
 
   // console.log('test iv ', ivEncryption("2B4D963C014DC36F24F69A50A394F875"))
   const resDataEnc = responseAPDU.slice(0, -16);
