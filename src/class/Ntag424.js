@@ -362,7 +362,7 @@ Ntag424.encData = function (cmdDataPadd, cmdCtr) {
   ).ciphertext.toString(CryptoJS.enc.Hex);
 }
 /**
- * Change File Settings
+ * Sets standard bolt card file settings using the picc offset and mac offset
  * CommMode Full
  *
  * @param {int} piccOffset picc offset
@@ -398,6 +398,11 @@ Ntag424.setBoltCardFileSettings = (
   return Ntag424.changeFileSettings(cmdData);
 }
 
+/**
+ * Clears the file settings back to default
+ * 
+ * @returns 
+ */
 Ntag424.resetFileSettings = () => {
   //File Option SDM and mirroring enabled, CommMode: plain
   var cmdData = '40';
