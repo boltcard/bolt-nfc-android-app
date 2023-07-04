@@ -347,8 +347,6 @@ Ntag424.calcMac = function (commandData) {
  * @returns 
  */
 Ntag424.encData = function (cmdDataPadd, cmdCtr) {
-  console.log('cmdDataPadd, cmdCtr', cmdDataPadd, cmdCtr);
-  console.log('Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey', Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -356,7 +354,6 @@ Ntag424.encData = function (cmdDataPadd, cmdCtr) {
     keySize: 128 / 8,
     padding: CryptoJS.pad.NoPadding,
   };
-  console.log('aesEncryptOption', aesEncryptOption);
 
   return AES.encrypt(
     CryptoJS.enc.Hex.parse(cmdDataPadd),
@@ -496,13 +493,6 @@ Ntag424.changeKey = async (
 ) => {
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
   console.log('cmdCtr', cmdCtr);
-  const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
-  const aesEncryptOption = {
-    mode: CryptoJS.mode.CBC,
-    iv: CryptoJS.enc.Hex.parse(iv),
-    keySize: 128 / 8,
-    padding: CryptoJS.pad.NoPadding,
-  };
 
   var keyData = '';
   const newKeyBytes = hexToBytes(newKey);
@@ -528,26 +518,11 @@ Ntag424.changeKey = async (
     keyData = padForEnc(oldNewXor + keyVersion + crc32, 32); //32 bytes
   }
 
-  const encKeyData = AES.encrypt(
-    CryptoJS.enc.Hex.parse(keyData),
-    CryptoJS.enc.Hex.parse(Ntag424.sesAuthEncKey),
-    aesEncryptOption,
-  ).ciphertext.toString(CryptoJS.enc.Hex);
+  const encKeyData = Ntag424.encData(keyData, cmdCtr);
 
-  const commandMac = CryptoJS.CMAC(
-    CryptoJS.enc.Hex.parse(Ntag424.sesAuthMacKey),
-    CryptoJS.enc.Hex.parse('C4' + cmdCtr + Ntag424.ti + keyNo + encKeyData),
-  );
-  const commandMacHex = commandMac.toString();
+  const truncatedMac = Ntag424.calcMac('C4' + cmdCtr + Ntag424.ti + keyNo + encKeyData)
 
-  const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
-    element,
-    index,
-    array,
-  ) {
-    return (index + 1) % 2 === 0;
-  });
-  const truncatedMac = bytesToHex(truncatedMacBytes);
+
   const data = encKeyData + truncatedMac;
   const lc = (data.length / 2 + 1).toString(16);
   const changeKeyHex =
