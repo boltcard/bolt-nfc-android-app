@@ -129,8 +129,6 @@ Ntag424.isoSelectFileApplication = async function () {
   if(resultHex == '9000') {
     return Promise.resolve(resultHex);
   } else {
-    const errorCodes = new Object();
-    
     return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + isoSelectErrorCodes[resultHex] );
   }
 }
@@ -209,7 +207,7 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
   
         const tiBytes = hexToBytes(secondAuthResultDataDecStr).slice(0, 4);
         const ti = bytesToHex(tiBytes);
-  
+          
         var WordArray = CryptoJS.lib.WordArray;
         const xor = CryptoJS.ext.xor(
           new WordArray.init(hexToBytes(RndA.slice(4, 16))),
@@ -231,6 +229,9 @@ Ntag424.AuthEv2First = async function (keyNo, pKey) {
         sv2 += svPost;
         const sesAuthMac = CryptoJS.CMAC(key, CryptoJS.enc.Hex.parse(sv2));
         const sesAuthMacKey = sesAuthMac.toString();
+        Ntag424.ti = ti;
+        Ntag424.sesAuthMacKey = sesAuthMacKey;
+        Ntag424.sesAuthEncKey = sesAuthEncKey;
         Ntag424.cmdCtrDec = 0;
         return Promise.resolve({sesAuthEncKey, sesAuthMacKey, ti});
       } else {
@@ -346,6 +347,8 @@ Ntag424.calcMac = function (commandData) {
  * @returns 
  */
 Ntag424.encData = function (cmdDataPadd, cmdCtr) {
+  console.log('cmdDataPadd, cmdCtr', cmdDataPadd, cmdCtr);
+  console.log('Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey', Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -353,6 +356,7 @@ Ntag424.encData = function (cmdDataPadd, cmdCtr) {
     keySize: 128 / 8,
     padding: CryptoJS.pad.NoPadding,
   };
+  console.log('aesEncryptOption', aesEncryptOption);
 
   return AES.encrypt(
     CryptoJS.enc.Hex.parse(cmdDataPadd),
@@ -400,14 +404,19 @@ Ntag424.changeFileSettings = async (
   console.log('cmdData', cmdData);
 
   const cmdDataPadd = padForEnc(cmdData, 16);
+  console.log('cmdDataPadd', cmdDataPadd);
 
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
+  console.log('cmdCtr', cmdCtr);
   
   const encKeyData = Ntag424.encData(cmdDataPadd, cmdCtr);
+  console.log('encKeyData', encKeyData);
 
   const commandData = '5F' + cmdCtr + Ntag424.ti + fileNo + encKeyData;
+  console.log('commandData', commandData);
   
   const truncatedMac = Ntag424.calcMac(commandData)
+  console.log('truncatedMac', truncatedMac);
 
   const data = encKeyData + truncatedMac;
   const lc = (data.length / 2 + 1).toString(16);
@@ -547,7 +556,7 @@ Ntag424.changeKey = async (
   keyVersion,
 ) => {
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
-  const iv = ivEncryption(Ntag424.ti, Ntag424.cmdCtr, Ntag424.sesAuthEncKey);
+  const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   console.log('cmdCtr', cmdCtr);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
@@ -588,7 +597,7 @@ Ntag424.changeKey = async (
 
   const commandMac = CryptoJS.CMAC(
     CryptoJS.enc.Hex.parse(Ntag424.sesAuthMacKey),
-    CryptoJS.enc.Hex.parse('C4' + Ntag424.cmdCtr + Ntag424.ti + keyNo + encKeyData),
+    CryptoJS.enc.Hex.parse('C4' + cmdCtr + Ntag424.ti + keyNo + encKeyData),
   );
   const commandMacHex = commandMac.toString();
 
@@ -664,7 +673,7 @@ Ntag424.getCardUid = async () => {
 
   const resDataDec = AES.decrypt(
     {ciphertext: CryptoJS.enc.Hex.parse(resDataEnc)},
-    CryptoJS.enc.Hex.parse(sesAuthEncKey),
+    CryptoJS.enc.Hex.parse(Ntag424.sesAuthEncKey),
     {
       padding: CryptoJS.pad.NoPadding,
       mode: CryptoJS.mode.CBC,
