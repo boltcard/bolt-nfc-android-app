@@ -695,7 +695,7 @@ Ntag424.getKeyVersion = async (keyNo) => {
   const resData = res.response;
   const resCode = bytesToHex([res.sw1, res.sw2]);
   console.warn(
-    'readData Res: ',
+    'getKeyVersion Res: ',
     resData,
     resCode
   );
@@ -705,6 +705,73 @@ Ntag424.getKeyVersion = async (keyNo) => {
   } else {
     return Promise.reject('Read Data Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
+}
+
+/**
+ * The GetVersion command returns manufacturing related data of NTAG 424 DNA (NT4H2421Gx). 
+ * No parameters are required for this command.
+ * The version data is return over three frames. 
+ * Part1 returns the hardware-related information, 
+ * Part2 returns the software-related information and 
+ * Part3 and last frame returns the production-related information.
+ * 
+ * CommMode Mac
+ * 
+ * @param {string} keyNo key number in hex (1 byte) 
+ * @returns 
+ */
+Ntag424.getVersion = async () => {
+  //first part
+
+  const firstHex = "9060000000";
+  const firstRes = await Ntag424.sendAPDUCommand(hexToBytes(firstHex));
+  const firstResData = bytesToHex(firstRes.response);
+  
+  const errorCodes = new Object();
+  errorCodes['91ca'] = 'COMMAND_ABORTED Chained command or multiple pass command ongoing.';
+  errorCodes['911e'] = 'INTEGRITY_ERROR Invalid secure messaging MAC (only).';
+  errorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
+  errorCodes['91ee'] = 'MEMORY_ERROR Failure when reading or writing to non-volatile memory.';
+
+  var resCode = bytesToHex([firstRes.sw1, firstRes.sw2]);
+  if(resCode == '91af') {
+    //second part
+    const secondHex = "90AF000000";
+    const secondRes = await Ntag424.sendAPDUCommand(hexToBytes(secondHex));
+    const secondResData = bytesToHex(secondRes.response);
+    resCode = bytesToHex([secondRes.sw1, secondRes.sw2]);
+    if(resCode == '91af') {
+      //third part
+      const thirdHex = "90AF000000";
+      const thirdRes = await Ntag424.sendAPDUCommand(hexToBytes(thirdHex));
+      const thirdResData = bytesToHex(thirdRes.response);
+      resCode = bytesToHex([thirdRes.sw1, thirdRes.sw2]);
+      if(resCode == '9100') {
+        return Promise.resolve({
+          'VendorID':firstResData.slice(0, 2),
+          'HWType': firstResData.slice(2, 4),
+          'HWSubType': firstResData.slice(4, 6),
+          'HWMajorVersion': firstResData.slice(6, 8),
+          'HWMinorVersion': firstResData.slice(8, 10),
+          'HWStorageSize': firstResData.slice(10, 12),
+          'HWProtocol': firstResData.slice(12, 14),
+          'SWType': secondResData.slice(0,2),
+          'SWSubType': secondResData.slice(4, 6),
+          'SWMajorVersion': secondResData.slice(6, 8),
+          'SWMinorVersion': secondResData.slice(8, 10),
+          'SWStorageSize': secondResData.slice(10, 12),
+          'SWProtocol': secondResData.slice(12, 14),
+          'UID': thirdResData.slice(0,14),
+          'BatchNo': thirdResData.slice(14, 22),
+          'FabKey': thirdResData.slice(22, 24),
+          'CWProd': thirdResData.slice(24, 26),
+          'YearProd': thirdResData.slice(26, 28),
+          'FabKeyID': thirdResData.slice(28, 30)
+        })
+      }
+    }
+  }
+  return Promise.reject('Get Version Failed, code ' +resCode + ' ' + errorCodes[resCode] );
 }
 
 export default Ntag424;

@@ -63,15 +63,18 @@ export default function ReadNFCScreen(props) {
 
   const readNfc = async () => {
     try {
-      await NfcManager.requestTechnology(NfcTech.IsoDep);
+      const tag = await NfcManager.requestTechnology(NfcTech.IsoDep);
       setReadyToRead(true);
+
+      const cardVersion = await Ntag424.getVersion();
+      setCardReadInfo(`Tagname: \nUID:${cardVersion.UID} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
 
       const ndef = await Ntag424.readData("060000");
       const ndefMessage = Ndef.uri.decodePayload(ndef);
       setNdef(ndefMessage);
 
-      const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First("00", "00000000000000000000000000000000");
-      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti);
+      await Ntag424.AuthEv2First("00", "00000000000000000000000000000000");
+      const uid = await Ntag424.getCardUid();
       setCardUID(uid);
       const key0Version = await Ntag424.getKeyVersion("00");
       setKey0Changed("Key 0 version: "+key0Version);
@@ -84,7 +87,7 @@ export default function ReadNFCScreen(props) {
       const key4Version = await Ntag424.getKeyVersion("04");
       setKey4Changed("Key 4 version: "+key4Version);
       
-
+      
     } catch (ex) {
       console.warn('Oops!', ex);
       setReadError(ex);
@@ -112,7 +115,16 @@ export default function ReadNFCScreen(props) {
           <Button icon="nfc" mode="contained" onPress={readNfc} compact={true} color="#f79928">Read NFC</Button>
         </View>
       }
-
+      {readError && (
+        <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+        <Card.Content>
+          <Title>Tag Read Error</Title>
+          <Paragraph style={{fontWeight: 'bold', fontSize: 15}}>
+            {readError}
+          </Paragraph>
+        </Card.Content>
+      </Card>
+            )}
       <Card style={{marginBottom: 20, marginHorizontal: 10}}>
         <Card.Content>
           <Title>NDEF Record</Title>
@@ -125,7 +137,7 @@ export default function ReadNFCScreen(props) {
         <Card.Content>
           <Title>Card UID</Title>
           <View style={{alignItems: 'flex-start', flexDirection: 'row'}}>
-            {cardUID && <Button onPress={copyToClipboard} title="Copy" />}
+            {cardUID && <Button onPress={copyToClipboard} mode="contained" color="#f79928">Copy</Button>}
             <Text style={{lineHeight: 35, marginLeft: 10}}>{cardUID}</Text>
           </View>
         </Card.Content>
