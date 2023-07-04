@@ -545,17 +545,13 @@ Ntag424.resetFileSettings = async (
  * @returns 
  */
 Ntag424.changeKey = async (
-  sesAuthEncKey,
-  sesAuthMacKey,
-  ti,
-  cmdCtrDec,
   keyNo,
   key,
   newKey,
   keyVersion,
 ) => {
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
-  const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
+  const iv = ivEncryption(Ntag424.ti, Ntag424.cmdCtr, Ntag424.sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
     iv: CryptoJS.enc.Hex.parse(iv),
@@ -589,13 +585,13 @@ Ntag424.changeKey = async (
 
   const encKeyData = AES.encrypt(
     CryptoJS.enc.Hex.parse(keyData),
-    CryptoJS.enc.Hex.parse(sesAuthEncKey),
+    CryptoJS.enc.Hex.parse(Ntag424.sesAuthEncKey),
     aesEncryptOption,
   ).ciphertext.toString(CryptoJS.enc.Hex);
 
   const commandMac = CryptoJS.CMAC(
-    CryptoJS.enc.Hex.parse(sesAuthMacKey),
-    CryptoJS.enc.Hex.parse('C4' + cmdCtr + ti + keyNo + encKeyData),
+    CryptoJS.enc.Hex.parse(Ntag424.sesAuthMacKey),
+    CryptoJS.enc.Hex.parse('C4' + Ntag424.cmdCtr + Ntag424.ti + keyNo + encKeyData),
   );
   const commandMacHex = commandMac.toString();
 
@@ -619,7 +615,16 @@ Ntag424.changeKey = async (
   if (resCode == '9100') {
     return Promise.resolve('Successful');
   } else {
-    return Promise.reject(resCode);
+    const errorCodes = new Object();
+    errorCodes['91ca'] = 'COMMAND_ABORTED Chained command or multiple pass command ongoing.';
+    errorCodes['911e'] = 'INTEGRITY_ERROR Integrity error in cryptogram or Invalid Secure Messaging MAC (only).';
+    errorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
+    errorCodes['919e'] = 'PARAMETER_ERROR Parameter value not allowed';
+    errorCodes['919d'] = 'PERMISSION_DENIED PICC level (MF) is selected. access right Change of targeted file has access conditions set to Fh. Enabling Secure Dynamic Messaging (FileOption Bit 6 set to 1b) is only allowed for FileNo 02h.';
+    errorCodes['91ae'] = 'AUTHENTICATION_ERROR At application level, missing active authentication with AppMasterKey while targeting any AppKey.';
+    errorCodes['91ee'] = 'MEMORY_ERROR Failure when reading or writing to non-volatile memory.';
+    
+    return Promise.reject('changeKey Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
 

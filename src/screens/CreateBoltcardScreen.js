@@ -133,21 +133,22 @@ export default function CreateBoltcardScreen({route}) {
         alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
       });
 
-      //set ndef
+      // //set ndef
       const ndefMessage = lnurlw_base.includes('?')
         ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'
         : lnurlw_base +
           '?p=00000000000000000000000000000000&c=0000000000000000';
-      const message = [Ndef.uriRecord(ndefMessage)];
-      const bytes = Ndef.encodeMessage(message);
-      await NfcManager.ndefHandler.writeNdefMessage(bytes);
-      setNdefWritten(true);
+      // const message = [Ndef.uriRecord(ndefMessage)];
+      // const bytes = Ndef.encodeMessage(message);
+      // await NfcManager.ndefHandler.writeNdefMessage(bytes);
+      // setNdefWritten(true);
 
       //check if ndef has been set correctly
-      const ndef = await NfcManager.ndefHandler.getNdefMessage();
-      console.log(Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+      // const ndef = await NfcManager.ndefHandler.getNdefMessage();
+      // console.log(Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+
       const key0 = '00000000000000000000000000000000';
-      //auth first
+      // //auth first     
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
         '00',
         key0,
@@ -158,10 +159,6 @@ export default function CreateBoltcardScreen({route}) {
       //change file settings
       var cmdCtrDec = 0;
       await Ntag424.changeFileSettings(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         piccOffset,
         macOffset,
       );
@@ -175,10 +172,6 @@ export default function CreateBoltcardScreen({route}) {
       cmdCtrDec += 1;
       console.log('changekey 1')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         '01',
         key0,
         keys[1],
@@ -188,10 +181,6 @@ export default function CreateBoltcardScreen({route}) {
       cmdCtrDec += 1;
       console.log('changekey 2')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         '02',
         key0,
         keys[2],
@@ -201,10 +190,6 @@ export default function CreateBoltcardScreen({route}) {
       cmdCtrDec += 1;
       console.log('changekey 3')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         '03',
         key0,
         keys[3],
@@ -214,10 +199,6 @@ export default function CreateBoltcardScreen({route}) {
       cmdCtrDec += 1;
       console.log('changekey 4')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         '04',
         key0,
         keys[4],
@@ -227,10 +208,6 @@ export default function CreateBoltcardScreen({route}) {
       cmdCtrDec += 1;
       console.log('changekey 0')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         '00',
         key0,
         keys[0],
@@ -239,7 +216,7 @@ export default function CreateBoltcardScreen({route}) {
       setKey0Changed(true);
       setWriteKeys(true);
     } catch (ex) {
-      console.warn('Oops!', ex);
+      console.error('Oops!', ex);
       setTagTypeError(ex);
     } finally {
       // stop the nfc scanning
