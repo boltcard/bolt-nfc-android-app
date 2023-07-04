@@ -612,7 +612,6 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
     const resultHex = bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]);
     if(resultHex == '9000') {
     } else {
-      const errorCodes = new Object();
       return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
     }
   
@@ -716,11 +715,11 @@ Ntag424.getVersion = async () => {
   const firstRes = await Ntag424.sendAPDUCommand(hexToBytes(firstHex));
   const firstResData = bytesToHex(firstRes.response);
   
-  const errorCodes = new Object();
-  errorCodes['91ca'] = 'COMMAND_ABORTED Chained command or multiple pass command ongoing.';
-  errorCodes['911e'] = 'INTEGRITY_ERROR Invalid secure messaging MAC (only).';
-  errorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
-  errorCodes['91ee'] = 'MEMORY_ERROR Failure when reading or writing to non-volatile memory.';
+  const gerVersionErrorCodes = new Object();
+  gerVersionErrorCodes['91ca'] = 'COMMAND_ABORTED Chained command or multiple pass command ongoing.';
+  gerVersionErrorCodes['911e'] = 'INTEGRITY_ERROR Invalid secure messaging MAC (only).';
+  gerVersionErrorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
+  gerVersionErrorCodes['91ee'] = 'MEMORY_ERROR Failure when reading or writing to non-volatile memory.';
 
   var resCode = bytesToHex([firstRes.sw1, firstRes.sw2]);
   if(resCode == '91af') {
@@ -760,7 +759,7 @@ Ntag424.getVersion = async () => {
       }
     }
   }
-  return Promise.reject('Get Version Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+  return Promise.reject('Get Version Failed, code ' +resCode + ' ' + gerVersionErrorCodes[resCode] );
 }
 
 export default Ntag424;
