@@ -138,14 +138,18 @@ export default function CreateBoltcardScreen({route}) {
         ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'
         : lnurlw_base +
           '?p=00000000000000000000000000000000&c=0000000000000000';
-      // const message = [Ndef.uriRecord(ndefMessage)];
-      // const bytes = Ndef.encodeMessage(message);
-      // await NfcManager.ndefHandler.writeNdefMessage(bytes);
-      // setNdefWritten(true);
 
-      //check if ndef has been set correctly
-      // const ndef = await NfcManager.ndefHandler.getNdefMessage();
-      // console.log(Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+
+      const message = [Ndef.uriRecord(ndefMessage)];
+      const bytes = Ndef.encodeMessage(message);
+
+      await Ntag424.setNdefMessage(bytes);
+      setNdefWritten('success');
+      
+      //set offset for ndef header
+      const ndef = await Ntag424.readData("060000");
+      console.log(Ndef.uri.decodePayload(ndef));
+      setNdefRead(Ndef.uri.decodePayload(ndef));
 
       const key0 = '00000000000000000000000000000000';
       // //auth first     
@@ -154,22 +158,20 @@ export default function CreateBoltcardScreen({route}) {
         key0,
       );
 
+
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
       //change file settings
-      var cmdCtrDec = 0;
       await Ntag424.changeFileSettings(
         piccOffset,
         macOffset,
       );
       //get uid
-      cmdCtrDec += 1;
-      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, cmdCtrDec);
+      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti);
       console.log('UID', uid);
       setCardUID(uid);
       
       //change keys
-      cmdCtrDec += 1;
       console.log('changekey 1')
       await Ntag424.changeKey(
         '01',
@@ -178,7 +180,6 @@ export default function CreateBoltcardScreen({route}) {
         '01',
       );
       setKey1Changed(true);
-      cmdCtrDec += 1;
       console.log('changekey 2')
       await Ntag424.changeKey(
         '02',
@@ -187,7 +188,6 @@ export default function CreateBoltcardScreen({route}) {
         '01',
       );
       setKey2Changed(true);
-      cmdCtrDec += 1;
       console.log('changekey 3')
       await Ntag424.changeKey(
         '03',
@@ -196,7 +196,6 @@ export default function CreateBoltcardScreen({route}) {
         '01',
       );
       setKey3Changed(true);
-      cmdCtrDec += 1;
       console.log('changekey 4')
       await Ntag424.changeKey(
         '04',
@@ -205,7 +204,6 @@ export default function CreateBoltcardScreen({route}) {
         '01',
       );
       setKey4Changed(true);
-      cmdCtrDec += 1;
       console.log('changekey 0')
       await Ntag424.changeKey(
         '00',
@@ -214,7 +212,7 @@ export default function CreateBoltcardScreen({route}) {
         '01',
       );
       setKey0Changed(true);
-      setWriteKeys(true);
+      setWriteKeys('success');
     } catch (ex) {
       console.error('Oops!', ex);
       setTagTypeError(ex);
@@ -334,7 +332,7 @@ export default function CreateBoltcardScreen({route}) {
           </Card.Actions>
         </Card>
       )}
-      {cardUID && (
+      {(cardUID || tagTypeError) && (
         <Card style={styles.card}>
           <Card.Content>
             <Title>Output</Title>

@@ -17,63 +17,6 @@ import crc from 'crc';
 var CryptoJS = require('../utils/Cmac');
 var AES = require('crypto-js/aes');
 
-function hexToBytes(hex) {
-  let bytes = [];
-  for (let c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16));
-  return bytes;
-}
-
-// Convert a byte array to a hex string
-function bytesToHex(bytes) {
-  let hex = [];
-  for (let i = 0; i < bytes.length; i++) {
-    let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-    hex.push((current >>> 4).toString(16));
-    hex.push((current & 0xf).toString(16));
-  }
-  return hex.join('');
-}
-
-function leftRotate(bytesArr, rotatebit = 1) {
-  let first = bytesArr.shift();
-  bytesArr.push(first);
-  return bytesArr;
-}
-
-//Encrypted IV
-function ivEncryption(ti, cmdCtr, sesAuthEncKey) {
-  const ivData = AES.encrypt(
-    CryptoJS.enc.Hex.parse('A55A' + ti + cmdCtr + '0000000000000000'),
-    CryptoJS.enc.Hex.parse(sesAuthEncKey),
-    {
-      mode: CryptoJS.mode.ECB,
-      // iv: CryptoJS.enc.Hex.parse("00000000000000000000000000000000"),
-      keySize: 128 / 8,
-      padding: CryptoJS.pad.NoPadding,
-    },
-  );
-  return ivData.ciphertext.toString(CryptoJS.enc.Hex);
-}
-
-function padForEnc(data, byteLen) {
-  console.log('padforenc', data, data.length, byteLen);
-  var paddedData = data;
-  if (data.length < byteLen * 2) {
-    console.log('padforEnc22', byteLen * 2);
-    paddedData += '80';
-    paddedData = paddedData.padEnd(byteLen * 2, '00');
-  }
-  return paddedData;
-}
-
-function decToHex(dec, bytes) {
-  return dec
-    .toString(16)
-    .padStart(2, '0')
-    .padEnd(bytes * 2, '0');
-}
-
 export default function TestScreen({navigation}) {
   async function readNdef() {
     try {
@@ -117,8 +60,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      const cmdCtr = 0;
-      await Ntag424.resetFileSettings(sesAuthEncKey, sesAuthMacKey, ti, cmdCtr);
+      await Ntag424.resetFileSettings(sesAuthEncKey, sesAuthMacKey, ti);
     } catch (ex) {
       console.warn('Oops!', ex);
     } finally {
@@ -139,63 +81,52 @@ export default function TestScreen({navigation}) {
         '00',
         key0,
       );
-      var cmdCtrDec = 0;
       console.log('key1');
 
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '01',
         key0,
         '22222222222222222222222222222222',
         '01',
       );
-      // await Ntag424.AuthEv2NonFirst("00", key0);
-      cmdCtrDec += 1;
       console.log('key2');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '02',
         key0,
         '33333333333333333333333333333333',
         '01',
       );
-      cmdCtrDec += 1;
       console.log('key3');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '03',
         key0,
         '44444444444444444444444444444444',
         '01',
       );
       console.log('key4');
-      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '04',
         key0,
         '55555555555555555555555555555555',
         '01',
       );
       console.log('key0');
-      cmdCtrDec += 1;
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '00',
         key0,
         '11111111111111111111111111111111',
@@ -221,61 +152,51 @@ export default function TestScreen({navigation}) {
         '00',
         '11111111111111111111111111111111',
       );
-      var cmdCtrDec = 0;
       console.log('key1')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         "01",
         "22222222222222222222222222222222",
         defaultkey,
         "00",
       );
-      cmdCtrDec += 1;
       console.log('key2')
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         "02",
         "33333333333333333333333333333333",
         defaultkey,
         "00",
       );
-      cmdCtrDec += 1;
       console.log('key3');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '03',
         '44444444444444444444444444444444',
         defaultkey,
         '00',
       );
-      cmdCtrDec += 1;
       console.log('key4');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '04',
         '55555555555555555555555555555555',
         defaultkey,
         '00',
       );
-      cmdCtrDec += 1;
       console.log('key0');
       await Ntag424.changeKey(
         sesAuthEncKey,
         sesAuthMacKey,
         ti,
-        cmdCtrDec,
         '00',
         '11111111111111111111111111111111',
         defaultkey,
@@ -316,12 +237,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      const cmdCtrDec = 0;
       await Ntag424.changeFileSettings(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
-        cmdCtrDec,
         piccOffset,
         macOffset,
       );
@@ -336,21 +252,24 @@ export default function TestScreen({navigation}) {
   const writeNdef = async () => {
     try {
       // register for the NFC tag with NDEF in it
-      await NfcManager.requestTechnology(NfcTech.IsoDep);
-      const url =
-        'lnurlw://your.domain.com/ln?p=00000000000000000000000000000000&c=0000000000000000';
+      await Ntag424.requestTechnology(NfcTech.IsoDep);
+      const url = 'lnurlw://your.domain.com/ln?p=00000000000000000000000000000000&c=0000000000000000';
 
       const message = [Ndef.uriRecord(url)];
       const bytes = Ndef.encodeMessage(message);
-      await NfcManager.ndefHandler.writeNdefMessage(bytes);
+      console.log(Ntag424.util.bytesToHex(bytes))
 
-      const ndef = await NfcManager.ndefHandler.getNdefMessage();
-      console.log(ndef, Ndef.uri.decodePayload(ndef.ndefMessage[0].payload));
+      await Ntag424.setNdefMessage(bytes);
+
+      //set offset for ndef header
+      const ndef = await Ntag424.readData("060000");
+      console.log(Ndef.uri.decodePayload(ndef));
+
     } catch (ex) {
       console.warn('Oops!', ex);
     } finally {
       // stop the nfc scanning
-      NfcManager.cancelTechnologyRequest();
+      Ntag424.cancelTechnologyRequest();
     }
   };
 
@@ -362,7 +281,7 @@ export default function TestScreen({navigation}) {
         '00',
         '00000000000000000000000000000000',
       );
-      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti, 0);
+      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti);
       console.log(uid);
     } catch (ex) {
       console.warn('Oops!', ex);
