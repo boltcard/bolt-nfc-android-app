@@ -439,9 +439,9 @@ Ntag424.changeFileSettings = async (
     errorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
     errorCodes['919e'] = 'PARAMETER_ERROR Parameter value not allowed';
     errorCodes['919d'] = 'PERMISSION_DENIED PICC level (MF) is selected. access right Change of targeted file has access conditions set to Fh. Enabling Secure Dynamic Messaging (FileOption Bit 6 set to 1b) is only allowed for FileNo 02h.';
-    errorCodes['91f0'] = 'FILE_NOT_FOUND File with targeted FileNo does not exist for the targeted application. ';
-    errorCodes['91ae'] = 'AUTHENTICATION_ERROR File access right Change of targeted file not granted as there is no active authentication with the required key while the access conditions is different from Fh.';
-    errorCodes['91ee'] = 'MEMORY_ERROR Failure when reading or writing to non-volatile memory.';
+    errorCodes['91f0'] = 'FILE_NOT_FOUND F0h File with targeted FileNo does not exist for the targeted application. ';
+    errorCodes['91ae'] = 'AUTHENTICATION_ERROR AEh File access right Change of targeted file not granted as there is no active authentication with the required key while the access conditions is different from Fh.';
+    errorCodes['91ee'] = 'MEMORY_ERROR EEh Failure when reading or writing to non-volatile memory.';
     
     return Promise.reject('Change file settings Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
@@ -556,8 +556,8 @@ Ntag424.changeKey = async (
   keyVersion,
 ) => {
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
-  const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   console.log('cmdCtr', cmdCtr);
+  const iv = ivEncryption(Ntag424.ti, cmdCtr, Ntag424.sesAuthEncKey);
   const aesEncryptOption = {
     mode: CryptoJS.mode.CBC,
     iv: CryptoJS.enc.Hex.parse(iv),
@@ -629,7 +629,7 @@ Ntag424.changeKey = async (
     errorCodes['919d'] = 'PERMISSION_DENIED PICC level (MF) is selected. access right Change of targeted file has access conditions set to Fh. Enabling Secure Dynamic Messaging (FileOption Bit 6 set to 1b) is only allowed for FileNo 02h.';
     errorCodes['91ae'] = 'AUTHENTICATION_ERROR At application level, missing active authentication with AppMasterKey while targeting any AppKey.';
     errorCodes['91ee'] = 'MEMORY_ERROR Failure when reading or writing to non-volatile memory.';
-    
+
     return Promise.reject('Change Key Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 };
@@ -685,7 +685,7 @@ Ntag424.getCardUid = async () => {
   const uid = resData.slice(0, 14);
 
   if (resCode == '9100') {
-    return Promise.resolve(resData);
+    return Promise.resolve(uid);
   } else {
     return Promise.reject('Get Card UID Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
@@ -758,6 +758,36 @@ Ntag424.readData = async (offset) => {
   );
   if(resCode == "9100") {
     return Promise.resolve(resData);
+  } else {
+    return Promise.reject('Read Data Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+  }
+}
+
+/**
+ * Get Key Version
+ * CommMode Mac
+ * 
+ * @param {string} keyNo key number in hex (1 byte) 
+ * @returns 
+ */
+Ntag424.getKeyVersion = async (keyNo) => {
+
+  const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
+  const commandData = '64' + cmdCtr + Ntag424.ti + keyNo;
+  const truncatedMac = Ntag424.calcMac(commandData);
+  const lc = "09";
+  const cmdHex = "90640000"+lc+keyNo+truncatedMac+"00";
+  const res = await Ntag424.sendAPDUCommand(hexToBytes(cmdHex));
+  const resData = res.response;
+  const resCode = bytesToHex([res.sw1, res.sw2]);
+  console.warn(
+    'readData Res: ',
+    resData,
+    resCode
+  );
+  const keyVersion = resData.slice(0, -8);
+  if(resCode == "9100") {
+    return Promise.resolve(keyVersion);
   } else {
     return Promise.reject('Read Data Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }

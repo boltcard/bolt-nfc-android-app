@@ -84,9 +84,6 @@ export default function TestScreen({navigation}) {
       console.log('key1');
 
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '01',
         key0,
         '22222222222222222222222222222222',
@@ -94,9 +91,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key2');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '02',
         key0,
         '33333333333333333333333333333333',
@@ -104,9 +98,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key3');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '03',
         key0,
         '44444444444444444444444444444444',
@@ -114,9 +105,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key4');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '04',
         key0,
         '55555555555555555555555555555555',
@@ -124,9 +112,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key0');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '00',
         key0,
         '11111111111111111111111111111111',
