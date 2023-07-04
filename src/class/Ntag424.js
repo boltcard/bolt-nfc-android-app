@@ -364,7 +364,6 @@ Ntag424.encData = function (cmdDataPadd, cmdCtr) {
     aesEncryptOption,
   ).ciphertext.toString(CryptoJS.enc.Hex);
 }
-
 /**
  * Change File Settings
  * CommMode Full
@@ -373,11 +372,10 @@ Ntag424.encData = function (cmdDataPadd, cmdCtr) {
  * @param {int} macOffset mac offset
  * @returns
  */
-Ntag424.changeFileSettings = async (
+Ntag424.setBoltCardFileSettings = (
   piccOffset,
   macOffset,
 ) => {
-  const cmdHeader = '905F0000';
   //File Option SDM and mirroring enabled, CommMode: plain
   var cmdData = '40';
   //Access rights (FileAR.ReadWrite: 0x0, FileAR.Change: 0x0, FileAR.Read: 0xE, FileAR.Write; 0x0)
@@ -400,6 +398,41 @@ Ntag424.changeFileSettings = async (
   cmdData += macOffset.toString(16).padEnd(6, '0');
   //SDMMACInputOffset
   cmdData += macOffset.toString(16).padEnd(6, '0');
+  return Ntag424.changeFileSettings(cmdData);
+}
+
+Ntag424.resetFileSettings = () => {
+  //File Option SDM and mirroring enabled, CommMode: plain
+  var cmdData = '40';
+  //Access rights (FileAR.ReadWrite: 0xE, FileAR.Change: 0x0, FileAR.Read: 0xE, FileAR.Write; 0xE)
+  cmdData += 'E0EE';
+
+  //UID mirror: 0
+  // SDMReadCtr: 0
+  // SDMReadCtrLimit: 0
+  // SDMENCFileData: 0
+  // ASCII Encoding mode: 1
+  cmdData += '01';
+  //sdm access rights
+  //RFU: 0F
+  //CtrRet: 0F
+  //MetaRead: 0F
+  //FileRead: 0F
+  cmdData += 'FFFF';
+  //no picc offset and mac offset
+  return Ntag424.changeFileSettings(cmdData);
+}
+/**
+ * Change File Settings
+ * CommMode Full
+ *
+ * @param {int} piccOffset picc offset
+ * @param {int} macOffset mac offset
+ * @returns
+ */
+Ntag424.changeFileSettings = async (cmdData) => {
+  const cmdHeader = '905F0000';
+  
   const fileNo = '02';
 
   const cmdDataPadd = padForEnc(cmdData, 16);
@@ -441,94 +474,6 @@ Ntag424.changeFileSettings = async (
   }
 };
 
-/**
- * Reset File Settings
- * CommMode full
- * @param {string} sesAuthEncKey hex string (16 bytes)
- * @param {string} sesAuthMacKey hex string (16 bytes)
- * @param {string} ti hex string ( 4bytes)
- * @param {int} cmdCtrDec command counter in int
- * @returns
- */
-Ntag424.resetFileSettings = async (
-  sesAuthEncKey,
-  sesAuthMacKey,
-  ti,
-  cmdCtrDec,
-) => {
-  //File Option SDM and mirroring enabled, CommMode: plain
-  var cmdData = '40';
-  //Access rights (FileAR.ReadWrite: 0xE, FileAR.Change: 0x0, FileAR.Read: 0xE, FileAR.Write; 0xE)
-  cmdData += 'E0EE';
-
-  //UID mirror: 0
-  // SDMReadCtr: 0
-  // SDMReadCtrLimit: 0
-  // SDMENCFileData: 0
-  // ASCII Encoding mode: 1
-  cmdData += '01';
-  //sdm access rights
-  //RFU: 0F
-  //CtrRet: 0F
-  //MetaRead: 0F
-  //FileRead: 0F
-  cmdData += 'FFFF';
-  //no picc offset and mac offset
-
-  const cmdDataPadd = padForEnc(cmdData, 16);
-  const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
-  const iv = ivEncryption(ti, cmdCtr, sesAuthEncKey);
-  const aesEncryptOption = {
-    mode: CryptoJS.mode.CBC,
-    iv: CryptoJS.enc.Hex.parse(iv),
-    keySize: 128 / 8,
-    padding: CryptoJS.pad.NoPadding,
-  };
-
-  const encKeyData = AES.encrypt(
-    CryptoJS.enc.Hex.parse(cmdDataPadd),
-    CryptoJS.enc.Hex.parse(sesAuthEncKey),
-    aesEncryptOption,
-  ).ciphertext.toString(CryptoJS.enc.Hex);
-
-  const fileNo = '02';
-  const commandMac = CryptoJS.CMAC(
-    CryptoJS.enc.Hex.parse(sesAuthMacKey),
-    CryptoJS.enc.Hex.parse('5F' + cmdCtr + ti + fileNo + encKeyData),
-  );
-  const commandMacHex = commandMac.toString();
-
-  const truncatedMacBytes = hexToBytes(commandMacHex).filter(function (
-    element,
-    index,
-    array,
-  ) {
-    return (index + 1) % 2 === 0;
-  });
-  const truncatedMac = bytesToHex(truncatedMacBytes);
-  const data = encKeyData + truncatedMac;
-  const lc = (data.length / 2 + 1).toString(16);
-  const changeFileSettingsHex =
-    '905F0000' + lc + fileNo + encKeyData + truncatedMac + '00';
-
-  const changeFileSettingsRes = await Ntag424.sendAPDUCommand(
-    hexToBytes(changeFileSettingsHex),
-  );
-  const resCode = bytesToHex([
-    changeFileSettingsRes.sw1,
-    changeFileSettingsRes.sw2,
-  ]);
-  console.warn('changeFileSettingsRes Result: ', resCode);
-  if (resCode == '9100') {
-    const message = [Ndef.uriRecord('')];
-    const bytes = Ndef.encodeMessage(message);
-    await NfcManager.ndefHandler.writeNdefMessage(bytes);
-
-    return Promise.resolve('Successful');
-  } else {
-    return Promise.reject('Reset file settings Failed, code ' +resCode + ' ' + errorCodes[resCode] );
-  }
-};
 
 /**
  * Change Key

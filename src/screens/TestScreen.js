@@ -222,7 +222,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      await Ntag424.changeFileSettings(
+      await Ntag424.setBoltCardFileSettings(
         piccOffset,
         macOffset,
       );
