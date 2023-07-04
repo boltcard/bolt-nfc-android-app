@@ -401,22 +401,16 @@ Ntag424.changeFileSettings = async (
   //SDMMACInputOffset
   cmdData += macOffset.toString(16).padEnd(6, '0');
   const fileNo = '02';
-  console.log('cmdData', cmdData);
 
   const cmdDataPadd = padForEnc(cmdData, 16);
-  console.log('cmdDataPadd', cmdDataPadd);
 
   const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
-  console.log('cmdCtr', cmdCtr);
   
   const encKeyData = Ntag424.encData(cmdDataPadd, cmdCtr);
-  console.log('encKeyData', encKeyData);
 
   const commandData = '5F' + cmdCtr + Ntag424.ti + fileNo + encKeyData;
-  console.log('commandData', commandData);
   
   const truncatedMac = Ntag424.calcMac(commandData)
-  console.log('truncatedMac', truncatedMac);
 
   const data = encKeyData + truncatedMac;
   const lc = (data.length / 2 + 1).toString(16);
