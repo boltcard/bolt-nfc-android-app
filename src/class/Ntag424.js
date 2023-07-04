@@ -2,7 +2,7 @@ import {Platform} from 'react-native';
 import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 import {randomBytes} from 'crypto';
 import crc from 'crc';
-import errorCodes, {isoSelectErrorCodes, changeKeyErrorCodes} from '../constants/ErrorCodes';
+import errorCodes, {isoSelectErrorCodes, changeKeyErrorCodes, changeFileSettingsErrorCodes} from '../constants/ErrorCodes';
 
 var CryptoJS = require('../utils/Cmac');
 var AES = require('crypto-js/aes');
@@ -457,17 +457,9 @@ Ntag424.changeFileSettings = async (cmdData) => {
   if (resCode == '9100') {
     return Promise.resolve('Successful');
   } else {
-    const errorCodes = new Object();
-    errorCodes['91ca'] = 'COMMAND_ABORTED chained command or multiple pass command ongoing.';
-    errorCodes['911e'] = 'INTEGRITY_ERROR Integrity error in cryptogram. Invalid Secure Messaging MAC (only).';
-    errorCodes['917e'] = 'LENGTH_ERROR Command size not allowed.';
-    errorCodes['919e'] = 'PARAMETER_ERROR Parameter value not allowed';
-    errorCodes['919d'] = 'PERMISSION_DENIED PICC level (MF) is selected. access right Change of targeted file has access conditions set to Fh. Enabling Secure Dynamic Messaging (FileOption Bit 6 set to 1b) is only allowed for FileNo 02h.';
-    errorCodes['91f0'] = 'FILE_NOT_FOUND F0h File with targeted FileNo does not exist for the targeted application. ';
-    errorCodes['91ae'] = 'AUTHENTICATION_ERROR AEh File access right Change of targeted file not granted as there is no active authentication with the required key while the access conditions is different from Fh.';
-    errorCodes['91ee'] = 'MEMORY_ERROR EEh Failure when reading or writing to non-volatile memory.';
     
-    return Promise.reject('Change file settings Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+    
+    return Promise.reject('Change file settings Failed, code ' +resCode + ' ' + changeFileSettingsErrorCodes[resCode] );
   }
 };
 
