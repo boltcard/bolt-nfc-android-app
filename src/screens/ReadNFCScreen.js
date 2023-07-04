@@ -62,13 +62,25 @@ export default function ReadNFCScreen(props) {
   };
 
   const readNfc = async () => {
+    setReadError(null);
     try {
-      const tag = await NfcManager.requestTechnology(NfcTech.IsoDep);
       setReadyToRead(true);
+      const tag = await NfcManager.requestTechnology(NfcTech.IsoDep);
 
+      await Ntag424.isoSelectFileApplication();
       const cardVersion = await Ntag424.getVersion();
-      setCardReadInfo(`Tagname: \nUID:${cardVersion.UID} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
-
+      const cardTypes = {
+        '01': 'MIFARE DESFire',
+        '02': 'MIFARE Plus',
+        '03': 'MIFARE Ultralight',
+        '04': 'NTAG',
+        '05': 'RFU',
+        '06': 'RFU',
+        '07': 'NTAG I2C',
+        '08': 'MIFARE DESFire Light',
+      };
+      setCardReadInfo(`Tagname: ${cardTypes.hasOwnProperty(cardVersion.HWType) ? cardTypes[cardVersion.HWType]: ''}\nUID:${cardVersion.UID} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
+      console.log('version', cardVersion);
       const ndef = await Ntag424.readData("060000");
       const ndefMessage = Ndef.uri.decodePayload(ndef);
       setNdef(ndefMessage);
