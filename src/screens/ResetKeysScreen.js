@@ -20,14 +20,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 export default function ResetKeysScreen({route}) {
   const navigation = useNavigation();
   const [writeKeysOutput, setWriteKeysOutput] = useState();
+
   const defaultKey = '00000000000000000000000000000000';
 
-  const [uid, setUid] = useState();
-  const [key0, setKey0] = useState();
-  const [key1, setKey1] = useState();
-  const [key2, setKey2] = useState();
-  const [key3, setKey3] = useState();
-  const [key4, setKey4] = useState();
+  const [uid, setUid] = useState()
+  const [key0, setKey0] = useState(defaultKey)
+  const [key1, setKey1] = useState(defaultKey)
+  const [key2, setKey2] = useState(defaultKey)
+  const [key3, setKey3] = useState(defaultKey)
+  const [key4, setKey4] = useState(defaultKey)
 
   const [pasteWipeKeysJSON, setPasteWipeKeysJSON] = useState();
   const [promptVisible, setPromptVisible] = useState(false);
@@ -57,13 +58,14 @@ export default function ResetKeysScreen({route}) {
       try {
         const dataObj = JSON.parse(data);
         setUid(dataObj.uid);
-        setKey0(dataObj.k0 || '00000000000000000000000000000000');
-        setKey1(dataObj.k1 || '00000000000000000000000000000000');
-        setKey2(dataObj.k2 || '00000000000000000000000000000000');
-        setKey3(dataObj.k3 || '00000000000000000000000000000000');
-        setKey4(dataObj.k4 || '00000000000000000000000000000000');
-        let error = '';
-        if (dataObj.action != 'wipe') {
+
+        setKey0(dataObj.k0 || defaultKey);
+        setKey1(dataObj.k1 || defaultKey);
+        setKey2(dataObj.k2 || defaultKey);
+        setKey3(dataObj.k3 || defaultKey);
+        setKey4(dataObj.k4 || defaultKey);
+        let error = ''
+        if(dataObj.action != 'wipe') {
           error = 'Wipe action not specified, proceed with caution.\r\n';
         }
         if (dataObj.version != '1') {
@@ -152,12 +154,12 @@ export default function ResetKeysScreen({route}) {
   };
 
   const clearKeys = () => {
-    setKey0(null);
-    setKey1(null);
-    setKey2(null);
-    setKey3(null);
-    setKey4(null);
-  };
+    setKey0(defaultKey);
+    setKey1(defaultKey);
+    setKey2(defaultKey);
+    setKey3(defaultKey);
+    setKey4(defaultKey);
+  }
 
   return (
     <ScrollView style={{padding: 10}}>
@@ -245,6 +247,7 @@ export default function ResetKeysScreen({route}) {
           <Title>Card Details</Title>
           <View style={styles.titlecontainer}>
             <Text style={styles.title}>Key 0</Text>
+            <Button onPress={()=>{setKey0('00000000000000000000000000000000')}} title="Set to Zeros" />
           </View>
           <TextInput
             style={styles.input}
@@ -258,6 +261,7 @@ export default function ResetKeysScreen({route}) {
           />
           <View style={styles.titlecontainer}>
             <Text style={styles.title}>Key 1</Text>
+            <Button onPress={()=>{setKey1('00000000000000000000000000000000')}} title="Set to Zeros" />
           </View>
           <TextInput
             style={styles.input}
@@ -271,6 +275,7 @@ export default function ResetKeysScreen({route}) {
           />
           <View style={styles.titlecontainer}>
             <Text style={styles.title}>Key 2</Text>
+            <Button onPress={()=>{setKey2('00000000000000000000000000000000')}} title="Set to Zeros" />
           </View>
           <TextInput
             style={styles.input}
@@ -284,6 +289,7 @@ export default function ResetKeysScreen({route}) {
           />
           <View style={styles.titlecontainer}>
             <Text style={styles.title}>Key 3</Text>
+            <Button onPress={()=>{setKey3('00000000000000000000000000000000')}} title="Set to Zeros" />
           </View>
           <TextInput
             style={styles.input}
@@ -297,6 +303,7 @@ export default function ResetKeysScreen({route}) {
           />
           <View style={styles.titlecontainer}>
             <Text style={styles.title}>Key 4</Text>
+            <Button onPress={()=>{setKey4('00000000000000000000000000000000')}} title="Set to Zeros" />
           </View>
           <TextInput
             style={styles.input}
@@ -308,14 +315,9 @@ export default function ResetKeysScreen({route}) {
             onChangeText={text => setKey4(text)}
             placeholder={defaultKey}
           />
-
           <Card.Actions style={{justifyContent: 'space-around'}}>
-            <Button onPress={() => enableResetMode()} title="Reset Card Now" />
-            <Button
-              color="red"
-              onPress={() => clearKeys()}
-              title="Clear Inputs"
-            />
+            <Button  onPress={() => enableResetMode()} title="Reset Card Now" />
+            <Button color="red" onPress={() => clearKeys()} title="Reset Inputs" />
           </Card.Actions>
         </Card.Content>
       </Card>
