@@ -167,10 +167,10 @@ export default function App(props) {
             component={HelpScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Help" {...props} />}} 
           />
-          <Tab.Screen 
+          {/* <Tab.Screen 
             name="Test" 
             component={TestScreen} 
-          />
+          /> */}
         </Tab.Navigator>
       </NavigationContainer>
       <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
