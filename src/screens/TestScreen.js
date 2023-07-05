@@ -302,6 +302,29 @@ export default function TestScreen({navigation}) {
     }
   }
 
+  const wipeNdef = async () => {
+    try {
+      // register for the NFC tag with NDEF in it
+      await Ntag424.requestTechnology(NfcTech.IsoDep);
+
+      const message = [Ndef.uriRecord('')];
+      const bytes = Ndef.encodeMessage(message);
+      console.log('WIPE', Ntag424.util.bytesToHex(bytes))
+
+      // await Ntag424.ndefHandler.writeNdefMessage(bytes);
+      await Ntag424.setNdefMessage(bytes);
+
+      const testNdef = await NfcManager.ndefHandler.getNdefMessage();
+      console.log('TEST NDEF', Ndef.uri.decodePayload(testNdef.ndefMessage[0].payload));
+
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      Ntag424.cancelTechnologyRequest();
+    }
+  }
+
   return (
     <ScrollView>
       <Card style={{marginBottom: 20, marginHorizontal: 10}}>
@@ -332,6 +355,7 @@ export default function TestScreen({navigation}) {
                 wipeNdefResetFileSettings('00000000000000000000000000000000');
               }}></Button>
             <Button title="WRITE NDEF" onPress={writeNdef}></Button>
+            <Button title="WIPE NDEF" onPress={wipeNdef}></Button>
             <Button title="Change key" onPress={changeKey}></Button>
             <Button title="Reset key" onPress={resetKey}></Button>
             <Button title="Get card uid" onPress={getCardUid}></Button>
