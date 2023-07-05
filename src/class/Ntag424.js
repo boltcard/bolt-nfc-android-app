@@ -603,10 +603,18 @@ Ntag424.getCardUid = async () => {
  */
 Ntag424.setNdefMessage = async (ndefMessageByte) => {
   try {
+    await Ntag424.isoSelectFileApplication();
+    
+    const secondISO = await Ntag424.sendAPDUCommand(hexToBytes('00A4000002E10300'));
+    console.log(
+      '2nd isoSelectRes: ',
+      bytesToHex([secondISO.sw1, secondISO.sw2]),
+    );
+
     const isoSelectFileBytes = hexToBytes('00A4000002E10400');
     const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
-    console.warn(
-      'isoSelectRes: ',
+    console.log(
+      '3rd isoSelectRes: ',
       bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]),
     );
     const resultHex = bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]);
@@ -614,6 +622,7 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
     } else {
       return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
     }
+
   
     const ndefMessage = bytesToHex(ndefMessageByte);
     const ndefLength = ((ndefMessageByte.length).toString(16)).padStart(4, "0");
@@ -624,17 +633,17 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
     console.log('isoUpdateBinaryHex', isoUpdateBinary);
     const isoUpdateBinaryRes = await Ntag424.sendAPDUCommand(hexToBytes(isoUpdateBinary));
     const resCode = bytesToHex([isoUpdateBinaryRes.sw1, isoUpdateBinaryRes.sw2]);
-    console.warn(
+    console.log(
       'isoUpdateBinaryRes Res: ',
       resCode,
     );
     if(resCode == "9000") {
       return Promise.resolve(resCode);
     } else {
-      return Promise.reject('ISO Update Binary Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+      return Promise.reject('Set NDEF Message Failed, code ' +resCode + ' ' + errorCodes[resCode] );
     }
   } catch(e) {
-    return Promise.reject(e);
+    return Promise.reject('setNdefMessage Failed: ', e);
   }
 }
 
