@@ -665,7 +665,8 @@ Ntag424.readData = async (offset) => {
   const resCode = bytesToHex([readDataRes.sw1, readDataRes.sw2]);
   console.warn(
     'readData Res: ',
-    resCode
+    resCode,
+    resData
   );
   if(resCode == "9100") {
     return Promise.resolve(resData);
@@ -675,22 +676,53 @@ Ntag424.readData = async (offset) => {
 }
 
 /**
+ * Read NDEF message
+ * CommMode Plain
+ * 
+ * @param {string} offset 1byte hex
+ * @returns 
+ */
+Ntag424.isoReadBinary = async (offset) => {
+  await Ntag424.isoSelectFileApplication();
+  
+  const isoSelectFileBytes = hexToBytes('00A4000002E10400');
+  const isoSelectRes = await Ntag424.sendAPDUCommand(isoSelectFileBytes);
+  console.warn(
+    'isoSelectRes: ',
+    bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]),
+  );
+  const resultHex = bytesToHex([isoSelectRes.sw1, isoSelectRes.sw2]);
+  if(resultHex == '9000') {
+  } else {
+    return Promise.reject('ISO Select File Failed, code ' +resultHex + ' ' + errorCodes[resultHex] );
+  }
+
+  const cmdHex = "00B00000"+offset;
+  const res = await Ntag424.sendAPDUCommand(hexToBytes(cmdHex));
+  const resData = res.response;
+  const resCode = bytesToHex([res.sw1, res.sw2]);
+  console.warn(
+    'isoReadBinary Res: ',
+    resCode,
+    resData
+  );
+  if(resCode == "9000") {
+    return Promise.resolve(resData);
+  } else {
+    return Promise.reject('isoReadBinary Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+  }
+}
+
+/**
  * Get Key Version
- * CommMode Plain || Mac
+ * CommMode Plain 
  * 
  * @param {string} keyNo key number in hex (1 byte) 
  * @returns 
  */
 Ntag424.getKeyVersion = async (keyNo) => {
   var cmdHex = "9064000001"+keyNo+"00";
-  if(Ntag424.sesAuthEncKey && Ntag424.sesAuthMacKey && Ntag424.ti) {
-    //CommMode Mac
-    const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
-    const commandData = '64' + cmdCtr + Ntag424.ti + keyNo;
-    const truncatedMac = Ntag424.calcMac(commandData);
-    const lc = "09";
-    cmdHex = "90640000"+lc+keyNo+truncatedMac+"00";
-  }
+  console.log('getkeyversion hex', cmdHex)
   const res = await Ntag424.sendAPDUCommand(hexToBytes(cmdHex));
   const resData = res.response;
   const resCode = bytesToHex([res.sw1, res.sw2]);
@@ -698,7 +730,7 @@ Ntag424.getKeyVersion = async (keyNo) => {
   if(resCode == "9100") {
     return Promise.resolve(keyVersion);
   } else {
-    return Promise.reject('Read Data Failed, code ' +resCode + ' ' + errorCodes[resCode] );
+    return Promise.reject('Get Key Version Failed, code ' +resCode + ' ' + errorCodes[resCode] );
   }
 }
 
