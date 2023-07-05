@@ -16,6 +16,8 @@ import {
 import Dialog from 'react-native-dialog';
 import {Card, Title} from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
+import Ntag424 from '../class/Ntag424';
 
 export default function ResetKeysScreen({route}) {
   const navigation = useNavigation();
@@ -38,21 +40,6 @@ export default function ResetKeysScreen({route}) {
   const data = route && route.params ? route.params.data : null;
   const timestamp = route && route.params ? route.params.timestamp : null;
 
-  useFocusEffect(
-    React.useCallback(() => {
-      NativeModules.MyReactModule.setCardMode('read');
-    }, []),
-  );
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     NativeModules.MyReactModule.setCardMode("resetkeys");
-  //     NativeModules.MyReactModule.setResetKeys(key0,key1,key2,key3,key4,uid, ()=> {
-  //       //callback
-  //       console.log("reset keys set");
-  //     });
-  //     setWriteKeysOutput("pending...")
-  //   }, [])
-  // );
   useEffect(() => {
     if (data) {
       try {
@@ -91,26 +78,90 @@ export default function ResetKeysScreen({route}) {
     }
   }, [data, timestamp]);
 
-  const enableResetMode = () => {
-    NativeModules.MyReactModule.setCardMode('resetkeys');
-    NativeModules.MyReactModule.setResetKeys(
-      key0,
-      key1,
-      key2,
-      key3,
-      key4,
-      uid,
-      () => {
-        //callback
-        console.log('reset keys set');
-      },
-    );
-    setWriteKeysOutput(null);
+  const enableResetMode = async() => {
     setResetNow(true);
+    setWriteKeysOutput(null);
+    var result = [];
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.IsoDep, {
+        alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
+      });
+      
+      const defaultKey = '00000000000000000000000000000000';
+      
+      // //auth first     
+      await Ntag424.AuthEv2First(
+        '00',
+        key0,
+      );
+
+      //reset file settings
+      await Ntag424.resetFileSettings();
+      
+      //change keys
+      await Ntag424.changeKey(
+        '01',
+        key1,
+        defaultKey,
+        '01',
+      );
+      result.push("Change Key1: Success");
+      console.log('changekey 2')
+      await Ntag424.changeKey(
+        '02',
+        key2,
+        defaultKey,
+        '01',
+      );
+      result.push("Change Key2: Success");
+      console.log('changekey 3')
+      await Ntag424.changeKey(
+        '03',
+        key3,
+        defaultKey,
+        '01',
+      );
+      result.push("Change Key3: Success");
+      await Ntag424.changeKey(
+        '04',
+        key4,
+        defaultKey,
+        '01',
+      );
+      result.push("Change Key4: Success");
+      await Ntag424.changeKey(
+        '00',
+        key0,
+        defaultKey,
+        '01',
+      );
+      result = ["Change Key0: Success", ...result];
+
+      const message = [Ndef.uriRecord('')];
+      const bytes = Ndef.encodeMessage(message);
+      await Ntag424.setNdefMessage(bytes);
+
+      result.push("NDEF and SUN/SDM cleared");
+
+    } catch (ex) {
+      console.error('Oops!', ex, ex.constructor.name);
+      var error = ex;
+      if(typeof ex === 'object') {
+        error = "NFC Error: "+(ex.message? ex.message : ex.constructor.name);
+      }
+      result.push(error);
+      setWriteKeysOutput(error);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
+      setWriteKeysOutput(result.join('\r\n'));
+      // setResetNow(false);
+    }
   };
 
   const disableResetMode = () => {
-    NativeModules.MyReactModule.setCardMode('read');
+    NfcManager.cancelTechnologyRequest();
     setResetNow(false);
   };
 
@@ -120,31 +171,6 @@ export default function ResetKeysScreen({route}) {
       timestamp: Date.now(),
     });
   };
-
-  useEffect(() => {
-    const eventEmitter = new NativeEventEmitter();
-    const eventListener = eventEmitter.addListener(
-      'ChangeKeysResult',
-      event => {
-        if (event.output == 'success') {
-          setWriteKeysOutput('Keys reset successfully');
-        } else {
-          setWriteKeysOutput(event.output);
-        }
-      },
-    );
-
-    return () => {
-      eventListener.remove();
-    };
-  }, []);
-
-  // useEffect(() =>{
-  //   NativeModules.MyReactModule.setResetKeys(key0,key1,key2,key3,key4,uid, ()=> {
-  //     //callback
-  //     console.log("reset keys set");
-  //   });
-  // },[key0,key1,key2,key3,key4,uid]);
 
   const scanQRCode = () => {
     navigation.navigate('ScanScreen', {

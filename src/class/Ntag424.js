@@ -616,9 +616,9 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
     }
   
     const ndefMessage = bytesToHex(ndefMessageByte);
-    const ndefLength = "00" + (ndefMessageByte.length).toString(16);
+    const ndefLength = ((ndefMessageByte.length).toString(16)).padStart(4, "0");
     const lc = ndefMessageByte.length + 2;
-    const lcHex = lc.toString(16);
+    const lcHex = (lc.toString(16)).padStart(2, "0");
     //ndef message (up to 248 byte including secure messaging)
     const isoUpdateBinary = "00D60000"+lcHex+ndefLength+ndefMessage;
     console.log('isoUpdateBinaryHex', isoUpdateBinary);

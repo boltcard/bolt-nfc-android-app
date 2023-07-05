@@ -362,7 +362,7 @@ export default function CreateBoltcardScreen({route}) {
             {testp && (
               <Text>
                 Test PICC:{' '}
-                {cardUID.length == 8 ? (
+                {cardUID && cardUID.length == 8 ? (
                   <>test skipped {showTickOrError(true)}</>
                 ) : (
                   <>
