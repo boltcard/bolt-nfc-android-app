@@ -85,7 +85,7 @@ export default function CreateBoltcardScreen({route}) {
         alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
       });
 
-      // //set ndef
+      //set ndef
       const ndefMessage = lnurlw_base.includes('?')
         ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'
         : lnurlw_base +
@@ -207,7 +207,11 @@ export default function CreateBoltcardScreen({route}) {
 
     } catch (ex) {
       console.error('Oops!', ex);
-      setTagTypeError(ex);
+      var error = ex;
+      if(typeof ex === 'object') {
+        error = "NFC Error: "+(ex.message? ex.message : ex.constructor.name);
+      }
+      setTagTypeError(error);
     } finally {
       // stop the nfc scanning
       NfcManager.cancelTechnologyRequest();
