@@ -104,7 +104,7 @@ export default function ResetKeysScreen({route}) {
         '01',
         key1,
         defaultKey,
-        '01',
+        '00',
       );
       result.push("Change Key1: Success");
       console.log('changekey 2')
@@ -112,7 +112,7 @@ export default function ResetKeysScreen({route}) {
         '02',
         key2,
         defaultKey,
-        '01',
+        '00',
       );
       result.push("Change Key2: Success");
       console.log('changekey 3')
@@ -120,21 +120,21 @@ export default function ResetKeysScreen({route}) {
         '03',
         key3,
         defaultKey,
-        '01',
+        '00',
       );
       result.push("Change Key3: Success");
       await Ntag424.changeKey(
         '04',
         key4,
         defaultKey,
-        '01',
+        '00',
       );
       result.push("Change Key4: Success");
       await Ntag424.changeKey(
         '00',
         key0,
         defaultKey,
-        '01',
+        '00',
       );
       result = ["Change Key0: Success", ...result];
 
