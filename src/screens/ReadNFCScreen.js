@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   NativeEventEmitter,
   NativeModules,
+  Platform,
   ScrollView,
   Text,
   ToastAndroid,
@@ -27,31 +28,6 @@ export default function ReadNFCScreen(props) {
   const [readyToRead, setReadyToRead] = useState(false);
   const [readError, setReadError] = useState(null);
 
-  // useEffect(() => {
-  //   const eventEmitter = new NativeEventEmitter();
-  //   const eventListener = eventEmitter.addListener('CardHasBeenRead', event => {
-  //     setCardReadInfo(event.cardReadInfo);
-  //     setNdef(event.ndef);
-  //     setCardUID(event.cardUID && event.cardUID.toLowerCase());
-  //     console.log(
-  //       event.key0Changed,
-  //       event.key1Changed,
-  //       event.key2Changed,
-  //       event.key3Changed,
-  //       event.key4Changed,
-  //     );
-  //     setKey0Changed('Key 0 version: ' + event.key0Changed);
-  //     setKey1Changed('Key 1 version: ' + event.key1Changed);
-  //     setKey2Changed('Key 2 version: ' + event.key2Changed);
-  //     setKey3Changed('Key 3 version: ' + event.key3Changed);
-  //     setKey4Changed('Key 4 version: ' + event.key4Changed);
-  //   });
-
-  //   return () => {
-  //     eventListener.remove();
-  //   };
-  // });
-
   const copyToClipboard = () => {
     Clipboard.setString(cardUID);
     ToastAndroid.showWithGravity(
@@ -63,10 +39,35 @@ export default function ReadNFCScreen(props) {
 
   const readNfc = async () => {
     setReadError(null);
+    setKey0Changed("Key 0 version pending");
+    setKey1Changed("Key 1 version pending");
+    setKey2Changed("Key 2 version pending");
+    setKey3Changed("Key 3 version pending");
+    setKey4Changed("Key 4 version pending");
+    setCardReadInfo(null);
+    setNdef(null);
+    setReadyToRead(true);
+
+    if(Platform.OS == 'android') {
+      //for android we have to use NfcTech.ndef to use ndef handler
+      try {
+        await NfcManager.requestTechnology(NfcTech.ndef);
+        const ndef = await NfcManager.ndefHandler.getNdefMessage();
+        const ndefMessage = Ndef.uri.decodePayload(ndef.ndefMessage[0].payload);
+        setNdef(ndefMessage);
+
+      } catch (ex) {
+        console.warn('Oops!', ex);
+        setReadError(ex);
+      } finally {
+        // stop the nfc scanning
+        await NfcManager.cancelTechnologyRequest();
+        setReadyToRead(false);
+      }
+    }
+
     try {
-      setReadyToRead(true);
-      const tag = await NfcManager.requestTechnology(NfcTech.IsoDep);
-      console.log(tag);
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
 
       await Ntag424.isoSelectFileApplication();
       const cardVersion = await Ntag424.getVersion();
@@ -81,14 +82,17 @@ export default function ReadNFCScreen(props) {
         '08': 'MIFARE DESFire Light',
       };
       setCardReadInfo(`Tagname: ${cardTypes.hasOwnProperty(cardVersion.HWType) ? cardTypes[cardVersion.HWType]: ''}\nUID:${cardVersion.UID} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
-      console.log('version', cardVersion);
-      const ndef = await Ntag424.readData("060000");
-      const ndefMessage = Ndef.uri.decodePayload(ndef);
-      setNdef(ndefMessage);
+
+      if(Platform.OS == 'ios') {
+        const ndef = await NfcManager.ndefHandler.getNdefMessage();
+        const ndefMessage = Ndef.uri.decodePayload(ndef.ndefMessage[0].payload);
+        setNdef(ndefMessage);
+      }
 
       const uid = cardVersion.UID;
       setCardUID(uid);
       const key0Version = await Ntag424.getKeyVersion("00");
+      // console.log('key0', key0Version);
       setKey0Changed("Key 0 version: "+key0Version);
       const key1Version = await Ntag424.getKeyVersion("01");
       setKey1Changed("Key 1 version: "+key1Version);
