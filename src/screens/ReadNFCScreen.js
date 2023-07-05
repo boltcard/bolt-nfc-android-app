@@ -66,6 +66,7 @@ export default function ReadNFCScreen(props) {
     try {
       setReadyToRead(true);
       const tag = await NfcManager.requestTechnology(NfcTech.IsoDep);
+      console.log(tag);
 
       await Ntag424.isoSelectFileApplication();
       const cardVersion = await Ntag424.getVersion();
@@ -85,8 +86,7 @@ export default function ReadNFCScreen(props) {
       const ndefMessage = Ndef.uri.decodePayload(ndef);
       setNdef(ndefMessage);
 
-      await Ntag424.AuthEv2First("00", "00000000000000000000000000000000");
-      const uid = await Ntag424.getCardUid();
+      const uid = cardVersion.UID;
       setCardUID(uid);
       const key0Version = await Ntag424.getKeyVersion("00");
       setKey0Changed("Key 0 version: "+key0Version);
