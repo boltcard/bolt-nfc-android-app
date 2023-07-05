@@ -49,54 +49,6 @@ export default function CreateBoltcardScreen({route}) {
   const [testc, setTestc] = useState();
   const [testBolt, setTestBolt] = useState();
 
-  useEffect(() => {
-    if (Platform.OS == 'android') {
-      const eventEmitter = new NativeEventEmitter();
-      const boltCardEventListener = eventEmitter.addListener(
-        'CreateBoltCard',
-        event => {
-          if (event.tagTypeError) setTagTypeError(event.tagTypeError);
-          if (event.cardUID) setCardUID(event.cardUID);
-          if (event.tagname) setTagname(event.tagname);
-
-          if (event.key0Changed) setKey0Changed(event.key0Changed);
-          if (event.key1Changed) setKey1Changed(event.key1Changed);
-          if (event.key2Changed) setKey2Changed(event.key2Changed);
-          if (event.key3Changed) setKey3Changed(event.key3Changed);
-          if (event.key4Changed) setKey4Changed(event.key4Changed);
-          if (event.uid_privacy) setPrivateUID(event.uid_privacy == 'Y');
-
-          if (event.ndefWritten) setNdefWritten(event.ndefWritten);
-          if (event.writekeys) setWriteKeys(event.writekeys);
-
-          if (event.readNDEF) {
-            setNdefRead(event.readNDEF);
-            //we have the latest read from the card fire it off to the server.
-            const httpsLNURL = event.readNDEF.replace('lnurlw://', 'https://');
-            fetch(httpsLNURL)
-              .then(response => response.json())
-              .then(json => {
-                setTestBolt('success');
-              })
-              .catch(error => {
-                setTestBolt('Error: ' + error.message);
-              });
-          }
-
-          if (event.testp) setTestp(event.testp);
-          if (event.testc) setTestc(event.testc);
-
-          NativeModules.MyReactModule.setCardMode('read');
-          setWriteMode(false);
-        },
-      );
-
-      return () => {
-        boltCardEventListener.remove();
-      };
-    }
-  }, []);
-
   const scanQRCode = () => {
     navigation.navigate('ScanScreen', {backScreen: 'CreateBoltcardScreen'});
   };
@@ -145,29 +97,23 @@ export default function CreateBoltcardScreen({route}) {
 
       await Ntag424.setNdefMessage(bytes);
       setNdefWritten('success');
-      
-      //set offset for ndef header
-      const ndef = await Ntag424.readData("060000");
-      console.log(Ndef.uri.decodePayload(ndef));
-      setNdefRead(Ndef.uri.decodePayload(ndef));
 
       const key0 = '00000000000000000000000000000000';
       // //auth first     
-      const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
+      await Ntag424.AuthEv2First(
         '00',
         key0,
       );
 
-
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
       //change file settings
-      await Ntag424.changeFileSettings(
+      await Ntag424.setBoltCardFileSettings(
         piccOffset,
         macOffset,
       );
       //get uid
-      const uid = await Ntag424.getCardUid(sesAuthEncKey, sesAuthMacKey, ti);
+      const uid = await Ntag424.getCardUid();
       console.log('UID', uid);
       setCardUID(uid);
       
@@ -213,6 +159,52 @@ export default function CreateBoltcardScreen({route}) {
       );
       setKey0Changed(true);
       setWriteKeys('success');
+
+      //set offset for ndef header
+      const ndef = await Ntag424.readData("060000");
+      const setNdefMessage = Ndef.uri.decodePayload(ndef);
+      setNdefRead(setNdefMessage);
+
+      //we have the latest read from the card fire it off to the server.
+      const httpsLNURL = setNdefMessage.replace('lnurlw://', 'https://');
+      fetch(httpsLNURL)
+        .then(response => response.json())
+        .then(json => {
+          setTestBolt('success');
+        })
+        .catch(error => {
+          setTestBolt('Error: ' + error.message);
+        });
+
+      await Ntag424.AuthEv2First(
+        '00',
+        keys[0],
+      );
+
+      const params = {};
+      setNdefMessage.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
+        function(m,key,value) {
+          params[key] = value;
+        }
+      );
+      if(!"p" in params) {
+        setTestp("no p value to test")
+        return;
+      }
+      if(!"c" in params) {
+        setTestc("no c value to test")
+        return;
+      }
+
+      const pVal = params['p'];
+      const cVal = params['c'].slice(0,16);
+
+      const testResult = await Ntag424.testPAndC(pVal, cVal, uid, keys[1], keys[2]);
+      setTestp(testResult.pTest ? 'ok' : 'decrypt with key failed');
+      setTestc(testResult.cTest ? 'ok' : 'decrypt with key failed');
+
+
+
     } catch (ex) {
       console.error('Oops!', ex);
       setTagTypeError(ex);

@@ -133,15 +133,12 @@ export default function TestScreen({navigation}) {
 
       //have to auth with key 0
       const defaultkey = '00000000000000000000000000000000';
-      const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
+      await Ntag424.AuthEv2First(
         '00',
         '11111111111111111111111111111111',
       );
       console.log('key1')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         "01",
         "22222222222222222222222222222222",
         defaultkey,
@@ -149,9 +146,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key2')
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         "02",
         "33333333333333333333333333333333",
         defaultkey,
@@ -159,9 +153,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key3');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '03',
         '44444444444444444444444444444444',
         defaultkey,
@@ -169,9 +160,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key4');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '04',
         '55555555555555555555555555555555',
         defaultkey,
@@ -179,9 +167,6 @@ export default function TestScreen({navigation}) {
       );
       console.log('key0');
       await Ntag424.changeKey(
-        sesAuthEncKey,
-        sesAuthMacKey,
-        ti,
         '00',
         '11111111111111111111111111111111',
         defaultkey,
@@ -276,6 +261,47 @@ export default function TestScreen({navigation}) {
     }
   };
 
+  const testcandp = async () => {
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
+
+      const ndef = await Ntag424.readData("060000");
+      const ndefMessage = Ndef.uri.decodePayload(ndef);
+      const params = {};
+      ndefMessage.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
+        function(m,key,value) {
+          params[key] = value;
+        }
+      );
+      console.log(params);
+      const pVal = params['p'];
+      const cVal = params['c'].slice(0,16);
+      console.log(ndefMessage, pVal, cVal)
+      
+      // const key0 = "00000000000000000000000000000000";
+      // const key1 = "00000000000000000000000000000000";
+      // const key2 = "00000000000000000000000000000000";
+
+      const key0 = "11111111111111111111111111111111";
+      const key1 = "22222222222222222222222222222222";
+      const key2 = "33333333333333333333333333333333";
+      await Ntag424.AuthEv2First(
+        '00',
+        key0,
+      );
+      const uid = await Ntag424.getCardUid();
+
+      const result = await Ntag424.testPAndC(pVal, cVal, uid, key1, key2);
+      console.log(result);
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
+    }
+  }
+
   return (
     <ScrollView>
       <Card style={{marginBottom: 20, marginHorizontal: 10}}>
@@ -309,6 +335,7 @@ export default function TestScreen({navigation}) {
             <Button title="Change key" onPress={changeKey}></Button>
             <Button title="Reset key" onPress={resetKey}></Button>
             <Button title="Get card uid" onPress={getCardUid}></Button>
+            <Button title="Test C and P values" onPress={testcandp}></Button>
           </View>
         </Card.Content>
       </Card>
