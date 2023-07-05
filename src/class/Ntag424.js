@@ -667,13 +667,21 @@ Ntag424.readData = async (offset) => {
 
 /**
  * Get Key Version
- * CommMode Plain
+ * CommMode Plain || Mac
  * 
  * @param {string} keyNo key number in hex (1 byte) 
  * @returns 
  */
 Ntag424.getKeyVersion = async (keyNo) => {
-  const cmdHex = "9064000001"+keyNo+"00";
+  var cmdHex = "9064000001"+keyNo+"00";
+  if(Ntag424.sesAuthEncKey && Ntag424.sesAuthMacKey && Ntag424.ti) {
+    //CommMode Mac
+    const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
+    const commandData = '64' + cmdCtr + Ntag424.ti + keyNo;
+    const truncatedMac = Ntag424.calcMac(commandData);
+    const lc = "09";
+    cmdHex = "90640000"+lc+keyNo+truncatedMac+"00";
+  }
   const res = await Ntag424.sendAPDUCommand(hexToBytes(cmdHex));
   const resData = res.response;
   const resCode = bytesToHex([res.sw1, res.sw2]);
