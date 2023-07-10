@@ -510,13 +510,12 @@ Ntag424.changeKey = async (
       new WordArray.init(newKeyBytes),
     ).words;
     const oldNewXor = bytesToHex(oldNewXorBytes);
-    const crc32Reversed = crc.crcjam(newKeyBytes).toString(16);
+    const crc32Reversed = (crc.crcjam(newKeyBytes).toString(16)).padStart(8, "0");
     const crc32 = bytesToHex(hexToBytes(crc32Reversed).reverse());
     keyData = padForEnc(oldNewXor + keyVersion + crc32, 32); //32 bytes
   }
 
   const encKeyData = Ntag424.encData(keyData, cmdCtr);
-
   const truncatedMac = Ntag424.calcMac('C4' + cmdCtr + Ntag424.ti + keyNo + encKeyData)
 
 
@@ -524,7 +523,6 @@ Ntag424.changeKey = async (
   const lc = (data.length / 2 + 1).toString(16);
   const changeKeyHex =
     '90C40000' + lc + keyNo + encKeyData + truncatedMac + '00';
-
   const changeKeyRes = await Ntag424.sendAPDUCommand(hexToBytes(changeKeyHex));
 
   const resCode = bytesToHex([changeKeyRes.sw1, changeKeyRes.sw2]);
@@ -533,7 +531,7 @@ Ntag424.changeKey = async (
     return Promise.resolve('Successful');
   } else {
     
-    return Promise.reject('Change Key Failed, code ' +resCode + ' ' + changeKeyErrorCodes[resCode] );
+    return Promise.reject('Change Key Failed for key '+ parseInt(keyNo, 16) +', code ' +resCode + ' ' + changeKeyErrorCodes[resCode] );
   }
 };
 
