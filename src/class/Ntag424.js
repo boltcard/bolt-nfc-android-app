@@ -800,6 +800,59 @@ Ntag424.getVersion = async () => {
 }
 
 /**
+ * SetConfiguration 
+ * 
+ * CommMode Full
+ * 
+ * @param {string} option Configuration Option. (1 byte)
+ * @param {string} data Data content depends on option values. (Up to 10 bytes) 
+ * 
+ * @returns 
+ */
+Ntag424.setConfiguration = async (option, configData) => {
+  const cmdHeader = '905c0000';
+  const cmdData = configData;
+
+  const cmdDataPadd = padForEnc(cmdData, 16);
+
+  const cmdCtr = decToHexLsbFirst(Ntag424.cmdCtrDec++, 2);
+  
+  const encKeyData = Ntag424.encData(cmdDataPadd, cmdCtr);
+
+  const commandData = '5c' + cmdCtr + Ntag424.ti + option + encKeyData;
+  
+  const truncatedMac = Ntag424.calcMac(commandData)
+
+  const data = encKeyData + truncatedMac;
+  const lc = (data.length / 2 + 1).toString(16);
+  const apduHex = cmdHeader + lc + option + encKeyData + truncatedMac + '00';
+
+  const res = await Ntag424.sendAPDUCommand(
+    hexToBytes(apduHex),
+  );
+  const resCode = bytesToHex([
+    res.sw1,
+    res.sw2,
+  ]);
+  console.warn('setConfiguration Result: ', resCode);
+  if (resCode == '9100') {
+    return Promise.resolve('Successful');
+  } else {
+    return Promise.reject('SetConfiguration Failed, code ' +resCode + ' ' + changeFileSettingsErrorCodes[resCode] );
+  }
+}
+
+/**
+ * Enabling random uid. This is non-reversable 
+ * 
+ * 
+ * @returns Promise
+ */
+Ntag424.setPrivateUid = () => {
+  return Ntag424.setConfiguration("00", "02");
+}
+
+/**
  * Test p and c values in ndef message
  * 
  * 

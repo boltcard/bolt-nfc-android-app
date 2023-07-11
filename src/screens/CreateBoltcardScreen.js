@@ -104,7 +104,10 @@ export default function CreateBoltcardScreen({route}) {
         '00',
         key0,
       );
-
+      
+      if(privateUID) {
+        await Ntag424.setPrivateUid();
+      }
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
       //change file settings
