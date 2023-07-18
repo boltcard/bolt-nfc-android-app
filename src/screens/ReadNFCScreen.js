@@ -8,10 +8,10 @@ import {
   Platform,
   ScrollView,
   Text,
-  ToastAndroid,
   View,
 } from 'react-native';
 import {Button, Card, Paragraph, Title} from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 import Ntag424 from '../class/Ntag424';
 import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 
@@ -30,11 +30,10 @@ export default function ReadNFCScreen(props) {
 
   const copyToClipboard = () => {
     Clipboard.setString(cardUID);
-    ToastAndroid.showWithGravity(
-      'Copied to clipboard',
-      ToastAndroid.SHORT,
-      ToastAndroid.TOP,
-    );
+    Toast.show({
+      type: 'success',
+      text1: 'Copied to clipboard'
+    });
   };
 
   const readNfc = async () => {

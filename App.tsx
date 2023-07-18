@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import NfcManager from 'react-native-nfc-manager';
+import Toast from 'react-native-toast-message';
 
 import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
@@ -174,7 +175,7 @@ export default function App(props) {
         </Tab.Navigator>
       </NavigationContainer>
       <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
-      
+      <Toast />
     </PaperProvider>
   );
 }
