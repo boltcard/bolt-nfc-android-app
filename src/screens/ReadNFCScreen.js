@@ -67,6 +67,7 @@ export default function ReadNFCScreen(props) {
 
     try {
       await NfcManager.requestTechnology(NfcTech.IsoDep);
+      const tag = await NfcManager.getTag();
 
       await Ntag424.isoSelectFileApplication();
       const cardVersion = await Ntag424.getVersion();
@@ -80,7 +81,7 @@ export default function ReadNFCScreen(props) {
         '07': 'NTAG I2C',
         '08': 'MIFARE DESFire Light',
       };
-      setCardReadInfo(`Tagname: ${cardTypes.hasOwnProperty(cardVersion.HWType) ? cardTypes[cardVersion.HWType]: ''}\nUID:${cardVersion.UID} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
+      setCardReadInfo(`Tagname: ${cardTypes.hasOwnProperty(cardVersion.HWType) ? cardTypes[cardVersion.HWType]: ''}\nUID:${tag.id} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
 
       if(Platform.OS == 'ios') {
         const ndef = await NfcManager.ndefHandler.getNdefMessage();
@@ -88,8 +89,7 @@ export default function ReadNFCScreen(props) {
         setNdef(ndefMessage);
       }
 
-      const uid = cardVersion.UID;
-      setCardUID(uid);
+      setCardUID(tag.id);
       const key0Version = await Ntag424.getKeyVersion("00");
       // console.log('key0', key0Version);
       setKey0Changed("Key 0 version: "+key0Version);
@@ -105,7 +105,11 @@ export default function ReadNFCScreen(props) {
       
     } catch (ex) {
       console.warn('Oops!', ex);
-      setReadError(ex);
+      var error = ex;
+      if(typeof ex === 'object') {
+        error = "NFC Error: "+(ex.message? ex.message : ex.constructor.name);
+      }
+      setReadError(error);
     } finally {
       // stop the nfc scanning
       await NfcManager.cancelTechnologyRequest();
