@@ -300,7 +300,6 @@ export default function CreateBoltcardScreen({route}) {
           </Card.Content>
           <Card.Actions style={{justifyContent: 'space-around'}}>
             <Button title="Reset" color="red" onPress={resetAll} />
-            <Button title="Write Card Now" onPress={writeAgain} />
             {readyToWrite && !writeMode && (
               <Button title="Write Card Now" onPress={writeAgain} />
             )}
@@ -323,7 +322,7 @@ export default function CreateBoltcardScreen({route}) {
               title="Cancel"
               color="red"
               onPress={() => {
-                NativeModules.MyReactModule.setCardMode('read');
+                NfcManager.cancelTechnologyRequest();
                 setWriteMode(false);
                 setReadyToWrite(true);
               }}
