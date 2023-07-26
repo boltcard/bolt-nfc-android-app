@@ -47,27 +47,12 @@ export default function ReadNFCScreen(props) {
     setNdef(null);
     setReadyToRead(true);
 
-    if(Platform.OS == 'android') {
-      //for android we have to use NfcTech.ndef to use ndef handler
-      try {
-        await NfcManager.requestTechnology(NfcTech.ndef);
-        const ndef = await NfcManager.ndefHandler.getNdefMessage();
-        const ndefMessage = Ndef.uri.decodePayload(ndef.ndefMessage[0].payload);
-        setNdef(ndefMessage);
-
-      } catch (ex) {
-        console.warn('Oops!', ex);
-        setReadError(ex);
-      } finally {
-        // stop the nfc scanning
-        await NfcManager.cancelTechnologyRequest();
-        setReadyToRead(false);
-      }
-    }
-
     try {
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       const tag = await NfcManager.getTag();
+
+      const ndefMessage = Ndef.uri.decodePayload(tag.ndefMessage[0].payload);
+      setNdef(ndefMessage);
 
       await Ntag424.isoSelectFileApplication();
       const cardVersion = await Ntag424.getVersion();
@@ -82,12 +67,6 @@ export default function ReadNFCScreen(props) {
         '08': 'MIFARE DESFire Light',
       };
       setCardReadInfo(`Tagname: ${cardTypes.hasOwnProperty(cardVersion.HWType) ? cardTypes[cardVersion.HWType]: ''}\nUID:${tag.id} \nTotalMem: ${cardVersion.HWStorageSize == '11' ? 'Between 256B and 512B' : 'RFU'}\nVendor: ${cardVersion.VendorID == '04' ? "NXP" : "Non NXP"}`);
-
-      if(Platform.OS == 'ios') {
-        const ndef = await NfcManager.ndefHandler.getNdefMessage();
-        const ndefMessage = Ndef.uri.decodePayload(ndef.ndefMessage[0].payload);
-        setNdef(ndefMessage);
-      }
 
       setCardUID(tag.id);
       const key0Version = await Ntag424.getKeyVersion("00");
