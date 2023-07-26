@@ -641,7 +641,7 @@ Ntag424.setNdefMessage = async (ndefMessageByte) => {
       return Promise.reject('Set NDEF Message Failed, code ' +resCode + ' ' + errorCodes[resCode] );
     }
   } catch(e) {
-    return Promise.reject('setNdefMessage Failed: ', e);
+    return Promise.reject('setNdefMessage Failed: ' + e);
   }
 }
 
