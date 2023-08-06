@@ -1,22 +1,17 @@
-
 import React from 'react';
 
-import {
-  Button,
-  StyleSheet,
-  Text
-} from 'react-native';
+import {Button, StyleSheet, Text} from 'react-native';
 
-import { useCameraDevices } from 'react-native-vision-camera';
-import { Camera } from 'react-native-vision-camera';
-import { useScanBarcodes, BarcodeFormat } from 'vision-camera-code-scanner';
+import {useCameraDevices} from 'react-native-vision-camera';
+import {Camera} from 'react-native-vision-camera';
+import {useScanBarcodes, BarcodeFormat} from 'vision-camera-code-scanner';
 
-export default function ScanScreen({ route, navigation }) {
+export default function ScanScreen({route, navigation}) {
   const [hasPermission, setHasPermission] = React.useState(false);
   const devices = useCameraDevices();
   const device = devices.back;
 
-  const { backScreen, backRoot } = route.params;
+  const {backScreen, backRoot} = route.params;
 
   // console.log('Scan Screen backScreen, backRoot', backScreen, backRoot);
   const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
@@ -32,7 +27,7 @@ export default function ScanScreen({ route, navigation }) {
 
   const onSuccess = data => {
     console.log('scan success');
-    navigation.navigate(backScreen, {data: data, timestamp: Date.now()})
+    navigation.navigate(backScreen, {data: data, timestamp: Date.now()});
   };
 
   const goBack = e => {
@@ -58,7 +53,6 @@ export default function ScanScreen({ route, navigation }) {
       </>
     )
   );
-
 }
 
 const styles = StyleSheet.create({
@@ -71,18 +65,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     padding: 32,
-    color: '#777'
+    color: '#777',
   },
   textBold: {
     fontWeight: '500',
-    color: '#000'
+    color: '#000',
   },
   buttonText: {
     fontSize: 21,
-    color: 'rgb(0,122,255)'
+    color: 'rgb(0,122,255)',
   },
   buttonTouchable: {
-    padding: 16
-  }
+    padding: 16,
+  },
 });
-  

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View, NativeModules } from 'react-native';
+import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View, NativeModules, Platform } from 'react-native';
 
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 
@@ -7,12 +7,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import NfcManager from 'react-native-nfc-manager';
+import Toast from 'react-native-toast-message';
 
 import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
+import TestScreen from './src/screens/TestScreen';
 
 import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -87,6 +90,8 @@ const ErrorModal = (props) => {
   );
 };
 
+NfcManager.start();
+
 export default function App(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalText, setModalText] = useState();
@@ -97,15 +102,17 @@ export default function App(props) {
   }
 
   useEffect(() => {
-    const eventEmitter = new NativeEventEmitter();
-    const eventListener = eventEmitter.addListener('NFCError', (event) => {
-      setModalText(event.message);
-      setModalVisible(true);
-    });
-
-    return () => {
-      eventListener.remove();
-    };
+    if(Platform.OS == 'android') {
+      const eventEmitter = new NativeEventEmitter();
+      const eventListener = eventEmitter.addListener('NFCError', (event) => {
+        setModalText(event.message);
+        setModalVisible(true);
+      });
+  
+      return () => {
+        eventListener.remove();
+      };
+    }
   }, []);
 
   return (
@@ -161,11 +168,14 @@ export default function App(props) {
             component={HelpScreen} 
             options={{ headerTitle: (props) => <LogoTitle title="Help" {...props} />}} 
           />
-          
+          {/* <Tab.Screen 
+            name="Test" 
+            component={TestScreen} 
+          /> */}
         </Tab.Navigator>
       </NavigationContainer>
       <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
-      
+      <Toast />
     </PaperProvider>
   );
 }

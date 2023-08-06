@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, NativeModules, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, NativeModules, StyleSheet, Text, View, Platform } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function DisplayAuthInfo(props) {
@@ -8,20 +8,6 @@ export default function DisplayAuthInfo(props) {
     const {data, keys, setKeys, lnurlw_base, setlnurlw_base, setReadyToWrite, cardName, setCardName, privateUID, setPrivateUID} = props;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
-
-    // useEffect(() => {
-    //     const appStateSub = AppState.addEventListener("change", nextAppState => {
-    //       if (nextAppState.match(/inactive|background/)) {
-    //         setKeys([]);
-    //         setlnurlw_base(null);
-    //         setCardName(null);
-    //         setLoading(false);
-    //     }
-    //     });
-    //     return () => {
-    //       appStateSub.remove();
-    //     };
-    // }, []);
 
     //Load the auth info from the URL
     useEffect(() => {
@@ -44,20 +30,8 @@ export default function DisplayAuthInfo(props) {
                     if(json.card_name) setCardName(json.card_name);
                     setKeys([json.k0,json.k1,json.k2,json.k3,json.k4]);
                     setPrivateUID(json.uid_privacy != undefined && json.uid_privacy == "Y")
-                    NativeModules.MyReactModule.changeKeys(
-                        json.lnurlw_base,
-                        json.k0, 
-                        json.k1, 
-                        json.k2, 
-                        json.k3, 
-                        json.k4, 
-                        json.uid_privacy != undefined && json.uid_privacy == "Y", 
-                        (response) => {
-                            console.log('Change keys response', response)
-                            if (response == "Success") setReadyToWrite(true);
-                        }
-                    );
-                    
+
+                    setReadyToWrite(true);
                     
                 })
                 .catch((error) => {
@@ -112,6 +86,6 @@ const styles = StyleSheet.create({
       marginBottom:5
     },
     monospace: {
-      fontFamily: "monospace"
+      fontFamily: Platform.OS === 'ios' ? "Courier New" : "monospace"
     }
   });
