@@ -82,7 +82,7 @@ As of 0.1.4 the app now supports card UID Randomisation (irreversable). If you a
     "protocol_version":1,
     "card_name": "Spending_Card",
     "lnurlw_base": "lnurlw://your.domain.com/ln", 
-    "uid_privacy": "Y"
+    "uid_privacy": "Y",
     "k0":"11111111111111111111111111111111",
     "k1":"22222222222222222222222222222222",
     "k2":"33333333333333333333333333333333",
