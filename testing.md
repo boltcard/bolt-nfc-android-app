@@ -1,9 +1,15 @@
 
-# Create Card
+# Create Card (short URL)
 
 https://boltcard.free.beeceptor.com/card
 
 ![image](https://user-images.githubusercontent.com/3826238/235588007-ef4fcd4a-daec-40c9-9437-834739a5c695.png)
+
+# Create Card (long URL)
+
+https://boltcard.free.beeceptor.com/longcard
+
+![qrcode (4)](https://github.com/boltcard/bolt-nfc-android-app/assets/3826238/a41e098e-336d-4891-b2d7-bbe890f863a9)
 
 # Create Private Card (one way operation)
 
