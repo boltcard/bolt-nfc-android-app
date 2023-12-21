@@ -915,8 +915,10 @@ Ntag424.testPAndC = async (pVal, cVal, uid, piccKey, macKey) => {
       keySize: 128 / 8,
     },
   );
-  const decryptedPiccData = CryptoJS.enc.Hex.stringify(decPiccData);
-  if (decryptedPiccData.startsWith('c7' + uid)) result.pTest = true;
+  const decryptedPiccData =
+    CryptoJS.enc.Hex.stringify(decPiccData).toLowerCase();
+  if (decryptedPiccData.startsWith('c7' + uid.toLowerCase()))
+    result.pTest = true;
 
   const sdmReadCtr = decryptedPiccData.slice(16, 22);
   const sv2 = '3cc300010080' + uid + sdmReadCtr;
@@ -935,7 +937,7 @@ Ntag424.testPAndC = async (pVal, cVal, uid, piccKey, macKey) => {
   ) {
     return (index + 1) % 2 === 0;
   });
-  const truncatedSdmMacHex = bytesToHex(truncatedMacBytes);
+  const truncatedSdmMacHex = bytesToHex(truncatedMacBytes).toLowerCase();
   if (truncatedSdmMacHex == cVal.toLowerCase()) result.cTest = true;
   return Promise.resolve(result);
 };
