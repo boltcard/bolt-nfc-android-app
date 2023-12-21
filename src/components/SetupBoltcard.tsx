@@ -355,7 +355,7 @@ export default function SetupBoltcard({url}: {url: string}) {
                 {showTickOrError(testBolt == 'success')}
               </Text>
             )}
-            <Button onPress={readNfc}>Write again</Button>
+            {!writingCard && <Button onPress={readNfc}>Write again</Button>}
           </Card.Content>
         </View>
       </WithStep>

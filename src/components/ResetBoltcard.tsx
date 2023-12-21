@@ -78,6 +78,7 @@ export default function SetupBoltcard({url}: {url: string}) {
         },
         body: JSON.stringify({
           UID: uid,
+          onExisting: 'KeepVersion',
         }),
       });
       if (!response.ok) {
