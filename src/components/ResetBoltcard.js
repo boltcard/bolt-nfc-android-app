@@ -5,27 +5,19 @@ import {Card, Text, ActivityIndicator, Button, Title} from 'react-native-paper';
 import Ntag424 from '../class/Ntag424';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-enum SetupStep {
-  Init,
-  Restart,
-  HoldCard,
-  ReadingUid,
-  RequestingKeys,
-  WritingCard,
-}
+const SetupStep = {
+  Init: 1,
+  Restart: 2,
+  HoldCard: 3,
+  ReadingUid: 4,
+  RequestingKeys: 5,
+  WritingCard: 6,
+};
 
-const WithStep = ({
-  step,
-  current,
-  children,
-}: {
-  step: SetupStep;
-  current: SetupStep;
-  children: JSX.Element;
-}) => {
+const WithStep = ({step, current, children}) => {
   return step === current ? children : null;
 };
-export default function SetupBoltcard({url}: {url: string}) {
+export default function SetupBoltcard({url}) {
   const [step, setStep] = useState(SetupStep.Init);
   const [readingNfc, setReadingNfc] = useState(false);
   const [error, setError] = useState('');
@@ -57,7 +49,7 @@ export default function SetupBoltcard({url}: {url: string}) {
   const readNfc = async () => {
     reset();
     setStep(SetupStep.HoldCard);
-    var result: any = [];
+    var result = [];
     try {
       setReadingNfc(true);
       await nfcManager.requestTechnology(NfcTech.IsoDep, {

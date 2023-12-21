@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView} from 'react-native';
 import ResetBoltcard from '../components/ResetBoltcard';
 
 export default function ProgramBoltcardScreen({route}) {
