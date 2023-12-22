@@ -144,14 +144,24 @@ export default function SetupBoltcard({url}) {
       setWriteKeys('success');
 
       //set offset for ndef header
-      const ndef = await Ntag424.readData('060000');
+      var ndef = await Ntag424.readData('060000');
+      while(ndef[ndef.length-1] === 0){ 
+        //Remomving trailing 0s 
+        //@TODO: need to figure out why there are trailing 0s in ndef
+        ndef.pop();                 
+      }
       const setNdefMessage = Ndef.uri.decodePayload(ndef);
       setNdefRead(setNdefMessage);
 
       //we have the latest read from the card fire it off to the server.
-      const httpsLNURL = setNdefMessage.replace('lnurlw://', 'https://');
+      const httpsLNURL = (String(setNdefMessage.replace('lnurlw://', 'https://'))).trim();
       fetch(httpsLNURL)
-        .then(response => response.json())
+        .then(response => {
+          if(!response.ok){
+            throw new Error(response.statusText)
+          }
+          return response.json();
+        })
         .then(json => {
           setTestBolt('success');
         })
@@ -191,7 +201,7 @@ export default function SetupBoltcard({url}) {
       if (typeof ex === 'object') {
         error = ex.message ? ex.message : ex.constructor.name;
       }
-      if (error == 'You can only issue one request at a time') {
+      if (error == 'You can only issue one request at a time' || error == 'UserCancel' || error == 'Duplicated registration') {
         setStep(SetupStep.Restart);
         return;
       }

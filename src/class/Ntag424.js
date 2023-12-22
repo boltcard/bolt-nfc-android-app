@@ -937,7 +937,7 @@ Ntag424.testPAndC = async (pVal, cVal, uid, piccKey, macKey) => {
   ) {
     return (index + 1) % 2 === 0;
   });
-  const truncatedSdmMacHex = bytesToHex(truncatedMacBytes).toLowerCase();
+  const truncatedSdmMacHex = bytesToHex(truncatedMacBytes);
   if (truncatedSdmMacHex == cVal.toLowerCase()) result.cTest = true;
   return Promise.resolve(result);
 };

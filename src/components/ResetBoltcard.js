@@ -120,7 +120,7 @@ export default function SetupBoltcard({url}) {
       if (typeof ex === 'object') {
         error = ex.message ? ex.message : ex.constructor.name;
       }
-      if (error == 'You can only issue one request at a time') {
+      if (error == 'You can only issue one request at a time' || error == 'UserCancel' || error == 'Duplicated registration') {
         setStep(SetupStep.Restart);
         return;
       }
