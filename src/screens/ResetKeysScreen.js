@@ -12,6 +12,7 @@ import {
   TextInput,
   View,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Dialog from 'react-native-dialog';
 import {Card, Title} from 'react-native-paper';
@@ -188,166 +189,169 @@ export default function ResetKeysScreen({route}) {
   }
 
   return (
-    <ScrollView style={{padding: 10}}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Wipe Keys QR code</Title>
-          <Text>
-            Click on the wipe keys button on LNBits or run the ./wipeboltcard
-            command on your boltcard server
-          </Text>
-        </Card.Content>
-        <Card.Actions style={{justifyContent: 'space-around'}}>
-          <Button onPress={scanQRCode} title="Scan QR Code" />
-          <Button
-            onPress={() => setPromptVisible(true)}
-            title="Paste Key JSON"
-          />
-        </Card.Actions>
-      </Card>
-      <Dialog.Container visible={promptVisible}>
-        <Dialog.Title style={styles.textBlack}>
-          Enter Wipe Key JSON
-        </Dialog.Title>
-        <Dialog.Description>Paste your wipe keys JSON here.</Dialog.Description>
-        <Dialog.Input
-          style={styles.textBlack}
-          label="Wipe Key JSON"
-          onChangeText={setPasteWipeKeysJSON}
-          value={pasteWipeKeysJSON}
-        />
-        <Dialog.Button
-          label="Cancel"
-          onPress={() => {
-            setPromptVisible(false);
-            setPasteWipeKeysJSON();
-          }}
-        />
-        <Dialog.Button
-          label="Continue"
-          onPress={() => {
-            setPromptVisible(false);
-            setPasteWipeKeysJSON();
-            navigation.navigate('ResetKeysScreen', {
-              data: pasteWipeKeysJSON,
-              timestamp: Date.now(),
-            });
-          }}
-        />
-      </Dialog.Container>
-      <Dialog.Container visible={keyJsonError}>
-        <Dialog.Title style={styles.textBlack}>Wipe Keys Issue</Dialog.Title>
-        <Text>{keyJsonError}</Text>
-        <Dialog.Button
-          label="I understand"
-          onPress={() => {
-            setKeyJsonError(false);
-          }}
-        />
-      </Dialog.Container>
-
-      <Dialog.Container visible={resetNow}>
-        <Dialog.Title style={styles.textBlack}>
-          <Ionicons name="card" size={30} color="green" /> Tap NFC Card
-        </Dialog.Title>
-        {!writeKeysOutput && (
-          <Text
-            style={{fontSize: 20, textAlign: 'center', borderColor: 'black'}}>
-            Hold NFC card to reader when ready
-          </Text>
-        )}
-
-        <Text style={{fontSize: 20, textAlign: 'center', borderColor: 'black'}}>
-          {writeKeysOutput ? writeKeysOutput : <ActivityIndicator />}
-        </Text>
-        <Dialog.Button
-          label="Close"
-          onPress={() => {
-            disableResetMode();
-          }}
-        />
-      </Dialog.Container>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Card Details</Title>
-          <View style={styles.titlecontainer}>
-            <Text style={styles.title}>Key 0</Text>
-            <Button onPress={()=>{setKey0('00000000000000000000000000000000')}} title="Set to Zeros" />
-          </View>
-          <TextInput
-            style={styles.input}
-            value={key0}
-            maxLength={32}
-            multiline={true}
-            numberOfLines={1}
-            autoCapitalize="none"
-            onChangeText={text => setKey0(text)}
-            placeholder={defaultKey}
-          />
-          <View style={styles.titlecontainer}>
-            <Text style={styles.title}>Key 1</Text>
-            <Button onPress={()=>{setKey1('00000000000000000000000000000000')}} title="Set to Zeros" />
-          </View>
-          <TextInput
-            style={styles.input}
-            value={key1}
-            maxLength={32}
-            multiline={true}
-            numberOfLines={1}
-            autoCapitalize="none"
-            onChangeText={text => setKey1(text)}
-            placeholder={defaultKey}
-          />
-          <View style={styles.titlecontainer}>
-            <Text style={styles.title}>Key 2</Text>
-            <Button onPress={()=>{setKey2('00000000000000000000000000000000')}} title="Set to Zeros" />
-          </View>
-          <TextInput
-            style={styles.input}
-            value={key2}
-            maxLength={32}
-            multiline={true}
-            numberOfLines={1}
-            autoCapitalize="none"
-            onChangeText={text => setKey2(text)}
-            placeholder={defaultKey}
-          />
-          <View style={styles.titlecontainer}>
-            <Text style={styles.title}>Key 3</Text>
-            <Button onPress={()=>{setKey3('00000000000000000000000000000000')}} title="Set to Zeros" />
-          </View>
-          <TextInput
-            style={styles.input}
-            value={key3}
-            maxLength={32}
-            multiline={true}
-            numberOfLines={1}
-            autoCapitalize="none"
-            onChangeText={text => setKey3(text)}
-            placeholder={defaultKey}
-          />
-          <View style={styles.titlecontainer}>
-            <Text style={styles.title}>Key 4</Text>
-            <Button onPress={()=>{setKey4('00000000000000000000000000000000')}} title="Set to Zeros" />
-          </View>
-          <TextInput
-            style={styles.input}
-            value={key4}
-            maxLength={32}
-            multiline={true}
-            numberOfLines={1}
-            autoCapitalize="none"
-            onChangeText={text => setKey4(text)}
-            placeholder={defaultKey}
-          />
+    <KeyboardAvoidingView style={{ flex: 1, flexDirection: 'column',justifyContent: 'center',}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} enabled keyboardVerticalOffset={100}>
+      <ScrollView style={{padding: 10}}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Wipe Keys QR code</Title>
+            <Text>
+              Click on the wipe keys button on LNBits or run the ./wipeboltcard
+              command on your boltcard server
+            </Text>
+          </Card.Content>
           <Card.Actions style={{justifyContent: 'space-around'}}>
-            <Button  onPress={() => enableResetMode()} title="Reset Card Now" />
-            <Button color="red" onPress={() => clearKeys()} title="Reset Inputs" />
+            <Button onPress={scanQRCode} title="Scan QR Code" />
+            <Button
+              onPress={() => setPromptVisible(true)}
+              title="Paste Key JSON"
+            />
           </Card.Actions>
-        </Card.Content>
-      </Card>
-    </ScrollView>
+        </Card>
+        <Dialog.Container visible={promptVisible}>
+          <Dialog.Title style={styles.textBlack}>
+            Enter Wipe Key JSON
+          </Dialog.Title>
+          <Dialog.Description>Paste your wipe keys JSON here.</Dialog.Description>
+          <Dialog.Input
+            style={styles.textBlack}
+            label="Wipe Key JSON"
+            onChangeText={setPasteWipeKeysJSON}
+            value={pasteWipeKeysJSON}
+          />
+          <Dialog.Button
+            label="Cancel"
+            onPress={() => {
+              setPromptVisible(false);
+              setPasteWipeKeysJSON();
+            }}
+          />
+          <Dialog.Button
+            label="Continue"
+            onPress={() => {
+              setPromptVisible(false);
+              setPasteWipeKeysJSON();
+              navigation.navigate('ResetKeysScreen', {
+                data: pasteWipeKeysJSON,
+                timestamp: Date.now(),
+              });
+            }}
+          />
+        </Dialog.Container>
+        <Dialog.Container visible={keyJsonError}>
+          <Dialog.Title style={styles.textBlack}>Wipe Keys Issue</Dialog.Title>
+          <Text>{keyJsonError}</Text>
+          <Dialog.Button
+            label="I understand"
+            onPress={() => {
+              setKeyJsonError(false);
+            }}
+          />
+        </Dialog.Container>
+
+        <Dialog.Container visible={resetNow}>
+          <Dialog.Title style={styles.textBlack}>
+            <Ionicons name="card" size={30} color="green" /> Tap NFC Card
+          </Dialog.Title>
+          {!writeKeysOutput && (
+            <Text
+              style={{fontSize: 20, textAlign: 'center', borderColor: 'black'}}>
+              Hold NFC card to reader when ready
+            </Text>
+          )}
+
+          <Text style={{fontSize: 20, textAlign: 'center', borderColor: 'black'}}>
+            {writeKeysOutput ? writeKeysOutput : <ActivityIndicator />}
+          </Text>
+          <Dialog.Button
+            label="Close"
+            onPress={() => {
+              disableResetMode();
+            }}
+          />
+        </Dialog.Container>
+
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Card Details</Title>
+            <View style={styles.titlecontainer}>
+              <Text style={styles.title}>Key 0</Text>
+              <Button onPress={()=>{setKey0('00000000000000000000000000000000')}} title="Set to Zeros" />
+            </View>
+            <TextInput
+              style={styles.input}
+              value={key0}
+              maxLength={32}
+              multiline={true}
+              numberOfLines={1}
+              autoCapitalize="none"
+              onChangeText={text => setKey0(text)}
+              placeholder={defaultKey}
+            />
+            <View style={styles.titlecontainer}>
+              <Text style={styles.title}>Key 1</Text>
+              <Button onPress={()=>{setKey1('00000000000000000000000000000000')}} title="Set to Zeros" />
+            </View>
+            <TextInput
+              style={styles.input}
+              value={key1}
+              maxLength={32}
+              multiline={true}
+              numberOfLines={1}
+              autoCapitalize="none"
+              onChangeText={text => setKey1(text)}
+              placeholder={defaultKey}
+            />
+            <View style={styles.titlecontainer}>
+              <Text style={styles.title}>Key 2</Text>
+              <Button onPress={()=>{setKey2('00000000000000000000000000000000')}} title="Set to Zeros" />
+            </View>
+            <TextInput
+              style={styles.input}
+              value={key2}
+              maxLength={32}
+              multiline={true}
+              numberOfLines={1}
+              autoCapitalize="none"
+              onChangeText={text => setKey2(text)}
+              placeholder={defaultKey}
+            />
+            <View style={styles.titlecontainer}>
+              <Text style={styles.title}>Key 3</Text>
+              <Button onPress={()=>{setKey3('00000000000000000000000000000000')}} title="Set to Zeros" />
+            </View>
+            <TextInput
+              style={styles.input}
+              value={key3}
+              maxLength={32}
+              multiline={true}
+              numberOfLines={1}
+              autoCapitalize="none"
+              onChangeText={text => setKey3(text)}
+              placeholder={defaultKey}
+            />
+            <View style={styles.titlecontainer}>
+              <Text style={styles.title}>Key 4</Text>
+              <Button onPress={()=>{setKey4('00000000000000000000000000000000')}} title="Set to Zeros" />
+            </View>
+            <TextInput
+              style={styles.input}
+              value={key4}
+              maxLength={32}
+              multiline={true}
+              numberOfLines={1}
+              autoCapitalize="none"
+              onChangeText={text => setKey4(text)}
+              placeholder={defaultKey}
+            />
+            <Card.Actions style={{justifyContent: 'space-around'}}>
+              <Button  onPress={() => enableResetMode()} title="Reset Card Now" />
+              <Button color="red" onPress={() => clearKeys()} title="Reset Inputs" />
+            </Card.Actions>
+          </Card.Content>
+        </Card>
+      </ScrollView>
+    </KeyboardAvoidingView>
+
   );
 }
 
