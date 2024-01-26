@@ -30,7 +30,7 @@ export default function SetupBoltcard({url}) {
 
   if (!url) {
     return (
-      <View>
+      <View style={{padding: 20}}>
         <Text>No valid URL passed.</Text>
       </View>
     );
@@ -61,6 +61,8 @@ export default function SetupBoltcard({url}) {
       if (!tag) throw new Error('Error reading card. No tag detected');
       const uid = tag?.id;
 
+      const ndefMessage = Ndef.uri.decodePayload(tag.ndefMessage[0].payload);
+
       setStep(SetupStep.RequestingKeys);
       const response = await fetch(url, {
         method: 'POST',
@@ -69,8 +71,7 @@ export default function SetupBoltcard({url}) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          UID: uid,
-          onExisting: 'KeepVersion',
+          LNURLW: ndefMessage,
         }),
       });
       if (!response.ok) {
@@ -80,8 +81,8 @@ export default function SetupBoltcard({url}) {
       }
       const json = await response.json();
       console.log(json);
-      const {K0, K1, K2, K3, K4, LNURLW: lnurlw_base} = json;
-      if (!K0 || !K1 || !K2 || !K3 || !K4 || !lnurlw_base) {
+      const {K0, K1, K2, K3, K4} = json;
+      if (!K0 || !K1 || !K2 || !K3 || !K4) {
         throw new Error('Error fetching the keys');
       }
 

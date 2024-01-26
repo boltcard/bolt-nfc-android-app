@@ -40,7 +40,7 @@ export default function SetupBoltcard({url}) {
 
   if (!url) {
     return (
-      <View>
+      <View style={{padding: 20}}>
         <Text>No valid URL passed.</Text>
       </View>
     );
@@ -66,6 +66,8 @@ export default function SetupBoltcard({url}) {
     setTestBolt('');
   };
 
+  const byteSize = str => new Blob([str]).size;
+
   const readNfc = async () => {
     reset();
     setStep(SetupStep.HoldCard);
@@ -79,8 +81,16 @@ export default function SetupBoltcard({url}) {
       setStep(SetupStep.ReadingUid);
       const tag = await nfcManager.getTag();
       if (!tag) throw new Error('Error reading card. No tag detected');
-      const uid = tag?.id;
+      let uid = tag?.id;
       setCardUID(uid ? uid : '');
+
+      const key0 = '00000000000000000000000000000000';
+      if(byteSize(uid) == 8) {
+        //random uid
+        //get the real uid by authenticating first
+        await Ntag424.AuthEv2First('00', key0);
+        uid = await Ntag424.getCardUid();
+      }
 
       setStep(SetupStep.RequestingKeys);
       const response = await fetch(url, {
@@ -118,7 +128,7 @@ export default function SetupBoltcard({url}) {
 
       await Ntag424.setNdefMessage(bytes);
       setNdefWritten(true);
-      const key0 = '00000000000000000000000000000000';
+      
       // //auth first
       await Ntag424.AuthEv2First('00', key0);
       const piccOffset = ndefMessage.indexOf('p=') + 9;
@@ -207,10 +217,12 @@ export default function SetupBoltcard({url}) {
       }
       error = 'NFC Error: ' + error;
       setTagTypeError(error);
+      setStep(SetupStep.WritingCard);
     } finally {
       setWritingCard(false);
       nfcManager.cancelTechnologyRequest();
       setReadingNfc(false);
+
     }
   };
 
