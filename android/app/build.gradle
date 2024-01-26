@@ -112,8 +112,8 @@ android {
         applicationId "com.lightningnfcapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 26
-        versionName "0.3.0"
+        versionCode 27
+        versionName "0.3.1"
     }
 
     splits {
