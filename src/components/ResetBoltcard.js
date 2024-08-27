@@ -81,10 +81,13 @@ export default function SetupBoltcard({url}) {
       }
       const json = await response.json();
       console.log(json);
-      const {K0, K1, K2, K3, K4} = json;
+      const {K0, K1, K2, K3, K4, version} = json;
       if (!K0 || !K1 || !K2 || !K3 || !K4) {
         throw new Error('Error fetching the keys');
       }
+      let versionhexstr = version.toString(16);
+      if (versionhexstr.length > 2) throw new Error('version out of range'); //check fits into one byte
+      versionhexstr = versionhexstr.padStart(2, '0');
 
       setWritingCard(true);
       setStep(SetupStep.WritingCard);
@@ -97,17 +100,17 @@ export default function SetupBoltcard({url}) {
       await Ntag424.resetFileSettings();
 
       //change keys
-      await Ntag424.changeKey('01', K1, defaultKey, '00');
+      await Ntag424.changeKey('01', K1, defaultKey, versionhexstr);
       result.push('Change Key1: Success');
       console.log('changekey 2');
-      await Ntag424.changeKey('02', K2, defaultKey, '00');
+      await Ntag424.changeKey('02', K2, defaultKey, versionhexstr);
       result.push('Change Key2: Success');
       console.log('changekey 3');
-      await Ntag424.changeKey('03', K3, defaultKey, '00');
+      await Ntag424.changeKey('03', K3, defaultKey, versionhexstr);
       result.push('Change Key3: Success');
-      await Ntag424.changeKey('04', K4, defaultKey, '00');
+      await Ntag424.changeKey('04', K4, defaultKey, versionhexstr);
       result.push('Change Key4: Success');
-      await Ntag424.changeKey('00', K0, defaultKey, '00');
+      await Ntag424.changeKey('00', K0, defaultKey, versionhexstr);
       result = ['Change Key0: Success', ...result];
 
       const message = [Ndef.uriRecord('')];
