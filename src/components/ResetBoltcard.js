@@ -81,7 +81,7 @@ export default function SetupBoltcard({url}) {
       }
       const json = await response.json();
       console.log(json);
-      const {K0, K1, K2, K3, K4, version} = json;
+      const {K0, K1, K2, K3, K4, version=0} = json;
       if (!K0 || !K1 || !K2 || !K3 || !K4) {
         throw new Error('Error fetching the keys');
       }
