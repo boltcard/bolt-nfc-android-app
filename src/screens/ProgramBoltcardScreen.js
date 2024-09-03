@@ -5,10 +5,7 @@ import SetupBoltcard from '../components/SetupBoltcard';
 export default function ProgramBoltcardScreen({route}) {
   return (
     <ScrollView>
-      <SetupBoltcard
-        url={route?.params?.url ? route.params.url : null}
-        navigation={navigation}
-      />
+      <SetupBoltcard url={route?.params?.url ? route.params.url : null} />
     </ScrollView>
   );
 }
