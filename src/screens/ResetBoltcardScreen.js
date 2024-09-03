@@ -3,11 +3,9 @@ import {ScrollView} from 'react-native';
 import ResetBoltcard from '../components/ResetBoltcard';
 
 export default function ProgramBoltcardScreen({route}) {
-  const {url} = route.params;
-
   return (
     <ScrollView>
-      <ResetBoltcard url={url} />
+      <ResetBoltcard url={route?.params?.url ? route.params.url : null} />
     </ScrollView>
   );
 }
