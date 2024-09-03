@@ -85,6 +85,10 @@ export default function CreateBoltcardScreen({route}) {
         alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
       });
 
+      await Ntag424.isoSelectFileApplication();
+      const key1Version = await Ntag424.getKeyVersion("01");
+      if (key1Version != '00') throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
+
       //set ndef
       const ndefMessage = lnurlw_base.includes('?')
         ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'

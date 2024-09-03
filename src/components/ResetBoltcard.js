@@ -63,6 +63,10 @@ export default function SetupBoltcard({url}) {
 
       const ndefMessage = Ndef.uri.decodePayload(tag.ndefMessage[0].payload);
 
+      await Ntag424.isoSelectFileApplication();
+      const key1Version = await Ntag424.getKeyVersion("01");
+      if (key1Version == '00') throw new Error('YOUR CARD IS ALREADY RESET!');
+
       setStep(SetupStep.RequestingKeys);
       const response = await fetch(url, {
         method: 'POST',

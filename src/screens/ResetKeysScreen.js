@@ -89,6 +89,10 @@ export default function ResetKeysScreen({route}) {
         alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
       });
       
+      await Ntag424.isoSelectFileApplication();
+      const key1Version = await Ntag424.getKeyVersion("01");
+      if (key1Version == '00') throw new Error('YOUR CARD IS ALREADY RESET!');
+
       const defaultKey = '00000000000000000000000000000000';
       
       // //auth first     

@@ -84,6 +84,10 @@ export default function SetupBoltcard({url}) {
       let uid = tag?.id;
       setCardUID(uid ? uid : '');
 
+      await Ntag424.isoSelectFileApplication();
+      const key1Version = await Ntag424.getKeyVersion("01");
+      if (key1Version != '00') throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
+
       const key0 = '00000000000000000000000000000000';
       if(byteSize(uid) == 8) {
         //random uid
