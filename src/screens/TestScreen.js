@@ -75,6 +75,10 @@ export default function TestScreen({navigation}) {
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       // the resolved tag object will contain `ndefMessage` property
 
+      await Ntag424.isoSelectFileApplication();
+      const key1Version = await Ntag424.getKeyVersion("01");
+      if (key1Version != '00') throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
+
       //have to auth with key 0
       const key0 = '00000000000000000000000000000000';
       const {sesAuthEncKey, sesAuthMacKey, ti} = await Ntag424.AuthEv2First(
@@ -130,6 +134,10 @@ export default function TestScreen({navigation}) {
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       // the resolved tag object will contain `ndefMessage` property
+
+      await Ntag424.isoSelectFileApplication();
+      const key1Version = await Ntag424.getKeyVersion("01");
+      if (key1Version == '00') throw new Error('YOUR CARD IS ALREADY RESET!');
 
       //have to auth with key 0
       const defaultkey = '00000000000000000000000000000000';
