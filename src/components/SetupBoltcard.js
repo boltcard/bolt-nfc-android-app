@@ -4,6 +4,7 @@ import nfcManager, {Ndef, NfcTech} from 'react-native-nfc-manager';
 import {Card, Text, ActivityIndicator, Button, Title} from 'react-native-paper';
 import Ntag424 from '../class/Ntag424';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useFocusEffect} from '@react-navigation/native';
 
 const SetupStep = {
   Init: 1,
@@ -46,9 +47,16 @@ export default function SetupBoltcard({url}) {
     );
   }
 
-  useEffect(() => {
-    readNfc();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      readNfc();
+
+      return () => {
+        // reset();
+        console.log('RESET');
+      };
+    }, []),
+  );
 
   const reset = () => {
     setError('');
@@ -64,6 +72,9 @@ export default function SetupBoltcard({url}) {
     setTestp('');
     setTestc('');
     setTestBolt('');
+    setWritingCard(false);
+    nfcManager.cancelTechnologyRequest();
+    setReadingNfc(false);
   };
 
   const byteSize = str => new Blob([str]).size;
