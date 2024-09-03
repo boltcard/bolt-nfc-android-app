@@ -130,6 +130,7 @@ export default function SetupBoltcard({url}) {
         return;
       }
       error = 'NFC Error: ' + error;
+      setStep(SetupStep.WritingCard)
       setTagTypeError(error);
     } finally {
       setWritingCard(false);
