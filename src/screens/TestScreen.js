@@ -76,8 +76,9 @@ export default function TestScreen({navigation}) {
       // the resolved tag object will contain `ndefMessage` property
 
       await Ntag424.isoSelectFileApplication();
-      const key1Version = await Ntag424.getKeyVersion("01");
-      if (key1Version != '00') throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
+      const key1Version = await Ntag424.getKeyVersion('01');
+      if (key1Version != '00')
+        throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
 
       //have to auth with key 0
       const key0 = '00000000000000000000000000000000';
@@ -136,28 +137,25 @@ export default function TestScreen({navigation}) {
       // the resolved tag object will contain `ndefMessage` property
 
       await Ntag424.isoSelectFileApplication();
-      const key1Version = await Ntag424.getKeyVersion("01");
+      const key1Version = await Ntag424.getKeyVersion('01');
       if (key1Version == '00') throw new Error('YOUR CARD IS ALREADY RESET!');
 
       //have to auth with key 0
       const defaultkey = '00000000000000000000000000000000';
-      await Ntag424.AuthEv2First(
+      await Ntag424.AuthEv2First('00', '11111111111111111111111111111111');
+      console.log('key1');
+      await Ntag424.changeKey(
+        '01',
+        '22222222222222222222222222222222',
+        defaultkey,
         '00',
-        '11111111111111111111111111111111',
       );
-      console.log('key1')
+      console.log('key2');
       await Ntag424.changeKey(
-        "01",
-        "22222222222222222222222222222222",
+        '02',
+        '33333333333333333333333333333333',
         defaultkey,
-        "00",
-      );
-      console.log('key2')
-      await Ntag424.changeKey(
-        "02",
-        "33333333333333333333333333333333",
-        defaultkey,
-        "00",
+        '00',
       );
       console.log('key3');
       await Ntag424.changeKey(
@@ -215,10 +213,7 @@ export default function TestScreen({navigation}) {
         '00',
         masterKey,
       );
-      await Ntag424.setBoltCardFileSettings(
-        piccOffset,
-        macOffset,
-      );
+      await Ntag424.setBoltCardFileSettings(piccOffset, macOffset);
     } catch (ex) {
       console.warn('Oops!', ex, ex.message);
     } finally {
@@ -231,18 +226,18 @@ export default function TestScreen({navigation}) {
     try {
       // register for the NFC tag with NDEF in it
       await Ntag424.requestTechnology(NfcTech.IsoDep);
-      const url = 'lnurlw://your.domain.com/ln?p=00000000000000000000000000000000&c=0000000000000000';
+      const url =
+        'lnurlw://your.domain.com/ln?p=00000000000000000000000000000000&c=0000000000000000';
 
       const message = [Ndef.uriRecord(url)];
       const bytes = Ndef.encodeMessage(message);
-      console.log(Ntag424.util.bytesToHex(bytes))
+      console.log(Ntag424.util.bytesToHex(bytes));
 
       await Ntag424.setNdefMessage(bytes);
 
       //set offset for ndef header
-      const ndef = await Ntag424.readData("060000");
+      const ndef = await Ntag424.readData('060000');
       console.log(Ndef.uri.decodePayload(ndef));
-
     } catch (ex) {
       console.warn('Oops!', ex);
     } finally {
@@ -274,30 +269,25 @@ export default function TestScreen({navigation}) {
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.IsoDep);
 
-      const ndef = await Ntag424.readData("060000");
+      const ndef = await Ntag424.readData('060000');
       const ndefMessage = Ndef.uri.decodePayload(ndef);
       const params = {};
-      ndefMessage.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
-        function(m,key,value) {
-          params[key] = value;
-        }
-      );
+      ndefMessage.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+        params[key] = value;
+      });
       console.log(params);
       const pVal = params['p'];
-      const cVal = params['c'].slice(0,16);
-      console.log(ndefMessage, pVal, cVal)
-      
+      const cVal = params['c'].slice(0, 16);
+      console.log(ndefMessage, pVal, cVal);
+
       // const key0 = "00000000000000000000000000000000";
       // const key1 = "00000000000000000000000000000000";
       // const key2 = "00000000000000000000000000000000";
 
-      const key0 = "11111111111111111111111111111111";
-      const key1 = "22222222222222222222222222222222";
-      const key2 = "33333333333333333333333333333333";
-      await Ntag424.AuthEv2First(
-        '00',
-        key0,
-      );
+      const key0 = '11111111111111111111111111111111';
+      const key1 = '22222222222222222222222222222222';
+      const key2 = '33333333333333333333333333333333';
+      await Ntag424.AuthEv2First('00', key0);
       const uid = await Ntag424.getCardUid();
 
       const result = await Ntag424.testPAndC(pVal, cVal, uid, key1, key2);
@@ -308,7 +298,7 @@ export default function TestScreen({navigation}) {
       // stop the nfc scanning
       NfcManager.cancelTechnologyRequest();
     }
-  }
+  };
 
   const wipeNdef = async () => {
     try {
@@ -317,21 +307,23 @@ export default function TestScreen({navigation}) {
 
       const message = [Ndef.uriRecord('')];
       const bytes = Ndef.encodeMessage(message);
-      console.log('WIPE', Ntag424.util.bytesToHex(bytes))
+      console.log('WIPE', Ntag424.util.bytesToHex(bytes));
 
       // await Ntag424.ndefHandler.writeNdefMessage(bytes);
       await Ntag424.setNdefMessage(bytes);
 
       const testNdef = await NfcManager.ndefHandler.getNdefMessage();
-      console.log('TEST NDEF', Ndef.uri.decodePayload(testNdef.ndefMessage[0].payload));
-
+      console.log(
+        'TEST NDEF',
+        Ndef.uri.decodePayload(testNdef.ndefMessage[0].payload),
+      );
     } catch (ex) {
       console.warn('Oops!', ex);
     } finally {
       // stop the nfc scanning
       Ntag424.cancelTechnologyRequest();
     }
-  }
+  };
 
   return (
     <ScrollView>
@@ -345,9 +337,7 @@ export default function TestScreen({navigation}) {
           <Title>Test Buttons</Title>
           <View
             style={{flexDirection: 'column', justifyContent: 'space-evenly'}}>
-            <Button
-              title="Authenticate EV2 First"
-              onPress={readNdef}></Button>
+            <Button title="Authenticate EV2 First" onPress={readNdef}></Button>
             <Button
               title="Write NDEF & Set File Settings"
               onPress={() => {

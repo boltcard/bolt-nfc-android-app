@@ -64,7 +64,7 @@ export default function SetupBoltcard({url}) {
       const ndefMessage = Ndef.uri.decodePayload(tag.ndefMessage[0].payload);
 
       await Ntag424.isoSelectFileApplication();
-      const key1Version = await Ntag424.getKeyVersion("01");
+      const key1Version = await Ntag424.getKeyVersion('01');
       if (key1Version == '00') throw new Error('YOUR CARD IS ALREADY RESET!');
 
       setStep(SetupStep.RequestingKeys);
@@ -125,12 +125,16 @@ export default function SetupBoltcard({url}) {
       if (typeof ex === 'object') {
         error = ex.message ? ex.message : ex.constructor.name;
       }
-      if (error == 'You can only issue one request at a time' || error == 'UserCancel' || error == 'Duplicated registration') {
+      if (
+        error == 'You can only issue one request at a time' ||
+        error == 'UserCancel' ||
+        error == 'Duplicated registration'
+      ) {
         setStep(SetupStep.Restart);
         return;
       }
       error = 'NFC Error: ' + error;
-      setStep(SetupStep.WritingCard)
+      setStep(SetupStep.WritingCard);
       setTagTypeError(error);
     } finally {
       setWritingCard(false);

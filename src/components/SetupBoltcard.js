@@ -85,11 +85,12 @@ export default function SetupBoltcard({url}) {
       setCardUID(uid ? uid : '');
 
       await Ntag424.isoSelectFileApplication();
-      const key1Version = await Ntag424.getKeyVersion("01");
-      if (key1Version != '00') throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
+      const key1Version = await Ntag424.getKeyVersion('01');
+      if (key1Version != '00')
+        throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
 
       const key0 = '00000000000000000000000000000000';
-      if(byteSize(uid) == 8) {
+      if (byteSize(uid) == 8) {
         //random uid
         //get the real uid by authenticating first
         await Ntag424.AuthEv2First('00', key0);
@@ -132,7 +133,7 @@ export default function SetupBoltcard({url}) {
 
       await Ntag424.setNdefMessage(bytes);
       setNdefWritten(true);
-      
+
       // //auth first
       await Ntag424.AuthEv2First('00', key0);
       const piccOffset = ndefMessage.indexOf('p=') + 9;
@@ -159,20 +160,22 @@ export default function SetupBoltcard({url}) {
 
       //set offset for ndef header
       var ndef = await Ntag424.readData('060000');
-      while(ndef[ndef.length-1] === 0){ 
-        //Remomving trailing 0s 
+      while (ndef[ndef.length - 1] === 0) {
+        //Remomving trailing 0s
         //@TODO: need to figure out why there are trailing 0s in ndef
-        ndef.pop();                 
+        ndef.pop();
       }
       const setNdefMessage = Ndef.uri.decodePayload(ndef);
       setNdefRead(setNdefMessage);
 
       //we have the latest read from the card fire it off to the server.
-      const httpsLNURL = (String(setNdefMessage.replace('lnurlw://', 'https://'))).trim();
+      const httpsLNURL = String(
+        setNdefMessage.replace('lnurlw://', 'https://'),
+      ).trim();
       fetch(httpsLNURL)
         .then(response => {
-          if(!response.ok){
-            throw new Error(response.statusText)
+          if (!response.ok) {
+            throw new Error(response.statusText);
           }
           return response.json();
         })
@@ -215,7 +218,11 @@ export default function SetupBoltcard({url}) {
       if (typeof ex === 'object') {
         error = ex.message ? ex.message : ex.constructor.name;
       }
-      if (error == 'You can only issue one request at a time' || error == 'UserCancel' || error == 'Duplicated registration') {
+      if (
+        error == 'You can only issue one request at a time' ||
+        error == 'UserCancel' ||
+        error == 'Duplicated registration'
+      ) {
         setStep(SetupStep.Restart);
         return;
       }
@@ -226,7 +233,6 @@ export default function SetupBoltcard({url}) {
       setWritingCard(false);
       nfcManager.cancelTechnologyRequest();
       setReadingNfc(false);
-
     }
   };
 

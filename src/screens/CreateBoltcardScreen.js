@@ -82,19 +82,20 @@ export default function CreateBoltcardScreen({route}) {
     try {
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.IsoDep, {
-        alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
+        alertMessage:
+          'Ready to write card. Hold NFC card to phone until all keys are changed.',
       });
 
       await Ntag424.isoSelectFileApplication();
-      const key1Version = await Ntag424.getKeyVersion("01");
-      if (key1Version != '00') throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
+      const key1Version = await Ntag424.getKeyVersion('01');
+      if (key1Version != '00')
+        throw new Error('TRY AGAIN AFTER RESETING YOUR CARD!');
 
       //set ndef
       const ndefMessage = lnurlw_base.includes('?')
         ? lnurlw_base + '&p=00000000000000000000000000000000&c=0000000000000000'
         : lnurlw_base +
           '?p=00000000000000000000000000000000&c=0000000000000000';
-
 
       const message = [Ndef.uriRecord(ndefMessage)];
       const bytes = Ndef.encodeMessage(message);
@@ -103,72 +104,41 @@ export default function CreateBoltcardScreen({route}) {
       setNdefWritten('success');
 
       const key0 = '00000000000000000000000000000000';
-      // //auth first     
-      await Ntag424.AuthEv2First(
-        '00',
-        key0,
-      );
-      
-      if(privateUID) {
+      // //auth first
+      await Ntag424.AuthEv2First('00', key0);
+
+      if (privateUID) {
         await Ntag424.setPrivateUid();
       }
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
       //change file settings
-      await Ntag424.setBoltCardFileSettings(
-        piccOffset,
-        macOffset,
-      );
+      await Ntag424.setBoltCardFileSettings(piccOffset, macOffset);
       //get uid
       const uid = await Ntag424.getCardUid();
       console.log('UID', uid);
       setCardUID(uid);
-      
+
       //change keys
-      console.log('changekey 1')
-      await Ntag424.changeKey(
-        '01',
-        key0,
-        keys[1],
-        '01',
-      );
+      console.log('changekey 1');
+      await Ntag424.changeKey('01', key0, keys[1], '01');
       setKey1Changed(true);
-      console.log('changekey 2')
-      await Ntag424.changeKey(
-        '02',
-        key0,
-        keys[2],
-        '01',
-      );
+      console.log('changekey 2');
+      await Ntag424.changeKey('02', key0, keys[2], '01');
       setKey2Changed(true);
-      console.log('changekey 3')
-      await Ntag424.changeKey(
-        '03',
-        key0,
-        keys[3],
-        '01',
-      );
+      console.log('changekey 3');
+      await Ntag424.changeKey('03', key0, keys[3], '01');
       setKey3Changed(true);
-      console.log('changekey 4')
-      await Ntag424.changeKey(
-        '04',
-        key0,
-        keys[4],
-        '01',
-      );
+      console.log('changekey 4');
+      await Ntag424.changeKey('04', key0, keys[4], '01');
       setKey4Changed(true);
-      console.log('changekey 0')
-      await Ntag424.changeKey(
-        '00',
-        key0,
-        keys[0],
-        '01',
-      );
+      console.log('changekey 0');
+      await Ntag424.changeKey('00', key0, keys[0], '01');
       setKey0Changed(true);
       setWriteKeys('success');
 
       //set offset for ndef header
-      const ndef = await Ntag424.readData("060000");
+      const ndef = await Ntag424.readData('060000');
       const setNdefMessage = Ndef.uri.decodePayload(ndef);
       setNdefRead(setNdefMessage);
 
@@ -183,40 +153,41 @@ export default function CreateBoltcardScreen({route}) {
           setTestBolt('Error: ' + error.message);
         });
 
-      await Ntag424.AuthEv2First(
-        '00',
-        keys[0],
-      );
+      await Ntag424.AuthEv2First('00', keys[0]);
 
       const params = {};
-      setNdefMessage.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
-        function(m,key,value) {
+      setNdefMessage.replace(
+        /[?&]+([^=&]+)=([^&]*)/gi,
+        function (m, key, value) {
           params[key] = value;
-        }
+        },
       );
-      if(!"p" in params) {
-        setTestp("no p value to test")
+      if (!'p' in params) {
+        setTestp('no p value to test');
         return;
       }
-      if(!"c" in params) {
-        setTestc("no c value to test")
+      if (!'c' in params) {
+        setTestc('no c value to test');
         return;
       }
 
       const pVal = params['p'];
-      const cVal = params['c'].slice(0,16);
+      const cVal = params['c'].slice(0, 16);
 
-      const testResult = await Ntag424.testPAndC(pVal, cVal, uid, keys[1], keys[2]);
+      const testResult = await Ntag424.testPAndC(
+        pVal,
+        cVal,
+        uid,
+        keys[1],
+        keys[2],
+      );
       setTestp(testResult.pTest ? 'ok' : 'decrypt with key failed');
       setTestc(testResult.cTest ? 'ok' : 'decrypt with key failed');
-
-
-
     } catch (ex) {
       console.error('Oops!', ex);
       var error = ex;
-      if(typeof ex === 'object') {
-        error = "NFC Error: "+(ex.message? ex.message : ex.constructor.name);
+      if (typeof ex === 'object') {
+        error = 'NFC Error: ' + (ex.message ? ex.message : ex.constructor.name);
       }
       setTagTypeError(error);
     } finally {

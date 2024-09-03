@@ -26,12 +26,12 @@ export default function ResetKeysScreen({route}) {
 
   const defaultKey = '00000000000000000000000000000000';
 
-  const [uid, setUid] = useState()
-  const [key0, setKey0] = useState(defaultKey)
-  const [key1, setKey1] = useState(defaultKey)
-  const [key2, setKey2] = useState(defaultKey)
-  const [key3, setKey3] = useState(defaultKey)
-  const [key4, setKey4] = useState(defaultKey)
+  const [uid, setUid] = useState();
+  const [key0, setKey0] = useState(defaultKey);
+  const [key1, setKey1] = useState(defaultKey);
+  const [key2, setKey2] = useState(defaultKey);
+  const [key3, setKey3] = useState(defaultKey);
+  const [key4, setKey4] = useState(defaultKey);
 
   const [pasteWipeKeysJSON, setPasteWipeKeysJSON] = useState();
   const [promptVisible, setPromptVisible] = useState(false);
@@ -52,8 +52,8 @@ export default function ResetKeysScreen({route}) {
         setKey2(dataObj.k2 || defaultKey);
         setKey3(dataObj.k3 || defaultKey);
         setKey4(dataObj.k4 || defaultKey);
-        let error = ''
-        if(dataObj.action != 'wipe') {
+        let error = '';
+        if (dataObj.action != 'wipe') {
           error = 'Wipe action not specified, proceed with caution.\r\n';
         }
         if (dataObj.version != '1') {
@@ -79,81 +79,53 @@ export default function ResetKeysScreen({route}) {
     }
   }, [data, timestamp]);
 
-  const enableResetMode = async() => {
+  const enableResetMode = async () => {
     setResetNow(true);
     setWriteKeysOutput(null);
     var result = [];
     try {
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.IsoDep, {
-        alertMessage: "Ready to write card. Hold NFC card to phone until all keys are changed."
+        alertMessage:
+          'Ready to write card. Hold NFC card to phone until all keys are changed.',
       });
-      
+
       await Ntag424.isoSelectFileApplication();
-      const key1Version = await Ntag424.getKeyVersion("01");
+      const key1Version = await Ntag424.getKeyVersion('01');
       if (key1Version == '00') throw new Error('YOUR CARD IS ALREADY RESET!');
 
       const defaultKey = '00000000000000000000000000000000';
-      
-      // //auth first     
-      await Ntag424.AuthEv2First(
-        '00',
-        key0,
-      );
+
+      // //auth first
+      await Ntag424.AuthEv2First('00', key0);
 
       //reset file settings
       await Ntag424.resetFileSettings();
-      
+
       //change keys
-      await Ntag424.changeKey(
-        '01',
-        key1,
-        defaultKey,
-        '00',
-      );
-      result.push("Change Key1: Success");
-      console.log('changekey 2')
-      await Ntag424.changeKey(
-        '02',
-        key2,
-        defaultKey,
-        '00',
-      );
-      result.push("Change Key2: Success");
-      console.log('changekey 3')
-      await Ntag424.changeKey(
-        '03',
-        key3,
-        defaultKey,
-        '00',
-      );
-      result.push("Change Key3: Success");
-      await Ntag424.changeKey(
-        '04',
-        key4,
-        defaultKey,
-        '00',
-      );
-      result.push("Change Key4: Success");
-      await Ntag424.changeKey(
-        '00',
-        key0,
-        defaultKey,
-        '00',
-      );
-      result = ["Change Key0: Success", ...result];
+      await Ntag424.changeKey('01', key1, defaultKey, '00');
+      result.push('Change Key1: Success');
+      console.log('changekey 2');
+      await Ntag424.changeKey('02', key2, defaultKey, '00');
+      result.push('Change Key2: Success');
+      console.log('changekey 3');
+      await Ntag424.changeKey('03', key3, defaultKey, '00');
+      result.push('Change Key3: Success');
+      await Ntag424.changeKey('04', key4, defaultKey, '00');
+      result.push('Change Key4: Success');
+      await Ntag424.changeKey('00', key0, defaultKey, '00');
+      result = ['Change Key0: Success', ...result];
 
       const message = [Ndef.uriRecord('')];
       const bytes = Ndef.encodeMessage(message);
       await Ntag424.setNdefMessage(bytes);
 
-      result.push("NDEF and SUN/SDM cleared");
-
+      result.push('NDEF and SUN/SDM cleared');
     } catch (ex) {
       console.error('Oops!', ex, ex.constructor.name);
       var error = ex;
-      if(typeof ex === 'object') {
-        error = "NFC Error: "+(ex.message? ex.message : ex.constructor.name);
+      if (typeof ex === 'object') {
+        error = 'NFC Error: ' + (ex.message ? ex.message : ex.constructor.name);
       }
       result.push(error);
       setWriteKeysOutput(error);
@@ -190,10 +162,14 @@ export default function ResetKeysScreen({route}) {
     setKey2(defaultKey);
     setKey3(defaultKey);
     setKey4(defaultKey);
-  }
+  };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, flexDirection: 'column',justifyContent: 'center',}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} enabled keyboardVerticalOffset={100}>
+    <KeyboardAvoidingView
+      style={{flex: 1, flexDirection: 'column', justifyContent: 'center'}}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      enabled
+      keyboardVerticalOffset={100}>
       <ScrollView style={{padding: 10}}>
         <Card style={styles.card}>
           <Card.Content>
@@ -215,7 +191,9 @@ export default function ResetKeysScreen({route}) {
           <Dialog.Title style={styles.textBlack}>
             Enter Wipe Key JSON
           </Dialog.Title>
-          <Dialog.Description>Paste your wipe keys JSON here.</Dialog.Description>
+          <Dialog.Description>
+            Paste your wipe keys JSON here.
+          </Dialog.Description>
           <Dialog.Input
             style={styles.textBlack}
             label="Wipe Key JSON"
@@ -263,7 +241,8 @@ export default function ResetKeysScreen({route}) {
             </Text>
           )}
 
-          <Text style={{fontSize: 20, textAlign: 'center', borderColor: 'black'}}>
+          <Text
+            style={{fontSize: 20, textAlign: 'center', borderColor: 'black'}}>
             {writeKeysOutput ? writeKeysOutput : <ActivityIndicator />}
           </Text>
           <Dialog.Button
@@ -279,7 +258,12 @@ export default function ResetKeysScreen({route}) {
             <Title>Card Details</Title>
             <View style={styles.titlecontainer}>
               <Text style={styles.title}>Key 0</Text>
-              <Button onPress={()=>{setKey0('00000000000000000000000000000000')}} title="Set to Zeros" />
+              <Button
+                onPress={() => {
+                  setKey0('00000000000000000000000000000000');
+                }}
+                title="Set to Zeros"
+              />
             </View>
             <TextInput
               style={styles.input}
@@ -293,7 +277,12 @@ export default function ResetKeysScreen({route}) {
             />
             <View style={styles.titlecontainer}>
               <Text style={styles.title}>Key 1</Text>
-              <Button onPress={()=>{setKey1('00000000000000000000000000000000')}} title="Set to Zeros" />
+              <Button
+                onPress={() => {
+                  setKey1('00000000000000000000000000000000');
+                }}
+                title="Set to Zeros"
+              />
             </View>
             <TextInput
               style={styles.input}
@@ -307,7 +296,12 @@ export default function ResetKeysScreen({route}) {
             />
             <View style={styles.titlecontainer}>
               <Text style={styles.title}>Key 2</Text>
-              <Button onPress={()=>{setKey2('00000000000000000000000000000000')}} title="Set to Zeros" />
+              <Button
+                onPress={() => {
+                  setKey2('00000000000000000000000000000000');
+                }}
+                title="Set to Zeros"
+              />
             </View>
             <TextInput
               style={styles.input}
@@ -321,7 +315,12 @@ export default function ResetKeysScreen({route}) {
             />
             <View style={styles.titlecontainer}>
               <Text style={styles.title}>Key 3</Text>
-              <Button onPress={()=>{setKey3('00000000000000000000000000000000')}} title="Set to Zeros" />
+              <Button
+                onPress={() => {
+                  setKey3('00000000000000000000000000000000');
+                }}
+                title="Set to Zeros"
+              />
             </View>
             <TextInput
               style={styles.input}
@@ -335,7 +334,12 @@ export default function ResetKeysScreen({route}) {
             />
             <View style={styles.titlecontainer}>
               <Text style={styles.title}>Key 4</Text>
-              <Button onPress={()=>{setKey4('00000000000000000000000000000000')}} title="Set to Zeros" />
+              <Button
+                onPress={() => {
+                  setKey4('00000000000000000000000000000000');
+                }}
+                title="Set to Zeros"
+              />
             </View>
             <TextInput
               style={styles.input}
@@ -348,14 +352,20 @@ export default function ResetKeysScreen({route}) {
               placeholder={defaultKey}
             />
             <Card.Actions style={{justifyContent: 'space-around'}}>
-              <Button  onPress={() => enableResetMode()} title="Reset Card Now" />
-              <Button color="red" onPress={() => clearKeys()} title="Reset Inputs" />
+              <Button
+                onPress={() => enableResetMode()}
+                title="Reset Card Now"
+              />
+              <Button
+                color="red"
+                onPress={() => clearKeys()}
+                title="Reset Inputs"
+              />
             </Card.Actions>
           </Card.Content>
         </Card>
       </ScrollView>
     </KeyboardAvoidingView>
-
   );
 }
 
