@@ -41,7 +41,7 @@ export default function SetupBoltcard({url}) {
     React.useCallback(() => {
       readNfc();
       return () => {
-        // reset();
+        nfcManager.cancelTechnologyRequest();
       };
     }, []),
   );

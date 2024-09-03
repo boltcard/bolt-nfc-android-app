@@ -52,8 +52,7 @@ export default function SetupBoltcard({url}) {
       readNfc();
 
       return () => {
-        // reset();
-        console.log('RESET');
+        nfcManager.cancelTechnologyRequest();
       };
     }, []),
   );
