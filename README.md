@@ -13,7 +13,7 @@ Find out more at [boltcard.org](https://boltcard.org)
 # [Card programming errors](card-programming-errors.md)
 
 ## Current Version
-v0.2.0
+v0.3.2
 
 ## NFC Card Support
  * NXP NTAG424 DNA
