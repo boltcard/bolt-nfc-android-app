@@ -13,7 +13,7 @@ Find out more at [boltcard.org](https://boltcard.org)
 # [Card programming errors](card-programming-errors.md)
 
 ## Current Version
-v0.3.2
+v0.3.3
 
 ## NFC Card Support
  * NXP NTAG424 DNA
@@ -100,6 +100,9 @@ React native libraries are also used to make building the UI easier.
 Keep all your keys secret, and be careful when creating your cards that there are no other potential listening devices in range.
 
 # Version info
+
+## 0.3.3
+Allow lower case keys for deeplink programming for LNBits etc.
 
 ## 0.2.0
 Support for iOS devices. Rebuilt the card communication. Uses raw ADPU commands from react native.
